@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning Notes — Concept Map</title>
+<style>
+  :root { --bg:#fbfaf7; --fg:#2b2b2b; --muted:#6b6b6b; --border:#e7e3da; --card:#fff; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg);
+    font:15px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  header { position:fixed; top:0; left:0; right:0; padding:14px 20px; z-index:5;
+    display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;
+    background:linear-gradient(var(--bg),rgba(251,250,247,.85),transparent); }
+  header h1 { font-size:1.1rem; margin:0; font-weight:600; }
+  header .hint { color:var(--muted); font-size:.82rem; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; margin-left:auto; }
+  .chip { display:inline-flex; align-items:center; gap:6px; font-size:.8rem; color:var(--muted); }
+  .chip i { width:11px; height:11px; border-radius:3px; display:inline-block; }
+  svg { display:block; width:100vw; height:100vh; }
+  .link { stroke:#bdb7aa; }
+  .link.prose { stroke:#9a8f7a; stroke-width:1.6; }
+  .link.category { stroke-width:1; stroke-dasharray:3 4; opacity:.5; }
+  .node circle { stroke:#fff; stroke-width:2; cursor:pointer; }
+  .node text.num { fill:#fff; font-weight:700; font-size:11px; text-anchor:middle;
+    dominant-baseline:central; pointer-events:none; }
+  .node text.label { fill:var(--fg); font-size:11px; pointer-events:none;
+    paint-order:stroke; stroke:var(--bg); stroke-width:3px; opacity:0; transition:opacity .12s; }
+  .node.hub text.label, .node.show text.label { opacity:1; }
+  .node.faded { opacity:.18; }
+  .node.faded text.label { opacity:0; }
+  .link.faded { opacity:.06; }
+  #tip { position:fixed; max-width:300px; padding:9px 12px; background:var(--card);
+    border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,.12);
+    font-size:.82rem; pointer-events:none; opacity:0; transition:opacity .12s; z-index:9; }
+  #tip b { display:block; margin-bottom:3px; }
+  #tip span { color:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Learning Notes — Concept Map</h1>
+  <span class="hint">12 notes · 12 prose links · drag to rearrange · hover to focus · click to read</span>
+  <div class="legend"><span class="chip"><i style="background:#3a6ea5"></i>Foundations</span>
+<span class="chip"><i style="background:#a5603a"></i>LLM app patterns</span>
+<span class="chip"><i style="background:#4a8c5f"></i>Data &amp; method</span>
+<span class="chip"><i style="background:#8c6dae"></i>Engineering hygiene</span></div>
+</header>
+<svg></svg>
+<div id="tip"></div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script>
+const GRAPH = {"nodes": [{"id": 1, "anchor": "01-structured-output-via-tool-use", "num": "01", "title": "Structured output via tool use", "tldr": "Hand the AI a form with fixed allowed answers (a \"tool\") and make it fill that out instead of writing prose — the API rejects off-menu answers before they reach your code.", "category": "Foundations", "project": "both", "indegree": 1}, {"id": 2, "anchor": "02-eval-driven-development", "num": "02", "title": "Eval-driven development", "tldr": "Before trusting any AI change, run a test set with known answers and compare the score before vs after — a change that reads better can quietly make the model worse.", "category": "Foundations", "project": "classifier", "indegree": 3}, {"id": 3, "anchor": "03-reading-the-numbers", "num": "03", "title": "Reading the numbers: accuracy vs precision/recall/F1", "tldr": "Accuracy alone can hide a label that's quietly failing. Precision and recall (per label) show you where it fails; F1 blends them; macro-F1 stops a small bad label from hiding behind big easy ones.", "category": "Foundations", "project": "classifier", "indegree": 3}, {"id": 4, "anchor": "04-tool-use-the-general-idea", "num": "04", "title": "Tool use / function calling, the general idea", "tldr": "A \"tool\" is a function you describe to the model so it can ask you to run it. This is how an AI does things beyond talking — and you stay in control, because the model only requests the call; your code decides what actually happens.", "category": "LLM app patterns", "project": "both", "indegree": 0}, {"id": 5, "anchor": "05-the-agentic-tool-use-loop", "num": "05", "title": "The agentic tool-use loop", "tldr": "An \"AI agent\" is just a loop: ask the model → run any tool it requests → feed the result back → repeat until it answers. About 15 lines of code. That's the whole trick.", "category": "LLM app patterns", "project": "kb-agent", "indegree": 1}, {"id": 6, "anchor": "06-rag-answering-from-your-own-docs", "num": "06", "title": "RAG: answering from your own documents", "tldr": "RAG = fetch the relevant notes first, then let the model answer using them. It makes the AI speak from your documents instead of its training memory — and lets it admit when it doesn't know.", "category": "LLM app patterns", "project": "kb-agent", "indegree": 1}, {"id": 7, "anchor": "07-embeddings-and-vector-stores", "num": "07", "title": "Embeddings & vector stores: search by meaning", "tldr": "An embedding turns text into a list of numbers that captures its meaning, so you can find related text by closeness in meaning rather than matching exact keywords. A vector store holds those numbers and finds the nearest ones fast.", "category": "LLM app patterns", "project": "kb-agent", "indegree": 1}, {"id": 8, "anchor": "08-synthetic-data-circular-eval", "num": "08", "title": "Synthetic data and the \"circular eval\" trap", "tldr": "I made the test data with the same AI that takes the test. That's cheap and perfectly balanced — but the score measures whether the model agrees with itself, not whether it'd handle real, human-written news.", "category": "Data & method", "project": "classifier", "indegree": 2}, {"id": 9, "anchor": "09-tiered-model-routing", "num": "09", "title": "Tiered model routing: pay for the big model only when it pays", "tldr": "Don't run the expensive model on every request. Use a cheap, fast model as the default and escalate to the premium one only for the hard cases the eval says it can't handle.", "category": "Data & method", "project": "classifier", "indegree": 0}, {"id": 10, "anchor": "10-secrets-and-env", "num": "10", "title": "Secrets and the `.env` pattern", "tldr": "Your API key is a password. Keep it in an untracked .env file and load it at runtime — never typed into the code, never committed to git.", "category": "Engineering hygiene", "project": "both", "indegree": 0}, {"id": 11, "anchor": "11-reproducible-environments-uv", "num": "11", "title": "Reproducible environments: uv and lockfiles", "tldr": "\"Works on my machine\" usually means mismatched library versions. A lockfile pins the exact version of everything, so every machine — yours, a teammate's, CI — installs the identical environment.", "category": "Engineering hygiene", "project": "both", "indegree": 0}, {"id": 12, "anchor": "12-checkpoint-resume-and-retries", "num": "12", "title": "Checkpoint/resume and retries: surviving flaky API runs", "tldr": "A 300-call job will hit a hiccup. Save progress after every call (so a crash costs one item, not the whole run) and auto-retry the transient errors (so a blip doesn't kill the job).", "category": "Engineering hygiene", "project": "classifier", "indegree": 0}], "links": [{"source": 2, "target": 3, "kind": "prose"}, {"source": 2, "target": 8, "kind": "prose"}, {"source": 4, "target": 1, "kind": "prose"}, {"source": 4, "target": 5, "kind": "prose"}, {"source": 6, "target": 2, "kind": "prose"}, {"source": 6, "target": 7, "kind": "prose"}, {"source": 7, "target": 6, "kind": "prose"}, {"source": 8, "target": 2, "kind": "prose"}, {"source": 8, "target": 3, "kind": "prose"}, {"source": 9, "target": 2, "kind": "prose"}, {"source": 9, "target": 3, "kind": "prose"}, {"source": 9, "target": 8, "kind": "prose"}, {"source": 1, "target": 2, "kind": "category"}, {"source": 1, "target": 3, "kind": "category"}, {"source": 4, "target": 6, "kind": "category"}, {"source": 4, "target": 7, "kind": "category"}, {"source": 5, "target": 6, "kind": "category"}, {"source": 5, "target": 7, "kind": "category"}, {"source": 10, "target": 11, "kind": "category"}, {"source": 10, "target": 12, "kind": "category"}, {"source": 11, "target": 12, "kind": "category"}]};
+const COLORS = {"Foundations": "#3a6ea5", "LLM app patterns": "#a5603a", "Data & method": "#4a8c5f", "Engineering hygiene": "#8c6dae"};
+const DEFAULT_COLOR = "#6b6b6b";
+const color = c => COLORS[c] || DEFAULT_COLOR;
+const radius = d => 13 + 3.2 * (d.indegree || 0);
+const short = s => (s && s.length > 34) ? s.slice(0, 33).trimEnd() + "…" : s;
+
+const svg = d3.select("svg");
+let W = window.innerWidth, H = window.innerHeight;
+svg.attr("viewBox", [0, 0, W, H]);
+
+// Arrowhead for directional prose links.
+svg.append("defs").append("marker")
+  .attr("id", "arrow").attr("viewBox", "0 -5 10 10").attr("refX", 22)
+  .attr("markerWidth", 6).attr("markerHeight", 6).attr("orient", "auto")
+  .append("path").attr("d", "M0,-4L9,0L0,4").attr("fill", "#9a8f7a");
+
+const root = svg.append("g");
+// Build a neighbour set so hover can highlight a node + everything it touches.
+const neighbours = new Map(GRAPH.nodes.map(n => [n.id, new Set([n.id])]));
+GRAPH.links.forEach(l => {
+  neighbours.get(l.source).add(l.target);
+  neighbours.get(l.target).add(l.source);
+});
+
+// Each category gets an anchor on a 2x2 grid -> 4 tidy clusters. Defined before
+// the simulation because d3.forceX/forceY evaluate this accessor at setup time.
+const CATS = Object.keys(COLORS);
+function anchorXY(d) {
+  const i = CATS.indexOf(d.category);
+  if (i < 0) return [W / 2, H / 2];
+  const col = i % 2, row = Math.floor(i / 2);
+  return [W * (0.34 + 0.34 * col), H * (0.34 + 0.36 * row)];
+}
+
+const sim = d3.forceSimulation(GRAPH.nodes)
+  .force("link", d3.forceLink(GRAPH.links).id(d => d.id)
+    .distance(l => l.kind === "prose" ? 95 : 150).strength(l => l.kind === "prose" ? 0.55 : 0.06))
+  .force("charge", d3.forceManyBody().strength(-360))
+  .force("collide", d3.forceCollide(d => radius(d) + 20))
+  .force("x", d3.forceX(d => anchorXY(d)[0]).strength(0.12))
+  .force("y", d3.forceY(d => anchorXY(d)[1]).strength(0.12));
+
+const link = root.append("g").selectAll("line")
+  .data(GRAPH.links).join("line")
+  .attr("class", d => "link " + d.kind)
+  .attr("marker-end", d => d.kind === "prose" ? "url(#arrow)" : null);
+
+const node = root.append("g").selectAll("g")
+  .data(GRAPH.nodes).join("g")
+  .attr("class", d => "node" + (d.indegree >= 2 ? " hub" : ""))
+  .call(d3.drag().on("start", dragStart).on("drag", dragged).on("end", dragEnd))
+  .on("mouseover", focus).on("mouseout", unfocus)
+  .on("click", (e, d) => window.open("index.html#" + d.anchor, "_blank"));
+
+node.append("circle").attr("r", radius).attr("fill", d => color(d.category));
+node.append("text").attr("class", "num").text(d => d.num);
+node.append("text").attr("class", "label")
+  .attr("x", d => radius(d) + 5).attr("y", 4).text(d => short(d.title));
+
+sim.on("tick", () => {
+  link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+  node.attr("transform", d => `translate(${d.x},${d.y})`);
+});
+
+// Hover: spotlight the node and its neighbours; show a TL;DR tooltip.
+const tip = document.getElementById("tip");
+function focus(event, d) {
+  const near = neighbours.get(d.id);
+  node.classed("faded", n => !near.has(n.id));
+  node.classed("show", n => near.has(n.id));
+  link.classed("faded", l => l.source.id !== d.id && l.target.id !== d.id);
+  tip.innerHTML = `<b>${d.num} — ${escapeHtml(d.title)}</b><span>${escapeHtml(d.tldr)}</span>`;
+  tip.style.opacity = 1;
+  moveTip(event);
+}
+function unfocus() {
+  node.classed("faded", false);
+  node.classed("show", false);
+  link.classed("faded", false);
+  tip.style.opacity = 0;
+}
+node.on("mousemove", moveTip);
+function moveTip(event) {
+  const pad = 16;
+  let x = event.clientX + pad, y = event.clientY + pad;
+  if (x + 320 > window.innerWidth) x = event.clientX - 320;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function escapeHtml(s) { const d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }
+
+function dragStart(event, d) { if (!event.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }
+function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
+function dragEnd(event, d) { if (!event.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }
+
+window.addEventListener("resize", () => {
+  W = window.innerWidth; H = window.innerHeight;
+  svg.attr("viewBox", [0, 0, W, H]);
+  sim.force("x", d3.forceX(d => anchorXY(d)[0]).strength(0.12));
+  sim.force("y", d3.forceY(d => anchorXY(d)[1]).strength(0.12));
+  sim.alpha(0.3).restart();
+});
+</script>
+</body>
+</html>

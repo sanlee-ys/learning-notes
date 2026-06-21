@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Local env / secrets (notes reference the pattern; never commit a real one)
+.env
+.env.*
+!.env.example
+
+# MkDocs build output (normally generated to ../learning-notes-site/)
+site/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini

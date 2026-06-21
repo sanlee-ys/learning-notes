@@ -1,0 +1,72 @@
+# MkDocs Material site for the learning notes (the "polished" viewer).
+# The notes themselves stay flat in this folder; this config just renders them.
+#
+# Build (one-time toolchain, no permanent install) from THIS folder:
+#   uv run --no-project --with mkdocs-material mkdocs build
+# Then open ../learning-notes-site/index.html in a browser.
+#
+# Live preview while editing:
+#   uv run --no-project --with mkdocs-material mkdocs serve
+#
+# When you add a note: add one line under nav: below (the single-page index.html
+# from build_site.py picks new notes up automatically; this site needs the line).
+site_name: Learning Notes
+site_description: Plain-language notes on the ideas behind my projects.
+docs_dir: .
+site_dir: ../learning-notes-site
+use_directory_urls: false   # flat .html files so the site opens offline via file://
+
+theme:
+  name: material
+  features:
+    - navigation.top
+    - navigation.tracking
+    - content.code.copy
+    - search.highlight
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: blue grey
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue grey
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+plugins:
+  - search
+
+# Keep non-note files out of the build.
+exclude_docs: |
+  build_site.py
+  index.html
+  mkdocs.yml
+
+nav:
+  - Overview: README.md
+  - Foundations:
+      - 01 · Structured output via tool use: 01-structured-output-via-tool-use.md
+      - 02 · Eval-driven development: 02-eval-driven-development.md
+      - 03 · Reading the numbers: 03-reading-the-numbers.md
+  - LLM app patterns:
+      - 04 · Tool use, the general idea: 04-tool-use-the-general-idea.md
+      - 05 · The agentic tool-use loop: 05-the-agentic-tool-use-loop.md
+      - 06 · RAG over your own docs: 06-rag-answering-from-your-own-docs.md
+      - 07 · Embeddings & vector stores: 07-embeddings-and-vector-stores.md
+  - Data & method:
+      - 08 · Synthetic data & the circular-eval trap: 08-synthetic-data-circular-eval.md
+      - 09 · Tiered model routing: 09-tiered-model-routing.md
+  - Engineering hygiene:
+      - 10 · Secrets & the .env pattern: 10-secrets-and-env.md
+      - 11 · Reproducible environments (uv): 11-reproducible-environments-uv.md
+      - 12 · Checkpoint/resume & retries: 12-checkpoint-resume-and-retries.md

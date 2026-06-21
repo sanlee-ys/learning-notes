@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning Notes</title>
+<style>
+:root { --bg:#fbfaf7; --fg:#2b2b2b; --muted:#6b6b6b; --accent:#3a6ea5;
+        --card:#ffffff; --border:#e7e3da; --code-bg:#f3f1ec; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+.layout { display:flex; max-width:1100px; margin:0 auto; }
+nav { position:sticky; top:0; align-self:flex-start; width:260px; height:100vh;
+      overflow-y:auto; padding:28px 18px; border-right:1px solid var(--border); }
+nav h2 { font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
+         color:var(--muted); margin:0 0 12px; }
+nav a { display:block; padding:5px 8px; color:var(--fg); text-decoration:none;
+        border-radius:6px; font-size:.9rem; }
+nav a:hover { background:var(--code-bg); color:var(--accent); }
+main { flex:1; min-width:0; padding:40px 48px 120px; }
+section { margin-bottom:56px; padding-bottom:8px; border-bottom:1px dashed var(--border); }
+section:last-child { border-bottom:none; }
+h1 { font-size:1.9rem; margin:.2em 0 .6em; }
+h2 { font-size:1.25rem; margin:1.6em 0 .4em; }
+h3 { font-size:1.05rem; margin:1.3em 0 .3em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.12em .35em; border-radius:4px;
+       font:.88em "SF Mono", Consolas, "Liberation Mono", monospace; }
+pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+      padding:14px 16px; overflow-x:auto; }
+pre code { background:none; padding:0; font-size:.85rem; line-height:1.5; }
+blockquote { margin:1em 0; padding:.8em 1.1em; background:var(--card);
+             border-left:4px solid var(--accent); border-radius:0 8px 8px 0;
+             box-shadow:0 1px 2px rgba(0,0,0,.04); }
+blockquote p { margin:.3em 0; }
+hr { border:none; border-top:1px solid var(--border); margin:1.4em 0; }
+ul, ol { padding-left:1.4em; }
+li { margin:.25em 0; }
+#search { width:100%; padding:8px 10px; margin-bottom:14px; border:1px solid var(--border);
+          border-radius:8px; background:#fff; color:var(--fg); font:.9rem inherit; }
+#search:focus { outline:none; border-color:var(--accent);
+                box-shadow:0 0 0 2px rgba(58,110,165,.25); }
+#noresults { display:none; color:var(--muted); font-style:italic; }
+@media (max-width:780px) { nav { display:none; } main { padding:28px 20px 80px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav><h2>Learning Notes</h2>
+<input id="search" type="search" placeholder="Search notes…" autocomplete="off" aria-label="Search notes">
+<a href="#overview">Learning Notes</a>
+<a href="#01-structured-output-via-tool-use">01 — Structured output via tool use</a>
+<a href="#02-eval-driven-development">02 — Eval-driven development</a>
+<a href="#03-reading-the-numbers">03 — Reading the numbers: accuracy vs precision/recall/F1</a>
+<a href="#04-tool-use-the-general-idea">04 — Tool use / function calling, the general idea</a>
+<a href="#05-the-agentic-tool-use-loop">05 — The agentic tool-use loop</a>
+<a href="#06-rag-answering-from-your-own-docs">06 — RAG: answering from your own documents</a>
+<a href="#07-embeddings-and-vector-stores">07 — Embeddings &amp; vector stores: search by meaning</a>
+<a href="#08-synthetic-data-circular-eval">08 — Synthetic data and the &quot;circular eval&quot; trap</a>
+<a href="#09-tiered-model-routing">09 — Tiered model routing: pay for the big model only when it pays</a>
+<a href="#10-secrets-and-env">10 — Secrets and the .env pattern</a>
+<a href="#11-reproducible-environments-uv">11 — Reproducible environments: uv and lockfiles</a>
+<a href="#12-checkpoint-resume-and-retries">12 — Checkpoint/resume and retries: surviving flaky API runs</a>
+</nav>
+<main>
+<p id="noresults">No matching notes.</p>
+<section id="overview">
+<h1>Learning Notes</h1>
+<p>Plain-language notes on the ideas behind my projects. <strong>For me, not for GitHub</strong> — this folder lives outside the project repos on purpose, so it never gets pushed. The goal is to <em>understand</em> the concepts, not just have working code, and to keep adding to it over time.</p>
+<h2>How to use this</h2>
+<p>Each note is short and follows the same five-part shape:</p>
+<ol>
+  <li><strong>Plain idea</strong> — the concept in everyday words, no jargon.</li>
+  <li><strong>Analogy</strong> — a real-world comparison so it sticks.</li>
+  <li><strong>In my project</strong> — where I actually used it, with the file name.</li>
+  <li><strong>Why it matters</strong> — what problem it solves / what it buys me.</li>
+  <li><strong>Go deeper</strong> — questions to chase when I want to expand this note.</li>
+</ol>
+<p>To add a concept: copy that shape into a new <code>NN-name.md</code> file and tick it off below. Keep it simple first; expand later. A half-written note is fine. After adding or editing a note, run <code>python build_site.py</code> to refresh the viewable <code>index.html</code> (see below).</p>
+<h2>Concept map</h2>
+<p>Concepts pulled from my two projects. <code>[x]</code> = written, <code>[ ]</code> = planned.</p>
+<h3>Foundations</h3>
+<ul>
+  <li>[x] 01 — Structured output via tool use <em>(both projects)</em></li>
+  <li>[x] 02 — Eval-driven development: knowing if a change actually helped <em>(classifier)</em></li>
+  <li>[x] 03 — Reading the numbers: accuracy vs precision/recall/F1 <em>(classifier)</em></li>
+</ul>
+<h3>LLM app patterns</h3>
+<ul>
+  <li>[x] 04 — Tool use / function calling, the general idea <em>(both)</em></li>
+  <li>[x] 05 — The agentic tool-use loop: letting the model decide <em>(kb-agent)</em></li>
+  <li>[x] 06 — RAG: answering from your own documents <em>(kb-agent)</em></li>
+  <li>[x] 07 — Embeddings &amp; vector stores: search by meaning <em>(kb-agent)</em></li>
+</ul>
+<h3>Data &amp; method</h3>
+<ul>
+  <li>[x] 08 — Synthetic data and the "circular eval" trap <em>(classifier)</em></li>
+  <li>[x] 09 — Tiered model routing: paying for the big model only when it pays <em>(classifier v2)</em></li>
+</ul>
+<h3>Engineering hygiene</h3>
+<ul>
+  <li>[x] 10 — Secrets and the <code>.env</code> pattern <em>(both)</em></li>
+  <li>[x] 11 — Reproducible environments: uv and lockfiles <em>(both)</em></li>
+  <li>[x] 12 — Checkpoint/resume and retries: surviving flaky API runs <em>(classifier)</em></li>
+</ul>
+<h2>Viewing the notes</h2>
+<p>Run the build script to render all notes into a single, self-contained page:</p>
+<pre><code>python build_site.py        # regenerates index.html</code></pre>
+<p>Then open <strong><code>index.html</code></strong> in any browser (just double-click it). It's one offline file — no server, no install, no internet. The <code>.md</code> files stay the source of truth; <strong>re-run <code>build_site.py</code> after editing or adding a note</strong> to refresh the page (don't hand-edit <code>index.html</code>).</p>
+<h3>Future display ideas (not built)</h3>
+<ul>
+  <li><strong>A docs site</strong> (MkDocs Material or Docsify) — sidebar nav + a search box + themes. More setup; still local; the TL;DR lines become the cards/index.</li>
+  <li><strong>Ask them instead of read them</strong> — point <code>kb-agent</code> at this folder so you can <em>chat</em> with your own notes. Reuses what you already built; just tell kb-agent where to look (keep the notes themselves outside git).</li>
+</ul>
+<h2>Where these come from</h2>
+<ul>
+  <li><strong>defense-news-classifier</strong> — an AI that reads a defense-news snippet and labels it (what it's about + which domain). Built to <em>measure</em> how well it does.</li>
+  <li><strong>kb-agent</strong> — an AI assistant that answers questions about my projects by searching a personal notebook of Markdown files (this is the "RAG" project).</li>
+</ul>
+</section>
+<section id="01-structured-output-via-tool-use">
+<h1>01 — Structured output via tool use</h1>
+<blockquote><strong>TL;DR</strong> Hand the AI a form with fixed allowed answers (a "tool") and make it fill that out instead of writing prose — the API rejects off-menu answers <em>before</em> they reach your code.</blockquote>
+<h2>Plain idea</h2>
+<p>Normally an AI answers with a paragraph of text. Often I don't want a paragraph — I want it to <strong>fill in a form</strong>: exact fields, and for some fields, only a fixed set of allowed answers. "Tool use" (also called <em>function calling</em>) is the feature that lets me hand the AI a form and make it fill <em>that</em> out instead of writing prose.</p>
+<p>The catch it solves: if I just <em>ask</em> "reply in JSON with <code>category</code> and <code>operational_domain</code>," the model usually does — but sometimes it writes <code>&quot;aerial&quot;</code> instead of <code>&quot;air&quot;</code>, adds a chatty sentence before the JSON, or misspells a key. Then my code has to detect and clean up the mess. With tool use, I define the form's rules up front (including the exact allowed values, called an <strong>enum</strong>), and the API checks the model's answer against those rules <em>before</em> handing it back to me. Off-menu answers get rejected on their end, not mine.</p>
+<h2>Analogy</h2>
+<p>The difference between asking someone "so, what do you want to order?" (they talk; I scribble it down and hope I got it right) versus handing them a <strong>checkbox menu</strong> (they can only tick boxes that exist). The menu makes a wrong answer almost impossible — and I don't have to interpret handwriting.</p>
+<h2>In my project</h2>
+<p><code>defense-news-classifier/src/classify.py</code>. I define a <code>classify_article</code> tool whose schema says: return <code>category</code> (one of 5 listed values) and <code>operational_domain</code> (one of 6). I set <code>tool_choice</code> to <em>force</em> the model to use it. Because the API guarantees the shape, the core function is about seven lines — make the call, grab the tool result, return it. No JSON parsing, no "is this a valid label?" checks. The dataset generator (<code>generate.py</code>) uses the exact same trick to produce correctly labeled fake articles.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>The schema becomes the single source of truth</strong> ("the schema is the contract"). To add or rename a label, I change one place, not scattered parsing code.</li>
+  <li><strong>My code gets boring</strong> (in a good way) — no defensive cleanup, fewer bugs.</li>
+  <li><strong>The model can't drift</strong> to synonyms, because <code>&quot;aerial&quot;</code> isn't on the menu.</li>
+</ul>
+<p>The tradeoff I accepted: it costs a few extra tokens (the schema rides along) and the API call is a bit wordier than a plain "just chat" call. Cheap price for reliability.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li>How does the API actually <em>enforce</em> the enum — does the model never generate the bad value, or does the API reject it after? (Worth understanding the mechanism.)</li>
+  <li>What is JSON Schema, the format these tool definitions are written in?</li>
+  <li>What happens when an article genuinely fits two categories? (The form forces one answer — is that the right design, or should I allow "uncertain"?)</li>
+  <li>How would the same thing look with a different provider (e.g. OpenAI's <code>response_format</code>)? Same idea, different wiring.</li>
+</ul>
+</section>
+<section id="02-eval-driven-development">
+<h1>02 — Eval-driven development</h1>
+<blockquote><strong>TL;DR</strong> Before trusting any AI change, run a test set with known answers and compare the score before vs after — a change that <em>reads</em> better can quietly make the model worse.</blockquote>
+<h2>Plain idea</h2>
+<p>An <strong>eval</strong> is a test set: a pile of examples where I already know the right answer. "Eval-driven" means that before I trust <em>any</em> change to the AI, I run the whole eval and compare the score <strong>before</strong> vs <strong>after</strong>. If the score didn't go up, the change didn't help — no matter how clever or clean it looked.</p>
+<p>This matters more with AI than with normal code, because AI changes are <em>persuasive</em>. A reworded prompt can read smarter to a human while quietly nudging the model's behavior the wrong way. You cannot feel a 3-point accuracy drop by skimming a few outputs. The number catches what your eyes flatter.</p>
+<h2>Analogy</h2>
+<p>Stepping on a scale before and after a diet change, instead of judging from the mirror. The mirror lies (and flatters); the scale doesn't care how good the plan sounded.</p>
+<h2>In my project</h2>
+<p>This isn't hypothetical — it's the best lesson in the whole repo.</p>
+<p>The classifier confused two labels, <code>industry</code> and <code>procurement</code> (both involve defense companies and money). The "obvious" fix: spell the distinction out more sharply in the prompt — <em>"a firm winning a contract is procurement; a firm reporting earnings is industry."</em> It read better. I ran the eval. It got <strong>worse</strong>: category accuracy fell 79.0% → 76.7%, and <code>industry</code> recall dropped from 0.22 to 0.10 (it caught even fewer of them). The sharper wording gave the model a cleaner rule for dumping borderline stories into the wrong bin. I reverted and kept the original.</p>
+<p>The machinery: <code>src/eval.py</code> runs the classifier on all 300 articles and writes the score, a confusion matrix (which labels get mistaken for which), and a log of every wrong answer. The failed experiment is recorded in <code>CHANGELOG.md</code> so I don't repeat it.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li>It's the only thing that reliably separates a <strong>real</strong> improvement from a <strong>plausible-sounding</strong> one.</li>
+  <li>It makes prompt-tweaking a <em>measured</em> activity, not a vibes activity.</li>
+  <li>The misclassification log turns failures into a to-do list — I can read the exact cases the model blows and look for patterns.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>What makes a <em>good</em> eval set? (Big one: my labels were made by the same AI that I'm grading — see note 08 on the "circular eval" trap.)</li>
+  <li>How do I read a confusion matrix at a glance?</li>
+  <li>When is a score difference real vs just random run-to-run noise? (I built a <code>stability.py</code> to measure that wobble — worth a note of its own.)</li>
+  <li>Precision vs recall vs F1 — what each one actually means (note 03).</li>
+</ul>
+</section>
+<section id="03-reading-the-numbers">
+<h1>03 — Reading the numbers: accuracy vs precision/recall/F1</h1>
+<blockquote><strong>TL;DR</strong> Accuracy alone can hide a label that's quietly failing. Precision and recall (per label) show you <em>where</em> it fails; F1 blends them; macro-F1 stops a small bad label from hiding behind big easy ones.</blockquote>
+<h2>Plain idea</h2>
+<p><strong>Accuracy</strong> is the obvious score: of everything, what fraction did I get right? It's fine when every label is roughly equal — but it <em>lies</em> when one label is rare or hard, because the easy labels drown out the struggling one in the average.</p>
+<p>So for each label separately we ask two sharper questions:</p>
+<ul>
+  <li><strong>Precision</strong> — <em>when the model says "X", how often is it actually X?</em> Punishes false alarms. <code>TP / (TP + FP)</code></li>
+  <li><strong>Recall</strong> — <em>of all the real X's out there, how many did the model catch?</em> Punishes misses. <code>TP / (TP + FN)</code></li>
+</ul>
+<p>These two pull against each other. Guess "X" for everything and you catch them all (recall 100%) but cry wolf constantly (precision tanks). Guess "X" only when totally sure and your guesses are all right (high precision) but you miss most of them (low recall). <strong>F1</strong> is a single number that balances the two (it's their harmonic mean, so it stays low unless <em>both</em> are decent).</p>
+<p><strong>Macro-F1</strong> averages each label's F1 with <em>equal weight</em>. That's the honest headline for uneven problems: a small, failing label counts just as much as a big, easy one, so it can't hide.</p>
+<h2>Analogy</h2>
+<p>A metal detector at airport security:</p>
+<ul>
+  <li><strong>Recall</strong> = of everyone actually carrying metal, how many it caught. Misses are a recall problem (dangerous).</li>
+  <li><strong>Precision</strong> = when it beeps, how often there's really metal. False alarms are a precision problem (annoying, slow).</li>
+</ul>
+<p>Crank sensitivity up → it beeps at everyone → recall 100%, precision awful. Crank it down → rarely beeps → precision high, recall awful. The "right" setting depends on which mistake costs you more.</p>
+<h2>In my project</h2>
+<p>The counting is just boolean arithmetic over the predictions table — no ML library needed (<code>src/eval.py</code>):</p>
+<pre><code>tp = ((df.true == label) &amp; (df.pred == label)).sum()   # said X, was X   ✅
+fp = ((df.true != label) &amp; (df.pred == label)).sum()   # said X, wasn&#x27;t  ❌ false alarm
+fn = ((df.true == label) &amp; (df.pred != label)).sum()   # was X, missed   ❌ miss
+precision = tp / (tp + fp)
+recall    = tp / (tp + fn)</code></pre>
+<p>The payoff shows up in the <code>industry</code> label: <strong>precision 1.000, recall 0.217</strong>. Read that out loud — <em>every time it said "industry" it was right, but it only caught 1 in 5 of the real ones</em> (the rest got mislabeled <code>procurement</code>). Plain accuracy would never have told me that. It's also why my honest headline, macro-F1 (0.765), sits <em>below</em> category accuracy (0.79): that one weak label drags the equal-weighted average down.</p>
+<h2>Why it matters</h2>
+<p>Choosing the metric is itself a decision. Headline accuracy would have let me brag; macro-F1 kept me honest <em>and</em> pointed a finger at the exact label to fix. Pick the number that exposes your weakness, not the one that flatters it.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li>The precision/recall <strong>trade-off</strong> and "thresholds" — when you'd deliberately favor one.</li>
+  <li>When recall matters more (cancer screening: don't miss) vs precision (spam filter: don't trash real mail).</li>
+  <li>How to read a <strong>confusion matrix</strong> (which label gets mistaken for which) at a glance.</li>
+  <li>Macro vs <strong>micro</strong> vs weighted averages — what each one is really measuring.</li>
+</ul>
+</section>
+<section id="04-tool-use-the-general-idea">
+<h1>04 — Tool use / function calling, the general idea</h1>
+<blockquote><strong>TL;DR</strong> A "tool" is a function you <em>describe</em> to the model so it can ask you to run it. This is how an AI does things beyond talking — and you stay in control, because the model only <em>requests</em> the call; your code decides what actually happens.</blockquote>
+<h2>Plain idea</h2>
+<p>By itself, a language model only produces text. It can't search your files, do reliable math, or call an API. <strong>Tool use</strong> (a.k.a. <em>function calling</em>) bridges that gap. You hand the model a menu of actions — each is a name + a description + an input form (schema). The model can't run anything itself; instead it <em>requests</em> a call: "please run <code>search_kb</code> with <code>query=&#x27;pandas&#x27;</code>." Your code runs it and hands the result back.</p>
+<p>There are two flavors of the same primitive:</p>
+<ul>
+  <li><strong>(a) Shape the output</strong> — force the model to fill a form so you get clean structured data instead of prose. (That's note 01.)</li>
+  <li><strong>(b) Give it abilities</strong> — let it look things up, calculate, hit an API, etc. (That's the agent in note 05.)</li>
+</ul>
+<p>Both my projects use the same feature for these two different purposes.</p>
+<h2>Analogy</h2>
+<p>The model is a sharp colleague on the phone who <strong>can't touch your computer</strong>. You say: "Here are buttons I can press for you — SEARCH and LIST. Just tell me which." They say "press SEARCH for 'pandas'." You press it and read them the result. They keep going. The model is the brain; <em>you</em> are the hands. Nothing happens that you didn't run.</p>
+<h2>In my projects</h2>
+<ul>
+  <li><strong>Classifier</strong> — flavor (a). One tool, <code>classify_article</code>, <em>forced</em> every call. Pure output-shaping; the model never "decides" anything about tools.</li>
+  <li><strong>kb-agent</strong> — flavor (b). Two tools, <code>search_kb</code> and <code>list_projects</code>, and the model <em>chooses</em> when (and whether) to call them.</li>
+</ul>
+<p>A detail that matters: the tool's <strong>description</strong> is a prompt. kb-agent's schemas are deliberately prescriptive about <em>when</em> to call each one —</p>
+<pre><code>&quot;description&quot;: (&quot;Search the personal knowledge base of projects and libraries. &quot;
+                &quot;Call this whenever the user asks about a tool, library, design &quot;
+                &quot;decision, or how something was used in a project.&quot;)</code></pre>
+<p>Good descriptions visibly improve the model's tool-picking.</p>
+<h2>Why it matters</h2>
+<p>This single primitive is the bridge between "a model that talks" and "software that does things." Once you see that structured output <em>and</em> AI agents are both just tool use, a lot of the mystery evaporates. And the safety story is built in: the model can only <em>ask</em>; what the tool actually does is ordinary code you wrote and control.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li>Forcing a tool (<code>tool_choice</code>) vs letting the model choose — when to do which.</li>
+  <li>What happens when the model wants to call <strong>several tools at once</strong> (parallel calls).</li>
+  <li>The risk surface: tools with <strong>side effects</strong> (writing files, sending email) — the model proposes, but you must decide what's safe to auto-run.</li>
+  <li>How tool descriptions act as prompts that steer tool selection.</li>
+</ul>
+</section>
+<section id="05-the-agentic-tool-use-loop">
+<h1>05 — The agentic tool-use loop</h1>
+<blockquote><strong>TL;DR</strong> An "AI agent" is just a loop: ask the model → run any tool it requests → feed the result back → repeat until it answers. About 15 lines of code. That's the whole trick.</blockquote>
+<h2>Plain idea</h2>
+<p>In the classifier I force <em>exactly one</em> tool call and I'm done. An <strong>agent</strong> is the open-ended version: I don't know in advance how many steps it'll take to answer. So I run a loop:</p>
+<pre><code>┌─────────────────────────────────────────────┐
+│ 1. send the conversation to the model        │
+│ 2. did it ask for a tool?                     │
+│      • no  → it gave a final answer → STOP    │
+│      • yes → run the tool(s), append results  │
+│             → go back to step 1               │
+└─────────────────────────────────────────────┘
+   (plus a safety cap so it can&#x27;t loop forever)</code></pre>
+<p>The model is the decision-maker; the loop is the engine; the tools are the hands. "Agent" = model + loop + tools. Nothing more mystical than that.</p>
+<h2>Analogy</h2>
+<p>A research assistant you email a question. They reply either with an answer, or with "please look up X for me." You look up X, email it back. They might ask for one more thing, then answer. You repeat until they're done — and you'd cut them off after, say, 10 round-trips so they don't spiral.</p>
+<h2>In my project</h2>
+<p><code>kb-agent/agent/agent.py</code>, the <code>ask()</code> method — a <em>manual</em> loop (I didn't use the SDK's auto-runner, so the control flow is visible and easy to follow):</p>
+<pre><code>for _ in range(MAX_TOOL_ITERATIONS):                 # safety cap (10)
+    resp = client.messages.create(..., tools=TOOLS, messages=self.messages)
+    self.messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: resp.content})
+
+    if resp.stop_reason != &quot;tool_use&quot;:               # model gave a real answer
+        return final_text(resp)                       # → done
+
+    for block in resp.content:                        # else: run what it asked for
+        if block.type == &quot;tool_use&quot;:
+            result = execute_tool(block.name, block.input)
+            tool_results.append({&quot;type&quot;: &quot;tool_result&quot;,
+                                 &quot;tool_use_id&quot;: block.id, &quot;content&quot;: result})
+    self.messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: tool_results})</code></pre>
+<p>Two things that are easy to get wrong: you <strong>must</strong> append the assistant turn (it carries the tool <em>request</em>) and you <strong>must</strong> send each tool result back with the matching <code>tool_use_id</code>. Mismatch those and the conversation breaks.</p>
+<h2>Why it matters</h2>
+<p>This little loop <em>is</em> what people mean by "AI agent." Seeing it written out demystifies the whole category. It also makes the failure modes obvious: runaway loops (hence the cap), and cost — every trip through the loop is another paid API call.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li>How does the model "know" it's done? (It stops asking for tools.)</li>
+  <li><strong>Memory</strong>: kb-agent keeps <code>self.messages</code> across turns so it remembers the chat — what changes if you reset it each question?</li>
+  <li>When to hand-roll the loop vs use the SDK's built-in tool runner.</li>
+  <li>Guardrails: capping iterations, capping spend, and what to do when the cap is hit.</li>
+</ul>
+</section>
+<section id="06-rag-answering-from-your-own-docs">
+<h1>06 — RAG: answering from your own documents</h1>
+<blockquote><strong>TL;DR</strong> RAG = <strong>fetch the relevant notes first, then let the model answer using them.</strong> It makes the AI speak from <em>your</em> documents instead of its training memory — and lets it admit when it doesn't know.</blockquote>
+<h2>Plain idea</h2>
+<p>A model only knows what it absorbed during training. It doesn't know your private notes, and it doesn't know what changed last week. <strong>RAG</strong> (Retrieval-Augmented Generation) fixes this in two steps:</p>
+<ol>
+  <li><strong>Retrieve</strong> — find the chunks of <em>your</em> documents most relevant to the question.</li>
+  <li><strong>Generate</strong> — hand those chunks to the model along with the question, and let it answer <em>from them</em>.</li>
+</ol>
+<p>Because the answer is grounded in real text you provided, the model makes far less up, and it can point at <em>which</em> document it used.</p>
+<h2>Analogy</h2>
+<p><strong>Open-book vs closed-book exam.</strong> Closed-book, the model answers from memory and can be confidently wrong. RAG turns it into an open-book exam where you've already flipped to the right page — it reads, then answers.</p>
+<h2>In my project</h2>
+<p>kb-agent <em>is</em> a RAG system. The "documents" are Markdown files about my projects and libraries (<code>kb/</code>). When I ask a question:</p>
+<ol>
+  <li><code>search_kb</code> finds the most relevant chunks (note 07 explains how "relevant" works).</li>
+  <li>The agent reads them and writes an answer.</li>
+</ol>
+<p>The honesty rules live in the system prompt, and they're the important part:</p>
+<pre><code>Answer questions using the search_kb ... tools rather than your own prior knowledge.
+When you state a fact that came from the KB, mention the source file. If the tools
+return nothing relevant, say so plainly instead of guessing — do not invent details.</code></pre>
+<p>So it <strong>cites the source file</strong> and is told to say "I don't know" when the KB is empty on a topic — instead of confidently inventing project details.</p>
+<h2>Why it matters</h2>
+<p>RAG is how you make an AI useful over <strong>private or fast-changing</strong> information <em>without</em> retraining anything. And the "cite your source / admit when you've got nothing" pattern is what keeps a RAG assistant trustworthy — grounding plus a way to fail honestly.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li><strong>Chunking</strong>: documents get split into pieces before retrieval — chunk too big and you bury the answer in noise; too small and you lose context. How to size it.</li>
+  <li>What to do when retrieval grabs the <em>wrong</em> chunk (the model can only be as good as what it's handed).</li>
+  <li>"Grounding" and citations — tying each claim back to a source.</li>
+  <li>How do you even <em>evaluate</em> a RAG system? (Did it retrieve the right docs? Did it answer faithfully from them? — ties back to note 02.)</li>
+</ul>
+</section>
+<section id="07-embeddings-and-vector-stores">
+<h1>07 — Embeddings &amp; vector stores: search by meaning</h1>
+<blockquote><strong>TL;DR</strong> An <em>embedding</em> turns text into a list of numbers that captures its meaning, so you can find related text by <strong>closeness in meaning</strong> rather than matching exact keywords. A <em>vector store</em> holds those numbers and finds the nearest ones fast.</blockquote>
+<h2>Plain idea</h2>
+<p>Keyword search breaks the moment the words don't match. Ask <em>"how do I keep secrets safe?"</em> but the note says <em>"API key management"</em> — zero shared words, zero results, even though it's the perfect note.</p>
+<p>An <strong>embedding</strong> fixes this. It converts a piece of text into a long list of numbers (a <strong>vector</strong>) arranged so that texts with <strong>similar meaning</strong> land near each other in that number-space. To search, you embed the <em>question</em> into the same space and grab the nearest note-vectors. "Secrets" and "API key management" end up close, so it just works.</p>
+<p>A <strong>vector store</strong> (a database like ChromaDB) is what holds all those vectors and answers "find me the nearest ones" quickly, even over thousands of chunks.</p>
+<pre><code>&quot;API key management&quot;  ─embed─▶  [0.12, -0.88, 0.05, ... ]  ┐
+&quot;keeping secrets safe&quot; ─embed─▶ [0.14, -0.85, 0.07, ... ]  ├─ near each other
+&quot;pandas dataframes&quot;   ─embed─▶  [0.91,  0.10, -0.4, ... ]  ┘  far away</code></pre>
+<h2>Analogy</h2>
+<p>A library where books are shelved by <strong>topic-closeness</strong>, not alphabetically — cooking next to nutrition next to gardening. To find a book you walk to the right <em>neighborhood</em>, even if you never knew the exact title.</p>
+<h2>In my project</h2>
+<p>kb-agent, <code>scripts/index.py</code>. It chops the Markdown KB into chunks and embeds each one into <strong>ChromaDB</strong> using a small model, <code>all-MiniLM-L6-v2</code>. The notable design choice:</p>
+<blockquote>The embedding model runs <strong>locally</strong> — no API key, no per-call cost, and nothing leaves the machine.</blockquote>
+<p>At query time, <code>search_kb</code> embeds the question with the same model and asks Chroma for the nearest chunks. That nearest-neighbor lookup is the <strong>Retrieve</strong> step that powers the RAG in note 06.</p>
+<h2>Why it matters</h2>
+<p>Embeddings are the engine under RAG <em>and</em> under "semantic search" in general. And the local-vs-API choice here is a real trade-off worth naming: local is <strong>private and free</strong> but a paid embedding model might retrieve a bit more accurately. For a personal KB, free + private wins.</p>
+<h2>Mini-glossary</h2>
+<ul>
+  <li><strong>Vector</strong> — the list of numbers representing one piece of text.</li>
+  <li><strong>Dimension</strong> — how many numbers are in that list (MiniLM uses 384).</li>
+  <li><strong>Similarity</strong> — how "close" two vectors are; usually <em>cosine similarity</em> (angle between them), not literal distance.</li>
+  <li><strong>Chunk</strong> — one slice of a document that gets embedded as a unit.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li><em>Why</em> chunk at all, and how chunk size changes what gets retrieved.</li>
+  <li><strong>Cosine similarity</strong> intuition — why angle, not raw distance.</li>
+  <li>Local vs API embedding models — quality, cost, and privacy trade-offs.</li>
+  <li>The individual numbers in a vector don't "mean" anything on their own — only their <em>pattern</em> does. Worth sitting with that.</li>
+</ul>
+</section>
+<section id="08-synthetic-data-circular-eval">
+<h1>08 — Synthetic data and the "circular eval" trap</h1>
+<blockquote><strong>TL;DR</strong> I made the test data with the <em>same</em> AI that takes the test. That's cheap and perfectly balanced — but the score measures whether the model <strong>agrees with itself</strong>, not whether it'd handle real, human-written news.</blockquote>
+<h2>Plain idea</h2>
+<p>To measure a classifier you need examples with known-correct answers. I had three options:</p>
+<ul>
+  <li><strong>Scrape real news</strong> — needs a scraper, licensing review, and humans to label each article.</li>
+  <li><strong>Find an existing labeled dataset</strong> — none matched my two-label scheme.</li>
+  <li><strong>Generate labeled examples with the AI</strong> — one API call per <code>category × domain</code> combo (30 combos × 10 = 300 articles), each one born with its label already attached.</li>
+</ul>
+<p>I picked generate. The upside is real: no scraping, no licensing, no human labeling, and every label gets exactly 10 examples — <em>perfectly balanced</em> (note 03 on why balance helps).</p>
+<p>The catch is in the name: <strong>circular</strong>. The same model wrote the data <em>and</em> grades it. So a high score really means <em>"the classifier agrees with the labels the generator chose"</em> — the model is consistent with itself. It does <strong>not</strong> prove it would do well on messy, human-written news it's never seen. I'm measuring <strong>consistency</strong>, not <strong>generalization</strong>.</p>
+<p>There's a subtler bias too: AI-written snippets are more uniform in style and vocabulary than real news, so a model tuned on them would overfit to that tidy style and stumble on the real thing.</p>
+<h2>Analogy</h2>
+<p>Writing your own exam questions <em>and</em> the answer key, then acing the exam. Impressive- looking, but it only proves you're consistent with yourself — not that you've learned the subject. The real test is questions <strong>someone else</strong> wrote.</p>
+<h2>In my project</h2>
+<p>The README and <code>decisions/003-synthetic-data-only.md</code> call this out <em>loudly</em> — it's listed as the project's #1 limitation, not buried:</p>
+<blockquote>the same model generates and classifies the data. Numbers measure in-distribution consistency, not generalization to real-world news.</blockquote>
+<p>The honest v2 move is written down: re-run the eval against a small set of <strong>human-labeled real</strong> articles.</p>
+<h2>Why it matters</h2>
+<p>Every eval has a quiet question behind it: <em>do I trust this number?</em> (ties to note 02). Naming the circularity is what keeps the 79% / 97% figures honest. A number you <em>can't</em> trust is worse than no number — it feels like progress while telling you nothing.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li>What would a <em>real</em> eval set need? (Real sources + human labels + a check that labelers agree with each other.)</li>
+  <li><strong>In-distribution</strong> vs <strong>out-of-distribution</strong> — the idea underneath the whole trap.</li>
+  <li>Could I keep synthetic data for prompt development but switch to real data for the <em>final</em> eval only?</li>
+  <li><strong>Data leakage</strong> in general — any time the answer sneaks into the question.</li>
+</ul>
+</section>
+<section id="09-tiered-model-routing">
+<h1>09 — Tiered model routing: pay for the big model only when it pays</h1>
+<blockquote><strong>TL;DR</strong> Don't run the expensive model on every request. Use a cheap, fast model as the default and <strong>escalate to the premium one only for the hard cases</strong> the eval says it can't handle.</blockquote>
+<h2>Plain idea</h2>
+<p>There's a menu of models: smaller = cheaper and faster, bigger = smarter and pricier. The lazy choice is "use one model for everything." <strong>Tiered routing</strong> says: choose the tier <em>per task</em>, guided by what the numbers actually show you need.</p>
+<p>The eval already told me where money should and shouldn't go:</p>
+<ul>
+  <li><strong>Operational domain is at 97.3%</strong> — the cheap model nails it. Spending more buys nothing.</li>
+  <li><strong>Category is stuck at ~79%</strong>, but the ceiling is <strong>label ambiguity</strong> (industry vs procurement is genuinely fuzzy — note 03), <em>not</em> the model being too weak. A bigger model won't un-blur a fuzzy definition across the board.</li>
+</ul>
+<p>So the v2 plan: keep <code>claude-sonnet-4-6</code> as the workhorse on every article, and escalate to a top-tier model (e.g. Opus) <strong>only</strong> on the low-confidence boundary cases — running the premium model on ~15% of articles instead of 100%. Most of the quality, a fraction of the cost.</p>
+<p>A second use of the same idea: once v2 uses <strong>real</strong> data, I can't auto-grade against an AI-made answer key anymore (note 08). There I'd reserve the top tier as an <strong>LLM judge</strong> — the expensive model grades, the cheap model does the everyday work.</p>
+<h2>Analogy</h2>
+<p>A hospital triage desk. A nurse handles the routine cases fast and cheap; only the complicated ones get escalated to the specialist. You don't send every sniffle to the senior surgeon.</p>
+<pre><code>article ─▶ sonnet-4-6  (cheap, fast)
+              │
+        confident? ──yes──▶ done            (~85% of articles)
+              │
+              no ──▶ Opus  (premium)         (~15%, the fuzzy ones)</code></pre>
+<h2>In my project</h2>
+<p>This lives in <code>CLAUDE.md</code> as a v2 idea — not built yet. The guiding principle is written there in one line:</p>
+<blockquote>model tier is a per-task cost/quality knob decided by the eval, not a default — measure first, escalate only where it pays.</blockquote>
+<h2>Why it matters</h2>
+<p>It's the same discipline as note 02: let the measurement drive the decision. The eval doesn't just tell you <em>if</em> you're good — it tells you <em>where to spend</em>.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li>How do you measure "confidence" to decide who gets escalated? (The model doesn't hand you a clean confidence number for free.)</li>
+  <li>The cost / latency / quality triangle — you usually optimize two at the expense of the third.</li>
+  <li><strong>LLM-as-judge</strong> — using a strong model to grade outputs, and where <em>that</em> can mislead.</li>
+  <li>Break-even math — escalating costs more per call, but only on a slice; does it net out?</li>
+</ul>
+</section>
+<section id="10-secrets-and-env">
+<h1>10 — Secrets and the <code>.env</code> pattern</h1>
+<blockquote><strong>TL;DR</strong> Your API key is a password. Keep it in an untracked <code>.env</code> file and load it at runtime — never typed into the code, never committed to git.</blockquote>
+<h2>Plain idea</h2>
+<p>The Anthropic key bills to your account, so it's a secret like a password. Two hard rules: (1) it must <strong>not</strong> live in your source code, and (2) it must <strong>not</strong> be committed to git (where it'd sit in the history forever — and be public the moment you push). The standard solution is the <strong><code>.env</code> pattern</strong>, which is just two files with two jobs:</p>
+<ul>
+  <li><strong><code>.env</code></strong> — holds the <em>real</em> key. Listed in <code>.gitignore</code>, so git ignores it. Lives only on your machine.</li>
+  <li><strong><code>.env.example</code></strong> — a committed, <strong>secret-free</strong> template (<code>ANTHROPIC_API_KEY=</code>) that documents <em>what</em> keys the project needs without revealing them.</li>
+</ul>
+<p>At runtime the key is loaded from <code>.env</code> into an environment variable, and the code reads it from there — never hardcoded.</p>
+<h2>Analogy</h2>
+<p><code>.env.example</code> is the <em>labeled empty key hook by the door</em> — it tells everyone "a house key goes here." <code>.env</code> is the <em>actual key</em>, which you keep in your pocket, not hanging where anyone walking past could grab it.</p>
+<h2>In my project</h2>
+<p>The classifier reads <code>ANTHROPIC_API_KEY</code> from the environment, and the README documents the workflow:</p>
+<pre><code>cp .env.example .env        # then paste your real key into .env
+uv run --env-file .env python src/eval.py   # inject the key for this run</code></pre>
+<p>There's an honest caveat written down too: because <code>.env</code> is gitignored, it's <strong>machine-local by design</strong>. A fresh clone or a new laptop has no <code>.env</code>, so you recreate it (copy the template, paste the key). That's not a bug — it's the <em>entire point</em> of keeping secrets out of git.</p>
+<h2>Why it matters</h2>
+<p>A key committed to a public repo gets scraped by bots within minutes and runs up your bill. The <code>.env</code> split — real secret ignored, empty template committed — is the simplest pattern that keeps the secret <em>out</em> while still telling the next person <em>what's needed</em>.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li>If a key ever <em>does</em> land in a commit, deleting the line isn't enough — it's in the history. The fix is to <strong>rotate</strong> (revoke + reissue) the key.</li>
+  <li>Environment variables vs dedicated <strong>secret managers</strong> (Vault, cloud secret stores) for larger setups.</li>
+  <li>How <code>.gitignore</code> decides what git skips — and the habit of running <code>git status</code> before every commit to catch a stray <code>.env</code>.</li>
+  <li>Why even <code>export KEY=...</code> in your shell beats hardcoding (it just vanishes when the shell closes).</li>
+</ul>
+</section>
+<section id="11-reproducible-environments-uv">
+<h1>11 — Reproducible environments: uv and lockfiles</h1>
+<blockquote><strong>TL;DR</strong> "Works on my machine" usually means mismatched library versions. A <strong>lockfile</strong> pins the exact version of everything, so every machine — yours, a teammate's, CI — installs the identical environment.</blockquote>
+<h2>Plain idea</h2>
+<p>Your code depends on libraries, and libraries have versions that change behavior over time. If all you write down is "I need <code>anthropic</code>," two people can install two different versions and get two different results. The fix is two files with two distinct jobs:</p>
+<ul>
+  <li><strong><code>pyproject.toml</code></strong> — what you <em>want</em>, usually a flexible range: <code>anthropic&gt;=0.40.0</code>. Human-edited.</li>
+  <li><strong><code>uv.lock</code></strong> — what you <em>actually got</em>: the one exact version that range resolved to, plus every sub-dependency, frozen. Machine-generated.</li>
+</ul>
+<p><code>uv sync</code> reads the lockfile and builds a local <code>.venv</code> with <em>exactly</em> those versions. <code>uv run &lt;cmd&gt;</code> runs a command inside that env — no manual "activate the virtualenv" step. Because the lockfile is committed, anyone who runs <code>uv sync</code> gets a matching setup.</p>
+<h2>Analogy</h2>
+<p><code>pyproject.toml</code> is a recipe that says <em>"some flour."</em> <code>uv.lock</code> is the note that says <em>"King Arthur bread flour, this exact bag"</em> — so the cake comes out the same in every kitchen.</p>
+<h2>In my project</h2>
+<p>Both repos use uv. The classifier README spells out the loop:</p>
+<pre><code>uv sync --group dev          # build .venv from uv.lock (exact pinned versions)
+uv run python src/eval.py    # run inside that env — no activation needed</code></pre>
+<p>A <code>requirements.txt</code> is kept in sync as a <strong>pip fallback</strong> for anyone who isn't using uv.</p>
+<h2>Why it matters</h2>
+<p>Reproducibility is the difference between a bug you can recreate and a ghost you can't. Pinned versions also mean a dependency can't silently update overnight and break you — you upgrade <em>on purpose</em> by re-locking, never by surprise.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li>"Abstract" deps (ranges, in <code>pyproject.toml</code>) vs "pinned" deps (exact, in the lockfile) — why you need both.</li>
+  <li>How and when to <strong>update</strong> the lockfile deliberately (re-resolve → test → commit).</li>
+  <li>Why <code>.venv</code> is gitignored but <code>uv.lock</code> is committed.</li>
+  <li>How CI uses the same lockfile to test in a clean environment every run.</li>
+</ul>
+</section>
+<section id="12-checkpoint-resume-and-retries">
+<h1>12 — Checkpoint/resume and retries: surviving flaky API runs</h1>
+<blockquote><strong>TL;DR</strong> A 300-call job <em>will</em> hit a hiccup. Save progress after every call (so a crash costs one item, not the whole run) and auto-retry the transient errors (so a blip doesn't kill the job).</blockquote>
+<h2>Plain idea</h2>
+<p>The eval makes ~300 API calls and takes a few minutes. Over that many network calls, <em>something</em> eventually fails — a dropped connection, a momentary server error, a rate-limit bump. Two cheap habits make the job robust:</p>
+<ol>
+  <li><strong>Checkpoint / resume.</strong> Write each prediction to disk <em>immediately</em> after its call. On restart, skip any article that already has one. A crash at call 250 costs you call 250 — not calls 1 through 249.</li>
+</ol>
+<ol>
+  <li><strong>Retry with backoff.</strong> Wrap the call so that on a <em>transient</em> error (a 500 server blip, a 429 rate-limit) it waits and tries again — and the wait <strong>grows</strong> each time (e.g. 2s, then 4s). That "exponential backoff" gives an overloaded server room to recover instead of you hammering it.</li>
+</ol>
+<h2>Analogy</h2>
+<p>Checkpointing is <strong>saving your game after every level</strong> instead of only at the end — die on level 9 and you respawn at 9, not level 1. Backoff is <strong>knocking on a busy door</strong>: no answer, so you wait a little longer each time instead of pounding nonstop.</p>
+<h2>In my project</h2>
+<p><code>src/eval.py</code>:</p>
+<pre><code># Resume: skip articles that already have a saved prediction. Each prediction
+# is written right after its API call, so a crash never loses more than one call.
+
+def classify_with_retry(...):     # exponential backoff: 2s → 4s
+    # retry transient 500 / 429 errors, then give up</code></pre>
+<p>The generator also drops a <code>0.5s</code> sleep between calls to stay comfortably under the rate limit in the first place — avoiding the error beats retrying it.</p>
+<h2>Why it matters</h2>
+<p>Without these, one network blink at minute 4 means redoing everything — and re-paying for it. Resumable, retry-tolerant jobs are a habit that scales far past this project: any long batch over a flaky network wants both.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li><strong>Idempotency</strong> — designing a job so that re-running it is safe and never double-works.</li>
+  <li>Which errors are safe to retry (transient: 429 / 500 / timeout) vs which aren't (400 bad request — retrying won't help).</li>
+  <li><strong>Jitter</strong> — adding randomness to the backoff so many clients don't all retry in lockstep.</li>
+  <li>Where the checkpoint should live — a CSV here; a database or queue for bigger jobs.</li>
+</ul>
+</section>
+</main>
+</div>
+<script>
+const q = document.getElementById('search');
+const sections = [...document.querySelectorAll('main section')];
+const links = [...document.querySelectorAll('nav a')];
+const navFor = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+const noresults = document.getElementById('noresults');
+q.addEventListener('input', () => {
+  const term = q.value.trim().toLowerCase();
+  let shown = 0;
+  for (const s of sections) {
+    const hit = !term || s.textContent.toLowerCase().includes(term);
+    s.style.display = hit ? '' : 'none';
+    const a = navFor[s.id];
+    if (a) a.style.display = hit ? '' : 'none';
+    if (hit) shown++;
+  }
+  noresults.style.display = shown ? 'none' : 'block';
+});
+</script>
+</body>
+</html>
