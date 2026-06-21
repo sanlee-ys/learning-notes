@@ -1,0 +1,8 @@
+# GitHub Linguist hints — make the repo's language bar reflect the real work.
+# index.html is fully generated boilerplate (build_site.py inlines every note),
+# so exclude it from language stats and collapse it in diffs.
+index.html linguist-generated=true
+
+# concept-map.html is a thin HTML shell around the D3 / JavaScript that does all
+# the work, so classify it as JavaScript rather than HTML.
+concept-map.html linguist-language=JavaScript

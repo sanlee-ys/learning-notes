@@ -25,10 +25,8 @@
   .node text.num { fill:#fff; font-weight:700; font-size:11px; text-anchor:middle;
     dominant-baseline:central; pointer-events:none; }
   .node text.label { fill:var(--fg); font-size:11px; pointer-events:none;
-    paint-order:stroke; stroke:var(--bg); stroke-width:3px; opacity:0; transition:opacity .12s; }
-  .node.hub text.label, .node.show text.label { opacity:1; }
-  .node.faded { opacity:.18; }
-  .node.faded text.label { opacity:0; }
+    paint-order:stroke; stroke:var(--bg); stroke-width:3px; }
+  .node.faded { opacity:.2; }
   .link.faded { opacity:.06; }
   #tip { position:fixed; max-width:300px; padding:9px 12px; background:var(--card);
     border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,.12);
@@ -99,29 +97,48 @@ const link = root.append("g").selectAll("line")
   .attr("marker-end", d => d.kind === "prose" ? "url(#arrow)" : null);
 
 const node = root.append("g").selectAll("g")
-  .data(GRAPH.nodes).join("g")
-  .attr("class", d => "node" + (d.indegree >= 2 ? " hub" : ""))
+  .data(GRAPH.nodes).join("g").attr("class", "node")
   .call(d3.drag().on("start", dragStart).on("drag", dragged).on("end", dragEnd))
   .on("mouseover", focus).on("mouseout", unfocus)
   .on("click", (e, d) => window.open("index.html#" + d.anchor, "_blank"));
 
 node.append("circle").attr("r", radius).attr("fill", d => color(d.category));
 node.append("text").attr("class", "num").text(d => d.num);
-node.append("text").attr("class", "label")
+const labelSel = node.append("text").attr("class", "label")
   .attr("x", d => radius(d) + 5).attr("y", 4).text(d => short(d.title));
+// Measure each label once so the de-overlap pass below can box them.
+labelSel.each(function(d) { d.labelW = this.getComputedTextLength(); });
 
 sim.on("tick", () => {
   link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
       .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
   node.attr("transform", d => `translate(${d.x},${d.y})`);
+  relabel();
 });
+
+// Greedy label de-overlap: place labels by priority (hubs first); hide any that
+// would collide with one already placed. Keeps the resting map fully readable.
+const labelOrder = GRAPH.nodes.slice().sort((a, b) => (b.indegree - a.indegree) || (a.id - b.id));
+function relabel() {
+  const placed = [];
+  for (const d of labelOrder) {
+    const w = d.labelW || 60, h = 13;
+    const x0 = d.x + radius(d) + 5, y0 = d.y - h / 2, x1 = x0 + w, y1 = d.y + h / 2;
+    let ok = true;
+    for (const p of placed) {
+      if (x0 < p.x1 && x1 > p.x0 && y0 < p.y1 && y1 > p.y0) { ok = false; break; }
+    }
+    d.shown = ok;
+    if (ok) placed.push({ x0, y0, x1, y1 });
+  }
+  labelSel.style("display", d => d.shown ? null : "none");
+}
 
 // Hover: spotlight the node and its neighbours; show a TL;DR tooltip.
 const tip = document.getElementById("tip");
 function focus(event, d) {
   const near = neighbours.get(d.id);
   node.classed("faded", n => !near.has(n.id));
-  node.classed("show", n => near.has(n.id));
   link.classed("faded", l => l.source.id !== d.id && l.target.id !== d.id);
   tip.innerHTML = `<b>${d.num} — ${escapeHtml(d.title)}</b><span>${escapeHtml(d.tldr)}</span>`;
   tip.style.opacity = 1;
@@ -129,7 +146,6 @@ function focus(event, d) {
 }
 function unfocus() {
   node.classed("faded", false);
-  node.classed("show", false);
   link.classed("faded", false);
   tip.style.opacity = 0;
 }

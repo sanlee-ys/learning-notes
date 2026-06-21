@@ -1,9 +1,9 @@
 # Learning Notes
 
-Plain-language notes on the ideas behind my projects. **For me, not for GitHub** —
-this folder lives outside the project repos on purpose, so it never gets pushed.
-The goal is to *understand* the concepts, not just have working code, and to keep
-adding to it over time.
+Plain-language notes on the ideas behind my projects. These started as private notes
+just for me; I've since made them **public** — as a backup, and because mapping how the
+concepts connect helps me see how my own projects fit together. The goal is to
+*understand* the concepts, not just have working code, and to keep adding over time.
 
 ## How to use this
 
@@ -45,7 +45,7 @@ Concepts pulled from my two projects. `[x]` = written, `[ ]` = planned.
 
 ## Viewing the notes
 
-Three ways to read these as more than raw text. The `.md` files always stay the source of
+Four ways to read these as more than raw text. The `.md` files always stay the source of
 truth — the viewers are regenerated, never hand-edited.
 
 ### 1. Single page — zero install
@@ -83,6 +83,20 @@ though layout, search, and everything else do. When you add a note, add one line
 `kb-agent` indexes this folder (via its `notes_dirs:` setting) into its knowledge base, so
 you can ask questions and get answers grounded in these notes *with citations*. See that
 project's README to run the chat UI.
+
+### 4. See how they connect — concept map
+
+```bash
+python build_graph.py       # regenerates concept-map.html
+```
+
+Open **`concept-map.html`** for a force-directed graph of every note: each note is a node
+(colored by category, larger when more notes point at it), and the lines are the in-text
+"note NN" cross-references. **Drag** nodes to rearrange, **hover** to focus a note and read
+its TL;DR, and **click** a node to jump straight to it in `index.html`. Needs internet on
+first open (D3 loads from a CDN). Re-run `build_graph.py` after editing or adding a note.
+
+Or view it live, no install: **https://sanlee-ys.github.io/learning-notes/concept-map.html**
 
 ## Where these come from
 
