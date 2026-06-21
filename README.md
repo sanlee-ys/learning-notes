@@ -5,6 +5,16 @@ just for me; I've since made them **public** — as a backup, and because mappin
 concepts connect helps me see how my own projects fit together. The goal is to
 *understand* the concepts, not just have working code, and to keep adding over time.
 
+<p align="center">
+  <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">
+    <img src="assets/concept-map.png" width="760"
+         alt="Interactive concept map: each note is a node, colored by category and linked by its in-text cross-references">
+  </a>
+  <br>
+  <em><a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">▶ Open the interactive map</a> — drag nodes, hover to read a note's TL;DR, click to open it.<br>
+  Nodes are colored by category: Foundations · LLM app patterns · Data &amp; method · Engineering hygiene.</em>
+</p>
+
 ## How to use this
 
 Each note is short and follows the same five-part shape:
