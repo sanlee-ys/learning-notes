@@ -31,12 +31,14 @@ a note, run `python build_site.py` to refresh the viewable `index.html` (see bel
 
 ## Concept map
 
-Concepts pulled from my two projects. `[x]` = written, `[ ]` = planned.
+Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 
 ### Foundations
 - [x] 01 — Structured output via tool use *(both projects)*
 - [x] 02 — Eval-driven development: knowing if a change actually helped *(classifier)*
 - [x] 03 — Reading the numbers: accuracy vs precision/recall/F1 *(classifier)*
+- [x] 13 — Classes vs functions: when to reach for a class *(notes-api + classifier)*
+- [x] 14 — Constructors & dependency injection *(notes-api + classifier)*
 
 ### LLM app patterns
 - [x] 04 — Tool use / function calling, the general idea *(both)*
@@ -114,3 +116,5 @@ Or view it live, no install: **https://sanlee-ys.github.io/learning-notes/concep
   (what it's about + which domain). Built to *measure* how well it does.
 - **kb-agent** — an AI assistant that answers questions about my projects by searching
   a personal notebook of Markdown files (this is the "RAG" project).
+- **notes-api** — a small Spring Boot REST API for notes (Java); my "getting back into Java"
+  project, and where the OOP/class examples (notes 13–14) come from.

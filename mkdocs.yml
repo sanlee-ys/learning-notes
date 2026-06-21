@@ -58,6 +58,8 @@ nav:
       - 01 · Structured output via tool use: 01-structured-output-via-tool-use.md
       - 02 · Eval-driven development: 02-eval-driven-development.md
       - 03 · Reading the numbers: 03-reading-the-numbers.md
+      - 13 · Classes vs functions: 13-classes-vs-functions.md
+      - 14 · Constructors & dependency injection: 14-constructors-and-dependency-injection.md
   - LLM app patterns:
       - 04 · Tool use, the general idea: 04-tool-use-the-general-idea.md
       - 05 · The agentic tool-use loop: 05-the-agentic-tool-use-loop.md
