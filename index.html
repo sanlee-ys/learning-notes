@@ -62,12 +62,15 @@ li { margin:.25em 0; }
 <a href="#10-secrets-and-env">10 — Secrets and the .env pattern</a>
 <a href="#11-reproducible-environments-uv">11 — Reproducible environments: uv and lockfiles</a>
 <a href="#12-checkpoint-resume-and-retries">12 — Checkpoint/resume and retries: surviving flaky API runs</a>
+<a href="#13-classes-vs-functions">13 — Classes vs functions: when to reach for a class</a>
+<a href="#14-constructors-and-dependency-injection">14 — Constructors &amp; dependency injection</a>
 </nav>
 <main>
 <p id="noresults">No matching notes.</p>
 <section id="overview">
 <h1>Learning Notes</h1>
-<p>Plain-language notes on the ideas behind my projects. <strong>For me, not for GitHub</strong> — this folder lives outside the project repos on purpose, so it never gets pushed. The goal is to <em>understand</em> the concepts, not just have working code, and to keep adding to it over time.</p>
+<p>Plain-language notes on the ideas behind my projects. These started as private notes just for me; I've since made them <strong>public</strong> — as a backup, and because mapping how the concepts connect helps me see how my own projects fit together. The goal is to <em>understand</em> the concepts, not just have working code, and to keep adding over time.</p>
+<p>&lt;p align="center"&gt; &lt;a href="https://sanlee-ys.github.io/learning-notes/concept-map.html"&gt; &lt;img src="assets/concept-map.png" width="760" alt="Interactive concept map: each note is a node, colored by category and linked by its in-text cross-references"&gt; &lt;/a&gt; &lt;br&gt; &lt;em&gt;&lt;a href="https://sanlee-ys.github.io/learning-notes/concept-map.html"&gt;▶ Open the interactive map&lt;/a&gt; — drag nodes, hover to read a note's TL;DR, click to open it.&lt;br&gt; Nodes are colored by category: Foundations · LLM app patterns · Data &amp;amp; method · Engineering hygiene.&lt;/em&gt; &lt;/p&gt;</p>
 <h2>How to use this</h2>
 <p>Each note is short and follows the same five-part shape:</p>
 <ol>
@@ -79,12 +82,14 @@ li { margin:.25em 0; }
 </ol>
 <p>To add a concept: copy that shape into a new <code>NN-name.md</code> file and tick it off below. Keep it simple first; expand later. A half-written note is fine. After adding or editing a note, run <code>python build_site.py</code> to refresh the viewable <code>index.html</code> (see below).</p>
 <h2>Concept map</h2>
-<p>Concepts pulled from my two projects. <code>[x]</code> = written, <code>[ ]</code> = planned.</p>
+<p>Concepts pulled from my three projects. <code>[x]</code> = written, <code>[ ]</code> = planned.</p>
 <h3>Foundations</h3>
 <ul>
   <li>[x] 01 — Structured output via tool use <em>(both projects)</em></li>
   <li>[x] 02 — Eval-driven development: knowing if a change actually helped <em>(classifier)</em></li>
   <li>[x] 03 — Reading the numbers: accuracy vs precision/recall/F1 <em>(classifier)</em></li>
+  <li>[x] 13 — Classes vs functions: when to reach for a class <em>(notes-api + classifier)</em></li>
+  <li>[x] 14 — Constructors &amp; dependency injection <em>(notes-api + classifier)</em></li>
 </ul>
 <h3>LLM app patterns</h3>
 <ul>
@@ -105,18 +110,27 @@ li { margin:.25em 0; }
   <li>[x] 12 — Checkpoint/resume and retries: surviving flaky API runs <em>(classifier)</em></li>
 </ul>
 <h2>Viewing the notes</h2>
-<p>Run the build script to render all notes into a single, self-contained page:</p>
+<p>Four ways to read these as more than raw text. The <code>.md</code> files always stay the source of truth — the viewers are regenerated, never hand-edited.</p>
+<h3>1. Single page — zero install</h3>
 <pre><code>python build_site.py        # regenerates index.html</code></pre>
-<p>Then open <strong><code>index.html</code></strong> in any browser (just double-click it). It's one offline file — no server, no install, no internet. The <code>.md</code> files stay the source of truth; <strong>re-run <code>build_site.py</code> after editing or adding a note</strong> to refresh the page (don't hand-edit <code>index.html</code>).</p>
-<h3>Future display ideas (not built)</h3>
-<ul>
-  <li><strong>A docs site</strong> (MkDocs Material or Docsify) — sidebar nav + a search box + themes. More setup; still local; the TL;DR lines become the cards/index.</li>
-  <li><strong>Ask them instead of read them</strong> — point <code>kb-agent</code> at this folder so you can <em>chat</em> with your own notes. Reuses what you already built; just tell kb-agent where to look (keep the notes themselves outside git).</li>
-</ul>
+<p>Open <strong><code>index.html</code></strong> in any browser (double-click). One offline file — no server, no install, no internet — with a sidebar and a <strong>search box</strong> that filters notes as you type. Re-run <code>build_site.py</code> after editing or adding a note.</p>
+<h3>2. Polished site — MkDocs Material</h3>
+<p>A themed, fully searchable site with dark mode. Uses a one-time toolchain via uv (no permanent install). From this folder:</p>
+<pre><code>uv run --no-project --with mkdocs-material mkdocs build   # → ../learning-notes-site/
+uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :8000</code></pre>
+<p>Then open <strong><code>../learning-notes-site/index.html</code></strong> to read it offline. Note: the <strong>dark-mode toggle only works when the site is served over HTTP</strong> (<code>mkdocs serve</code> above, at http://127.0.0.1:8000) — opened as a bare <code>file://</code> page the light/dark switch can't run, though layout, search, and everything else do. When you add a note, add one line to <code>mkdocs.yml</code>'s <code>nav:</code> (option 1 picks new notes up automatically; this one needs the line).</p>
+<blockquote><strong>Gotcha:</strong> if you've set <code>UV_ENV_FILE=.env</code> globally (the convention from the classifier project), these <code>uv</code> commands fail here looking for a <code>.env</code>. Prefix them with <code>UV_ENV_FILE= </code> (note the trailing space) or run <code>unset UV_ENV_FILE</code> first.</blockquote>
+<h3>3. Chat with them — kb-agent</h3>
+<p><code>kb-agent</code> indexes this folder (via its <code>notes_dirs:</code> setting) into its knowledge base, so you can ask questions and get answers grounded in these notes <em>with citations</em>. See that project's README to run the chat UI.</p>
+<h3>4. See how they connect — concept map</h3>
+<pre><code>python build_graph.py       # regenerates concept-map.html</code></pre>
+<p>Open <strong><code>concept-map.html</code></strong> for a force-directed graph of every note: each note is a node (colored by category, larger when more notes point at it), and the lines are the in-text "note NN" cross-references. <strong>Drag</strong> nodes to rearrange, <strong>hover</strong> to focus a note and read its TL;DR, and <strong>click</strong> a node to jump straight to it in <code>index.html</code>. Needs internet on first open (D3 loads from a CDN). Re-run <code>build_graph.py</code> after editing or adding a note.</p>
+<p>Or view it live, no install: <strong>https://sanlee-ys.github.io/learning-notes/concept-map.html</strong></p>
 <h2>Where these come from</h2>
 <ul>
   <li><strong>defense-news-classifier</strong> — an AI that reads a defense-news snippet and labels it (what it's about + which domain). Built to <em>measure</em> how well it does.</li>
   <li><strong>kb-agent</strong> — an AI assistant that answers questions about my projects by searching a personal notebook of Markdown files (this is the "RAG" project).</li>
+  <li><strong>notes-api</strong> — a small Spring Boot REST API for notes (Java); my "getting back into Java" project, and where the OOP/class examples (notes 13–14) come from.</li>
 </ul>
 </section>
 <section id="01-structured-output-via-tool-use">
@@ -492,6 +506,68 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
   <li>Which errors are safe to retry (transient: 429 / 500 / timeout) vs which aren't (400 bad request — retrying won't help).</li>
   <li><strong>Jitter</strong> — adding randomness to the backoff so many clients don't all retry in lockstep.</li>
   <li>Where the checkpoint should live — a CSV here; a database or queue for bigger jobs.</li>
+</ul>
+</section>
+<section id="13-classes-vs-functions">
+<h1>13 — Classes vs functions: when to reach for a class</h1>
+<blockquote><strong>TL;DR</strong> Use a plain function when you just transform input to output and forget it. Reach for a class only when you have state worth keeping, rules about what "valid" means, and behavior glued to that state. Most code is functions; a class has to earn its keep.</blockquote>
+<h2>Plain idea</h2>
+<p>A function is a verb: data goes in, a result comes out, nothing is remembered. A class is a noun: a <em>thing</em> that holds some state and owns the behavior that acts on it. The beginner trap is reaching for a class by reflex. The rule I actually use: only make a class when I have all three of —</p>
+<ol>
+  <li>state that lives longer than one call,</li>
+  <li>invariants (rules about what a valid instance looks like), and</li>
+  <li>behavior that only makes sense paired with that state.</li>
+</ol>
+<p>No three? A function is the simpler, truer tool.</p>
+<h2>Analogy</h2>
+<p>A blender vs a recipe card. A <strong>recipe</strong> (function) takes ingredients and returns a smoothie; it doesn't <em>remember</em> yesterday's smoothie. A <strong>blender</strong> (object) has state — on or off, full or empty — and its "blend" button only makes sense given what's inside. You buy a blender when you have something to keep and buttons bound to it; you don't buy a blender to add two numbers.</p>
+<h2>In my project</h2>
+<p>The contrast shows up across two of my repos:</p>
+<ul>
+  <li><strong>classifier — functions.</strong> <code>defense-news-classifier/src/generate.py</code> is just constants and two functions (<code>generate_combo</code>, <code>main</code>). It's a stateless pipeline: hand it a (category, domain) pair, get back a list of articles. Nothing to hold, no invariant to guard — so wrapping it in a class would be a function wearing a costume.</li>
+  <li><strong>notes-api — classes.</strong> The Java notes API is all classes, because it has long-lived things with rules: a <code>Note</code> (must always have a title), a <code>NoteService</code> (owns the business rules). Each class is one <em>responsibility</em>.</li>
+</ul>
+<p>The tell that a <code>dict</code> secretly wants to be a class: in <code>generate.py</code> I rebuild <code>{&quot;id&quot;: ..., &quot;text&quot;: ..., &quot;category&quot;: ..., &quot;operational_domain&quot;: ...}</code> by hand every loop. That fixed shape with nothing enforcing it is exactly what a Python <code>@dataclass</code> (or a Java <code>record</code>) formalizes — see note 14.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>Simplicity by default.</strong> Functions are easier to read, test, and move around. Classes add ceremony; only pay it when state/invariants/behavior justify it.</li>
+  <li><strong>A class names a responsibility.</strong> When one <em>is</em> warranted (the notes-api layers), the class boundary becomes the design — one place per rule.</li>
+  <li><strong>It tells you when to refactor.</strong> The moment a function grows a pile of config it keeps passing around (a client, a model name, retry settings), that's the signal to bundle them into an object — see note 14.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>Where exactly is the line? Could <code>generate.py</code> legitimately become a <code>DatasetGenerator</code> class, and what would tip it over?</li>
+  <li>Python dataclasses vs Java records vs a hand-written class — when is each the right amount of structure?</li>
+  <li>"Composition over inheritance" — once I do have classes, how do I avoid deep class trees?</li>
+</ul>
+</section>
+<section id="14-constructors-and-dependency-injection">
+<h1>14 — Constructors &amp; dependency injection</h1>
+<blockquote><strong>TL;DR</strong> A constructor is the setup ritual that runs when you create an object; its job is to leave the object valid and ready, so nobody can get a half-built one. Passing an object's dependencies <em>into</em> its constructor (dependency injection) makes those dependencies explicit, final, and easy to fake in tests.</blockquote>
+<h2>Plain idea</h2>
+<p>When you create an object, a special function runs first: the <strong>constructor</strong> (<code>__init__</code> in Python, <code>Note(...)</code> in Java). Its one job is to leave the new object in a valid, usable state — it's the gatekeeper of "what valid means." If a <code>Note</code> can't exist without a title, the constructor demands a title, and there's simply no way to build a blank one.</p>
+<p>A second, bigger use: <strong>dependency injection.</strong> Instead of an object reaching out and creating the things it needs, you hand them in through the constructor. The object just declares "I need a repository" and someone supplies one — turning a hidden dependency into a stated one.</p>
+<h2>Analogy</h2>
+<p>A constructor is <em>new-hire onboarding</em> before someone's allowed to start: badge issued, laptop assigned, paperwork signed. You don't let a half-onboarded employee answer support tickets. Dependency injection is the company <em>handing</em> them the laptop on day one, rather than the employee buying a random one off the street — you control, and can swap, what they're given.</p>
+<h2>In my project</h2>
+<p>In <code>notes-api</code>:</p>
+<ul>
+  <li><strong>Valid-by-construction.</strong> <code>Note</code> has two constructors: a no-arg one Java's persistence layer needs to rebuild rows from the database, and <code>Note(title, content)</code> for my own code — which refuses to make a note missing its essentials.</li>
+  <li><strong>Dependency injection.</strong> <code>NoteService(NoteRepository repository)</code> takes its data layer through the constructor; the field is <code>final</code> (set once, never null), and in a unit test I can write <code>new NoteService(fakeRepo)</code> with no framework at all.</li>
+</ul>
+<p>The Python mirror: a constructor is <code>__init__</code>. The day <code>generate.py</code> (note 13) grows shared config, I'd give it a <code>DatasetGenerator.__init__(self, client, model=...)</code> — the same move, handing the client in once instead of threading it through every call.</p>
+<p>Related: the immutable request object <code>NoteRequest</code> (a Java <code>record</code>) is a constructor that also <em>validates</em>, and it deliberately has no <code>id</code> field, so a client can't set one. That's the same "the schema is the contract" principle as structured output in note 01.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>No half-built objects.</strong> Whole classes of "I forgot to set field X" bugs vanish — the constructor won't let you.</li>
+  <li><strong>Testability.</strong> Injected dependencies can be swapped for fakes, so I can test the rules without a real database or network.</li>
+  <li><strong>Honesty.</strong> A constructor's parameter list is a public statement of what the object truly needs in order to exist.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>Constructor injection vs field/setter injection — why is constructor injection usually preferred?</li>
+  <li>What's an immutable object, and why are <code>record</code> / frozen-<code>dataclass</code> types worth reaching for?</li>
+  <li>When a constructor needs many parameters, what patterns (builder, factory) keep it sane?</li>
 </ul>
 </section>
 </main>
