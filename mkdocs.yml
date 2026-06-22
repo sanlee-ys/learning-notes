@@ -80,3 +80,7 @@ nav:
       - 17 · Layered architecture: 17-layered-architecture.md
       - 18 · Event-driven architecture: 18-event-driven-architecture.md
       - 19 · Database migrations: 19-database-migrations.md
+  - Working with AI agents:
+      - 22 · Steering an AI agent with CLAUDE.md: 22-steering-an-ai-agent-with-claude-md.md
+      - 23 · Permissions, allowlists & hooks: 23-permissions-allowlists-and-hooks.md
+      - 24 · One concern, one branch — parallel sessions: 24-one-concern-one-branch-parallel-sessions.md
