@@ -25,18 +25,42 @@ employee buying a random one off the street — you control, and can swap, what 
 
 ## In my project
 
-In `notes-api`:
+In `notes-api`, **valid-by-construction** shows up as two constructors on `Note` — a no-arg one
+Java's persistence layer needs to rebuild rows from the database, and one for my own code that
+refuses to make a note missing its essentials:
 
-- **Valid-by-construction.** `Note` has two constructors: a no-arg one Java's persistence layer
-  needs to rebuild rows from the database, and `Note(title, content)` for my own code — which
-  refuses to make a note missing its essentials.
-- **Dependency injection.** `NoteService(NoteRepository repository)` takes its data layer
-  through the constructor; the field is `final` (set once, never null), and in a unit test I can
-  write `new NoteService(fakeRepo)` with no framework at all.
+```java
+// The only way to make a Note in my own code — no blank, half-built notes.
+public Note(String title, String content) {
+    this.title = title;
+    this.content = content;
+}
+```
 
-The Python mirror: a constructor is `__init__`. The day `generate.py` (note 13) grows shared
-config, I'd give it a `DatasetGenerator.__init__(self, client, model=...)` — the same move,
-handing the client in once instead of threading it through every call.
+**Dependency injection** shows up in `NoteService`: it takes its data layer through the
+constructor, and the field is `final` (set once, never null), so the service simply can't exist
+without its repository — and a unit test can hand it a fake with no framework at all.
+
+```java
+private final NoteRepository repository;         // set once, never reassigned
+
+public NoteService(NoteRepository repository) {  // the dependency is handed IN
+    this.repository = repository;
+}
+
+// In a test — no Spring, no database, just a stand-in:
+var service = new NoteService(fakeRepo);
+```
+
+The Python mirror: the constructor is `__init__`. The day `generate.py` (note 13) grows shared
+config, I'd hand the client in once instead of threading it through every call:
+
+```python
+class DatasetGenerator:
+    def __init__(self, client, model="claude-..."):  # __init__ = the constructor
+        self.client = client      # dependency injected here, reused by every method
+        self.model = model
+```
 
 Related: the immutable request object `NoteRequest` (a Java `record`) is a constructor that
 also *validates*, and it deliberately has no `id` field, so a client can't set one. That's the
