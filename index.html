@@ -81,6 +81,7 @@ aside.related a:hover { background:#e9e4d8; }
 <a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a>
 <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a>
 <a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a>
+<a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a>
 </div>
 </nav>
 <main>
@@ -126,6 +127,7 @@ aside.related a:hover { background:#e9e4d8; }
   <li>[x] 10 — Secrets and the <code>.env</code> pattern <em>(both)</em></li>
   <li>[x] 11 — Reproducible environments: uv and lockfiles <em>(both)</em></li>
   <li>[x] 12 — Checkpoint/resume and retries: surviving flaky API runs <em>(classifier)</em></li>
+  <li>[x] 15 — Semantic versioning: a version number is a promise <em>(classifier)</em></li>
 </ul>
 <h2>Viewing the notes</h2>
 <p>Four ways to read these as more than raw text. The <code>.md</code> files always stay the source of truth — the viewers are regenerated, never hand-edited.</p>
@@ -176,7 +178,7 @@ uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :800
   <li>What happens when an article genuinely fits two categories? (The form forces one answer — is that the right design, or should I allow "uncertain"?)</li>
   <li>How would the same thing look with a different provider (e.g. OpenAI's <code>response_format</code>)? Same idea, different wiring.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#04-tool-use-the-general-idea">04 · Tool use / function calling, the general idea</a> <a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#04-tool-use-the-general-idea">04 · Tool use / function calling, the general idea</a> <a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a></div>
 </aside>
 </section>
 <section id="02-eval-driven-development">
@@ -205,7 +207,7 @@ uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :800
   <li>Precision vs recall vs F1 — what each one actually means (note 03).</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a></div>
 </aside>
 </section>
 <section id="03-reading-the-numbers">
@@ -462,6 +464,7 @@ return nothing relevant, say so plainly instead of guessing — do not invent de
   <li>Break-even math — escalating costs more per call, but only on a slice; does it net out?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a></div>
 </aside>
 </section>
 <section id="10-secrets-and-env">
@@ -516,7 +519,9 @@ uv run python src/eval.py    # run inside that env — no activation needed</cod
   <li>How and when to <strong>update</strong> the lockfile deliberately (re-resolve → test → commit).</li>
   <li>Why <code>.venv</code> is gitignored but <code>uv.lock</code> is committed.</li>
   <li>How CI uses the same lockfile to test in a clean environment every run.</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a></div>
+</aside>
 </section>
 <section id="12-checkpoint-resume-and-retries">
 <h1>12 — Checkpoint/resume and retries: surviving flaky API runs</h1>
@@ -615,6 +620,44 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#01-structured-output-via-tool-use">01 · Structured output via tool use</a> <a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a></div>
 <div class="rel-row"><span class="rel-label">Referenced by</span><a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a></div>
+</aside>
+</section>
+<section id="15-semantic-versioning">
+<h1>15 — Semantic versioning: a version number is a promise</h1>
+<blockquote><strong>TL;DR</strong> <code>MAJOR.MINOR.PATCH</code> isn't a counter — each digit is a promise about <em>what kind</em> of change happened. PATCH = a fix (same behaviour, more correct), MINOR = a new backward-compatible capability, MAJOR = a breaking change. Bump a digit and every digit to its right resets to 0.</blockquote>
+<h2>Plain idea</h2>
+<p>A version like <code>2.1.0</code> has three parts, and each one means something specific:</p>
+<ul>
+  <li><strong>PATCH</strong> (the last digit) — a <strong>fix</strong>. Behaviour is the same, just more correct. No new feature, and nothing a caller relies on changes.</li>
+  <li><strong>MINOR</strong> (the middle digit) — a <strong>new, backward-compatible capability</strong>. You <em>added</em> something; you didn't change what already worked. Bumping MINOR resets PATCH to 0.</li>
+  <li><strong>MAJOR</strong> (the first digit) — a <strong>breaking change</strong>. The contract callers depend on changed, so old assumptions no longer hold. Bumping MAJOR resets <em>both</em> MINOR and PATCH to 0.</li>
+</ul>
+<p>The reset is the whole trick. Read straight down the last digit and it climbs <em>within</em> a line (<code>2.0.1</code> → <code>2.0.2</code>) but snaps back to 0 the moment a digit to its left moves (<code>2.1.0</code>, <code>3.0.0</code>). So the number isn't a tally of how many releases you've shipped — it's a claim about <em>what this release did</em> to the people depending on you.</p>
+<h2>Analogy</h2>
+<p>Think of book editions, not a page counter. Fixing typos and reprinting is a <strong>patch</strong> — same book, fewer errors. Adding an appendix that doesn't touch the existing chapters is a <strong>minor</strong> edition — extra value, and your old page references still work. Rewriting and renumbering the chapters is a <strong>new (major) edition</strong> — anyone's notes against the old one are now wrong. The edition number tells a returning reader, at a glance, whether their bookmarks still hold.</p>
+<h2>In my project</h2>
+<p><code>defense-news-classifier</code> is versioned this way (the plan lives in its <code>CLAUDE.md</code>). The <strong>output contract</strong> — the <code>{category, operational_domain}</code> JSON the classifier returns — is the thing each version makes promises about; that contract <em>is</em> the schema from note 01.</p>
+<ul>
+  <li><code>v1</code> → <code>v2.0.0</code> was a <strong>MAJOR</strong> bump: the whole methodology changed (synthetic self-grading → real text + human-labeled gold + retrieval), so prior results no longer compare.</li>
+  <li>Planned <code>v2.1.0</code> (<strong>MINOR</strong>): scale the eval with the validated judge — a new capability, same output contract. Then <code>v2.1.1</code> (<strong>PATCH</strong>): fix whatever that larger run exposes.</li>
+  <li>Planned <code>v2.2.0</code> (<strong>MINOR</strong>): tiered model routing — that's note 09, and it's additive, so callers are unaffected.</li>
+  <li>Planned <code>v3.0.0</code> (<strong>MAJOR</strong>): add a <code>region</code> field. That changes <code>{category, operational_domain}</code> itself → it breaks the contract, so MINOR and PATCH reset to 0.</li>
+</ul>
+<p>Each bump is <strong>decided by the eval, not by default</strong> (note 02): you measure first and only spend a digit — or a premium model — where the numbers say it pays. That's why <em>scaling the eval</em> (<code>2.1.0</code>) comes before <em>paying for routing</em> (<code>2.2.0</code>). The version itself is pinned in <code>pyproject.toml</code> / <code>uv.lock</code> (note 11), and each milestone gets a git tag + a CHANGELOG entry.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>It's a promise, not a counter.</strong> Someone depending on your output reads <code>2.1.0</code> → <code>2.1.1</code> and knows it's safe to take; <code>2.x</code> → <code>3.0.0</code> warns them to expect breakage. That's information they get for free, from the number alone.</li>
+  <li><strong>It forces you to name the change.</strong> Choosing patch-vs-minor-vs-major makes you say out loud whether you broke the contract — exactly the discipline note 01 (the schema <em>is</em> the contract) is about.</li>
+  <li><strong>It pairs with measure-first.</strong> Additive work (note 09) earns a MINOR; changing the contract earns a MAJOR; a fix earns a PATCH — and the eval (note 02) is what tells you which one you actually did.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>For an ML system, what <em>exactly</em> is the "public contract"? Just the output schema, or also a quality bar ("accuracy won't regress")? Is a big accuracy drop a breaking change even when the JSON shape is identical?</li>
+  <li>What are <code>0.x</code> versions and pre-release tags (<code>3.0.0-rc1</code>) for, and when do you graduate off <code>0.x</code>?</li>
+  <li>How does <a href="https://keepachangelog.com/">Keep a Changelog</a> map onto these bumps?</li>
+  <li>Where's the line between MINOR and MAJOR when a change is <em>technically</em> compatible but shifts outputs enough that downstream results move?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#01-structured-output-via-tool-use">01 · Structured output via tool use</a> <a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a></div>
 </aside>
 </section>
 </main>

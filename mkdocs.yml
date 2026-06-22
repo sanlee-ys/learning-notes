@@ -72,3 +72,4 @@ nav:
       - 10 · Secrets & the .env pattern: 10-secrets-and-env.md
       - 11 · Reproducible environments (uv): 11-reproducible-environments-uv.md
       - 12 · Checkpoint/resume & retries: 12-checkpoint-resume-and-retries.md
+      - 15 · Semantic versioning: 15-semantic-versioning.md
