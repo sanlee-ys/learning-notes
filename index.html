@@ -42,6 +42,16 @@ li { margin:.25em 0; }
 #search:focus { outline:none; border-color:var(--accent);
                 box-shadow:0 0 0 2px rgba(58,110,165,.25); }
 #noresults { display:none; color:var(--muted); font-style:italic; }
+.navgroup { margin-bottom:6px; }
+.navgroup h3 { font-size:.68rem; letter-spacing:.09em; text-transform:uppercase;
+               color:var(--muted); font-weight:700; margin:16px 8px 4px; }
+aside.related { margin-top:26px; padding-top:14px; border-top:1px solid var(--border); }
+.rel-row { display:flex; flex-wrap:wrap; gap:6px 8px; align-items:baseline; margin:.35em 0; }
+.rel-label { flex:0 0 auto; min-width:104px; color:var(--muted); font-weight:700;
+             text-transform:uppercase; font-size:.66rem; letter-spacing:.06em; }
+aside.related a { padding:2px 9px; background:var(--code-bg); border-radius:12px;
+                  text-decoration:none; font-size:.82rem; color:var(--accent); }
+aside.related a:hover { background:#e9e4d8; }
 @media (max-width:780px) { nav { display:none; } main { padding:28px 20px 80px; } }
 </style>
 </head>
@@ -50,20 +60,28 @@ li { margin:.25em 0; }
 <nav><h2>Learning Notes</h2>
 <input id="search" type="search" placeholder="Search notes…" autocomplete="off" aria-label="Search notes">
 <a href="#overview">Learning Notes</a>
-<a href="#01-structured-output-via-tool-use">01 — Structured output via tool use</a>
-<a href="#02-eval-driven-development">02 — Eval-driven development</a>
-<a href="#03-reading-the-numbers">03 — Reading the numbers: accuracy vs precision/recall/F1</a>
-<a href="#04-tool-use-the-general-idea">04 — Tool use / function calling, the general idea</a>
-<a href="#05-the-agentic-tool-use-loop">05 — The agentic tool-use loop</a>
-<a href="#06-rag-answering-from-your-own-docs">06 — RAG: answering from your own documents</a>
-<a href="#07-embeddings-and-vector-stores">07 — Embeddings &amp; vector stores: search by meaning</a>
-<a href="#08-synthetic-data-circular-eval">08 — Synthetic data and the &quot;circular eval&quot; trap</a>
-<a href="#09-tiered-model-routing">09 — Tiered model routing: pay for the big model only when it pays</a>
-<a href="#10-secrets-and-env">10 — Secrets and the .env pattern</a>
-<a href="#11-reproducible-environments-uv">11 — Reproducible environments: uv and lockfiles</a>
-<a href="#12-checkpoint-resume-and-retries">12 — Checkpoint/resume and retries: surviving flaky API runs</a>
-<a href="#13-classes-vs-functions">13 — Classes vs functions: when to reach for a class</a>
-<a href="#14-constructors-and-dependency-injection">14 — Constructors &amp; dependency injection</a>
+<div class="navgroup"><h3>Foundations</h3>
+<a href="#01-structured-output-via-tool-use">01 · Structured output via tool use</a>
+<a href="#02-eval-driven-development">02 · Eval-driven development</a>
+<a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a>
+<a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a>
+<a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a>
+</div>
+<div class="navgroup"><h3>LLM app patterns</h3>
+<a href="#04-tool-use-the-general-idea">04 · Tool use / function calling, the general idea</a>
+<a href="#05-the-agentic-tool-use-loop">05 · The agentic tool-use loop</a>
+<a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a>
+<a href="#07-embeddings-and-vector-stores">07 · Embeddings &amp; vector stores: search by meaning</a>
+</div>
+<div class="navgroup"><h3>Data &amp; method</h3>
+<a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a>
+<a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a>
+</div>
+<div class="navgroup"><h3>Engineering hygiene</h3>
+<a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a>
+<a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a>
+<a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a>
+</div>
 </nav>
 <main>
 <p id="noresults">No matching notes.</p>
@@ -156,7 +174,9 @@ uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :800
   <li>What is JSON Schema, the format these tool definitions are written in?</li>
   <li>What happens when an article genuinely fits two categories? (The form forces one answer — is that the right design, or should I allow "uncertain"?)</li>
   <li>How would the same thing look with a different provider (e.g. OpenAI's <code>response_format</code>)? Same idea, different wiring.</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#04-tool-use-the-general-idea">04 · Tool use / function calling, the general idea</a> <a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a></div>
+</aside>
 </section>
 <section id="02-eval-driven-development">
 <h1>02 — Eval-driven development</h1>
@@ -182,7 +202,10 @@ uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :800
   <li>How do I read a confusion matrix at a glance?</li>
   <li>When is a score difference real vs just random run-to-run noise? (I built a <code>stability.py</code> to measure that wobble — worth a note of its own.)</li>
   <li>Precision vs recall vs F1 — what each one actually means (note 03).</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a></div>
+</aside>
 </section>
 <section id="03-reading-the-numbers">
 <h1>03 — Reading the numbers: accuracy vs precision/recall/F1</h1>
@@ -219,7 +242,9 @@ recall    = tp / (tp + fn)</code></pre>
   <li>When recall matters more (cancer screening: don't miss) vs precision (spam filter: don't trash real mail).</li>
   <li>How to read a <strong>confusion matrix</strong> (which label gets mistaken for which) at a glance.</li>
   <li>Macro vs <strong>micro</strong> vs weighted averages — what each one is really measuring.</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a></div>
+</aside>
 </section>
 <section id="04-tool-use-the-general-idea">
 <h1>04 — Tool use / function calling, the general idea</h1>
@@ -252,7 +277,9 @@ recall    = tp / (tp + fn)</code></pre>
   <li>What happens when the model wants to call <strong>several tools at once</strong> (parallel calls).</li>
   <li>The risk surface: tools with <strong>side effects</strong> (writing files, sending email) — the model proposes, but you must decide what's safe to auto-run.</li>
   <li>How tool descriptions act as prompts that steer tool selection.</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#01-structured-output-via-tool-use">01 · Structured output via tool use</a> <a href="#05-the-agentic-tool-use-loop">05 · The agentic tool-use loop</a></div>
+</aside>
 </section>
 <section id="05-the-agentic-tool-use-loop">
 <h1>05 — The agentic tool-use loop</h1>
@@ -294,7 +321,9 @@ recall    = tp / (tp + fn)</code></pre>
   <li><strong>Memory</strong>: kb-agent keeps <code>self.messages</code> across turns so it remembers the chat — what changes if you reset it each question?</li>
   <li>When to hand-roll the loop vs use the SDK's built-in tool runner.</li>
   <li>Guardrails: capping iterations, capping spend, and what to do when the cap is hit.</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#04-tool-use-the-general-idea">04 · Tool use / function calling, the general idea</a></div>
+</aside>
 </section>
 <section id="06-rag-answering-from-your-own-docs">
 <h1>06 — RAG: answering from your own documents</h1>
@@ -327,7 +356,10 @@ return nothing relevant, say so plainly instead of guessing — do not invent de
   <li>What to do when retrieval grabs the <em>wrong</em> chunk (the model can only be as good as what it's handed).</li>
   <li>"Grounding" and citations — tying each claim back to a source.</li>
   <li>How do you even <em>evaluate</em> a RAG system? (Did it retrieve the right docs? Did it answer faithfully from them? — ties back to note 02.)</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#07-embeddings-and-vector-stores">07 · Embeddings &amp; vector stores: search by meaning</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#07-embeddings-and-vector-stores">07 · Embeddings &amp; vector stores: search by meaning</a></div>
+</aside>
 </section>
 <section id="07-embeddings-and-vector-stores">
 <h1>07 — Embeddings &amp; vector stores: search by meaning</h1>
@@ -360,7 +392,10 @@ return nothing relevant, say so plainly instead of guessing — do not invent de
   <li><strong>Cosine similarity</strong> intuition — why angle, not raw distance.</li>
   <li>Local vs API embedding models — quality, cost, and privacy trade-offs.</li>
   <li>The individual numbers in a vector don't "mean" anything on their own — only their <em>pattern</em> does. Worth sitting with that.</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a></div>
+</aside>
 </section>
 <section id="08-synthetic-data-circular-eval">
 <h1>08 — Synthetic data and the "circular eval" trap</h1>
@@ -389,7 +424,10 @@ return nothing relevant, say so plainly instead of guessing — do not invent de
   <li><strong>In-distribution</strong> vs <strong>out-of-distribution</strong> — the idea underneath the whole trap.</li>
   <li>Could I keep synthetic data for prompt development but switch to real data for the <em>final</em> eval only?</li>
   <li><strong>Data leakage</strong> in general — any time the answer sneaks into the question.</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a></div>
+</aside>
 </section>
 <section id="09-tiered-model-routing">
 <h1>09 — Tiered model routing: pay for the big model only when it pays</h1>
@@ -421,7 +459,9 @@ return nothing relevant, say so plainly instead of guessing — do not invent de
   <li>The cost / latency / quality triangle — you usually optimize two at the expense of the third.</li>
   <li><strong>LLM-as-judge</strong> — using a strong model to grade outputs, and where <em>that</em> can mislead.</li>
   <li>Break-even math — escalating costs more per call, but only on a slice; does it net out?</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a></div>
+</aside>
 </section>
 <section id="10-secrets-and-env">
 <h1>10 — Secrets and the <code>.env</code> pattern</h1>
@@ -539,7 +579,10 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
   <li>Where exactly is the line? Could <code>generate.py</code> legitimately become a <code>DatasetGenerator</code> class, and what would tip it over?</li>
   <li>Python dataclasses vs Java records vs a hand-written class — when is each the right amount of structure?</li>
   <li>"Composition over inheritance" — once I do have classes, how do I avoid deep class trees?</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a></div>
+</aside>
 </section>
 <section id="14-constructors-and-dependency-injection">
 <h1>14 — Constructors &amp; dependency injection</h1>
@@ -568,7 +611,10 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
   <li>Constructor injection vs field/setter injection — why is constructor injection usually preferred?</li>
   <li>What's an immutable object, and why are <code>record</code> / frozen-<code>dataclass</code> types worth reaching for?</li>
   <li>When a constructor needs many parameters, what patterns (builder, factory) keep it sane?</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#01-structured-output-via-tool-use">01 · Structured output via tool use</a> <a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a></div>
+</aside>
 </section>
 </main>
 </div>
@@ -577,6 +623,7 @@ const q = document.getElementById('search');
 const sections = [...document.querySelectorAll('main section')];
 const links = [...document.querySelectorAll('nav a')];
 const navFor = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+const groups = [...document.querySelectorAll('.navgroup')];
 const noresults = document.getElementById('noresults');
 q.addEventListener('input', () => {
   const term = q.value.trim().toLowerCase();
@@ -587,6 +634,11 @@ q.addEventListener('input', () => {
     const a = navFor[s.id];
     if (a) a.style.display = hit ? '' : 'none';
     if (hit) shown++;
+  }
+  // Hide a category heading once all of its notes are filtered out.
+  for (const g of groups) {
+    const any = [...g.querySelectorAll('a')].some(a => a.style.display !== 'none');
+    g.style.display = any ? '' : 'none';
   }
   noresults.style.display = shown ? 'none' : 'block';
 });

@@ -17,6 +17,8 @@ import html
 import re
 from pathlib import Path
 
+from notes_data import Note, load_notes
+
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "index.html"
 
@@ -140,17 +142,32 @@ def first_heading(text: str, fallback: str) -> str:
     return fallback
 
 
-def collect() -> list[tuple[str, str, str]]:
-    """Return (anchor, title, html) for the intro + each note, in order."""
-    docs: list[tuple[str, str, str]] = []
-    readme = HERE / "README.md"
-    if readme.exists():
-        body = readme.read_text(encoding="utf-8")
-        docs.append(("overview", first_heading(body, "Overview"), md_to_html(body)))
-    for path in sorted(HERE.glob("[0-9][0-9]-*.md")):
-        body = path.read_text(encoding="utf-8")
-        docs.append((path.stem, first_heading(body, path.stem), md_to_html(body)))
-    return docs
+def related_aside(note: Note, by_num: dict[int, Note]) -> str:
+    """An auto "References / Referenced by" rail, built from the note's edges.
+
+    Outgoing edges are the "note NN" mentions the author wrote; incoming edges are
+    the reverse — the backlinks the concept map could never show inline. Returns ""
+    when a note is isolated, so unconnected notes get no empty box.
+    """
+    rows: list[tuple[str, list[int]]] = []
+    if note.refs_out:
+        rows.append(("References", note.refs_out))
+    if note.refs_in:
+        rows.append(("Referenced by", note.refs_in))
+    if not rows:
+        return ""
+
+    html_rows = []
+    for label, nums in rows:
+        chips = " ".join(
+            f'<a href="#{by_num[m].anchor}">{m:02d} · {html.escape(by_num[m].title)}</a>'
+            for m in nums
+            if m in by_num
+        )
+        html_rows.append(
+            f'<div class="rel-row"><span class="rel-label">{label}</span>{chips}</div>'
+        )
+    return '<aside class="related">\n' + "\n".join(html_rows) + "\n</aside>"
 
 
 CSS = """
@@ -191,6 +208,16 @@ li { margin:.25em 0; }
 #search:focus { outline:none; border-color:var(--accent);
                 box-shadow:0 0 0 2px rgba(58,110,165,.25); }
 #noresults { display:none; color:var(--muted); font-style:italic; }
+.navgroup { margin-bottom:6px; }
+.navgroup h3 { font-size:.68rem; letter-spacing:.09em; text-transform:uppercase;
+               color:var(--muted); font-weight:700; margin:16px 8px 4px; }
+aside.related { margin-top:26px; padding-top:14px; border-top:1px solid var(--border); }
+.rel-row { display:flex; flex-wrap:wrap; gap:6px 8px; align-items:baseline; margin:.35em 0; }
+.rel-label { flex:0 0 auto; min-width:104px; color:var(--muted); font-weight:700;
+             text-transform:uppercase; font-size:.66rem; letter-spacing:.06em; }
+aside.related a { padding:2px 9px; background:var(--code-bg); border-radius:12px;
+                  text-decoration:none; font-size:.82rem; color:var(--accent); }
+aside.related a:hover { background:#e9e4d8; }
 @media (max-width:780px) { nav { display:none; } main { padding:28px 20px 80px; } }
 """
 
@@ -201,6 +228,7 @@ const q = document.getElementById('search');
 const sections = [...document.querySelectorAll('main section')];
 const links = [...document.querySelectorAll('nav a')];
 const navFor = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+const groups = [...document.querySelectorAll('.navgroup')];
 const noresults = document.getElementById('noresults');
 q.addEventListener('input', () => {
   const term = q.value.trim().toLowerCase();
@@ -212,17 +240,50 @@ q.addEventListener('input', () => {
     if (a) a.style.display = hit ? '' : 'none';
     if (hit) shown++;
   }
+  // Hide a category heading once all of its notes are filtered out.
+  for (const g of groups) {
+    const any = [...g.querySelectorAll('a')].some(a => a.style.display !== 'none');
+    g.style.display = any ? '' : 'none';
+  }
   noresults.style.display = shown ? 'none' : 'block';
 });
 """
 
 
 def build() -> None:
-    docs = collect()
-    nav = "\n".join(
-        f'<a href="#{a}">{html.escape(re.sub(r"[`*]", "", t))}</a>' for a, t, _ in docs
-    )
-    body = "\n".join(f'<section id="{a}">\n{h}\n</section>' for a, _, h in docs)
+    notes, cat_order = load_notes()
+    by_num = {n.num: n for n in notes}
+
+    def clean(t: str) -> str:
+        return html.escape(re.sub(r"[`*]", "", t))
+
+    # Overview section from the README.
+    overview_title, overview_html = "Overview", ""
+    readme = HERE / "README.md"
+    if readme.exists():
+        rb = readme.read_text(encoding="utf-8")
+        overview_title = first_heading(rb, "Overview")
+        overview_html = md_to_html(rb)
+
+    # Note sections in numeric order, each with an auto backlink rail appended.
+    sections = [f'<section id="overview">\n{overview_html}\n</section>']
+    for n in notes:
+        note_html = md_to_html(n.path.read_text(encoding="utf-8")) + related_aside(n, by_num)
+        sections.append(f'<section id="{n.anchor}">\n{note_html}\n</section>')
+    body = "\n".join(sections)
+
+    # Category-grouped sidebar: overview link, then a group per category (README order).
+    nav_parts = [f'<a href="#overview">{clean(overview_title)}</a>']
+    for cat in cat_order:
+        in_cat = [n for n in notes if n.category == cat]
+        if not in_cat:
+            continue
+        rows = "\n".join(
+            f'<a href="#{n.anchor}">{n.num:02d} · {html.escape(n.title)}</a>' for n in in_cat
+        )
+        nav_parts.append(f'<div class="navgroup"><h3>{html.escape(cat)}</h3>\n{rows}\n</div>')
+    nav = "\n".join(nav_parts)
+
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -247,7 +308,7 @@ def build() -> None:
 </html>
 """
     OUT.write_text(page, encoding="utf-8")
-    print(f"Wrote {OUT}  ({len(docs)} sections, {len(page):,} bytes)")
+    print(f"Wrote {OUT}  ({len(notes) + 1} sections, {len(page):,} bytes)")
 
 
 if __name__ == "__main__":
