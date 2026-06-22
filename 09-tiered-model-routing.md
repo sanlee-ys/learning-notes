@@ -17,6 +17,10 @@ The eval already told me where money should and shouldn't go:
   procurement is genuinely fuzzy — note 03), *not* the model being too weak. A bigger model
   won't un-blur a fuzzy definition across the board.
 
+*Update (v2):* re-measured on real, human-labeled text, category is now 88.9% (macro-F1
+0.906) and domain 88.9% (0.894) — the ceiling is still label ambiguity (industry vs.
+procurement), not model horsepower, so this holds.
+
 So the v2 plan: keep `claude-sonnet-4-6` as the workhorse on every article, and escalate to
 a top-tier model (e.g. Opus) **only** on the low-confidence boundary cases — running the
 premium model on ~15% of articles instead of 100%. Most of the quality, a fraction of the
