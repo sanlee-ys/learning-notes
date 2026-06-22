@@ -25,6 +25,17 @@ OUT = HERE / "index.html"
 
 # ---- Markdown -> HTML (just the subset these notes use) --------------------
 
+# Block-level HTML tags. A line that *starts* with one of these (e.g. the
+# README's centered hero) is passed through verbatim instead of being escaped
+# as paragraph text — the same idea as CommonMark's raw "HTML blocks".
+_BLOCK_TAGS = {
+    "p", "div", "figure", "figcaption", "table", "thead", "tbody", "tr", "td",
+    "th", "section", "article", "header", "footer", "aside", "details",
+    "summary", "nav", "dl", "dt", "dd", "ul", "ol", "blockquote", "pre",
+    "img", "hr",
+}
+
+
 def _inline(text: str) -> str:
     """Inline formatting: code spans, links, bold, italic — with HTML escaping."""
     # Stash code spans first so we don't format or double-escape inside them.
@@ -111,6 +122,18 @@ def md_to_html(text: str) -> str:
                 quote.append(q[1:] if q.startswith(" ") else q)
                 i += 1
             out.append(f"<blockquote>{_inline(' '.join(quote))}</blockquote>")
+            continue
+        elif (hm := re.match(r"<(/?)([a-zA-Z][\w-]*)", stripped)) and (
+            not hm.group(1) and hm.group(2).lower() in _BLOCK_TAGS
+        ):
+            # Raw block-level HTML (the README hero) — copy verbatim, no escaping,
+            # until the blank line that ends the block.
+            flush_blocks()
+            raw: list[str] = []
+            while i < len(lines) and lines[i].strip() != "":
+                raw.append(lines[i])
+                i += 1
+            out.append("\n".join(raw))
             continue
         elif m := re.match(r"[-*]\s+(.*)", stripped):
             flush_para()
