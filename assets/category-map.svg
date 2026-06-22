@@ -1,21 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" width="760" height="440" role="img" aria-labelledby="title desc" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
 <title id="title">Learning notes — category map</title>
-<desc id="desc">How the note categories connect. Foundations: 5 notes; LLM app patterns: 4 notes; Data &amp; method: 2 notes; Engineering hygiene: 4 notes</desc>
+<desc id="desc">How the note categories connect. Foundations: 5 notes; LLM app patterns: 4 notes; Data &amp; method: 2 notes; Engineering hygiene: 6 notes; Systems &amp; infrastructure: 4 notes</desc>
 <rect x="0" y="0" width="760" height="440" rx="12" fill="#fbfaf7"/>
-<line x1="380.0" y1="345.0" x2="255.0" y2="220.0" stroke="#c9c1b2" stroke-width="2.7" stroke-linecap="round"/>
-<line x1="380.0" y1="345.0" x2="380.0" y2="95.0" stroke="#c9c1b2" stroke-width="7.5" stroke-linecap="round"/>
-<line x1="255.0" y1="220.0" x2="380.0" y2="95.0" stroke="#c9c1b2" stroke-width="3.9" stroke-linecap="round"/>
-<line x1="380.0" y1="95.0" x2="505.0" y2="220.0" stroke="#c9c1b2" stroke-width="3.9" stroke-linecap="round"/>
-<circle cx="380.0" cy="95.0" r="56.0" fill="#3a6ea5" stroke="#fff" stroke-width="3"/>
+<line x1="453.5" y1="321.1" x2="306.5" y2="321.1" stroke="#c9c1b2" stroke-width="2.7" stroke-linecap="round"/>
+<line x1="453.5" y1="321.1" x2="380.0" y2="95.0" stroke="#c9c1b2" stroke-width="7.5" stroke-linecap="round"/>
+<line x1="306.5" y1="321.1" x2="380.0" y2="95.0" stroke="#c9c1b2" stroke-width="7.5" stroke-linecap="round"/>
+<line x1="306.5" y1="321.1" x2="261.1" y2="181.4" stroke="#c9c1b2" stroke-width="5.1" stroke-linecap="round"/>
+<line x1="380.0" y1="95.0" x2="498.9" y2="181.4" stroke="#c9c1b2" stroke-width="3.9" stroke-linecap="round"/>
+<line x1="380.0" y1="95.0" x2="261.1" y2="181.4" stroke="#c9c1b2" stroke-width="3.9" stroke-linecap="round"/>
+<circle cx="380.0" cy="95.0" r="51.0" fill="#3a6ea5" stroke="#fff" stroke-width="3"/>
 <text x="380.0" y="95.0" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">5</text>
-<text x="380.0" y="167.0" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Foundations</text>
-<circle cx="505.0" cy="220.0" r="50.0" fill="#a5603a" stroke="#fff" stroke-width="3"/>
-<text x="505.0" y="220.0" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">4</text>
-<text x="505.0" y="286.0" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">LLM app patterns</text>
-<circle cx="380.0" cy="345.0" r="38.0" fill="#4a8c5f" stroke="#fff" stroke-width="3"/>
-<text x="380.0" y="345.0" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">2</text>
-<text x="380.0" y="399.0" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Data &amp; method</text>
-<circle cx="255.0" cy="220.0" r="50.0" fill="#8c6dae" stroke="#fff" stroke-width="3"/>
-<text x="255.0" y="220.0" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">4</text>
-<text x="255.0" y="286.0" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Engineering hygiene</text>
+<text x="380.0" y="162.0" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Foundations</text>
+<circle cx="498.9" cy="181.4" r="46.0" fill="#a5603a" stroke="#fff" stroke-width="3"/>
+<text x="498.9" y="181.4" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">4</text>
+<text x="498.9" y="243.4" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">LLM app patterns</text>
+<circle cx="453.5" cy="321.1" r="36.0" fill="#4a8c5f" stroke="#fff" stroke-width="3"/>
+<text x="453.5" y="321.1" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">2</text>
+<text x="453.5" y="373.1" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Data &amp; method</text>
+<circle cx="306.5" cy="321.1" r="56.0" fill="#8c6dae" stroke="#fff" stroke-width="3"/>
+<text x="306.5" y="321.1" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">6</text>
+<text x="306.5" y="393.1" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Engineering hygiene</text>
+<circle cx="261.1" cy="181.4" r="46.0" fill="#2f8f9d" stroke="#fff" stroke-width="3"/>
+<text x="261.1" y="181.4" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">4</text>
+<text x="261.1" y="243.4" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Systems &amp; infrastructure</text>
 </svg>

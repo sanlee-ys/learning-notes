@@ -82,6 +82,14 @@ aside.related a:hover { background:#e9e4d8; }
 <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a>
 <a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a>
 <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a>
+<a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a>
+<a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a>
+</div>
+<div class="navgroup"><h3>Systems &amp; infrastructure</h3>
+<a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a>
+<a href="#17-layered-architecture">17 · Layered architecture: controller, service, repository</a>
+<a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a>
+<a href="#19-database-migrations">19 · Database migrations: versioning your schema</a>
 </div>
 </nav>
 <main>
@@ -128,6 +136,15 @@ aside.related a:hover { background:#e9e4d8; }
   <li>[x] 11 — Reproducible environments: uv and lockfiles <em>(both)</em></li>
   <li>[x] 12 — Checkpoint/resume and retries: surviving flaky API runs <em>(classifier)</em></li>
   <li>[x] 15 — Semantic versioning: a version number is a promise <em>(classifier)</em></li>
+  <li>[x] 20 — Testing &amp; coverage: knowing what's exercised <em>(both)</em></li>
+  <li>[x] 21 — Test-driven development: red, green, refactor <em>(both)</em></li>
+</ul>
+<h3>Systems &amp; infrastructure</h3>
+<ul>
+  <li>[x] 16 — Containers &amp; Docker: ship it the same everywhere <em>(both)</em></li>
+  <li>[x] 17 — Layered architecture: controller, service, repository <em>(notes-api)</em></li>
+  <li>[x] 18 — Event-driven architecture: working through a message queue <em>(notes-api)</em></li>
+  <li>[x] 19 — Database migrations: versioning your schema <em>(notes-api)</em></li>
 </ul>
 <h2>Viewing the notes</h2>
 <p>Four ways to read these as more than raw text. The <code>.md</code> files always stay the source of truth — the viewers are regenerated, never hand-edited.</p>
@@ -207,7 +224,7 @@ uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :800
   <li>Precision vs recall vs F1 — what each one actually means (note 03).</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a></div>
 </aside>
 </section>
 <section id="03-reading-the-numbers">
@@ -492,7 +509,9 @@ uv run --env-file .env python src/eval.py   # inject the key for this run</code>
   <li>Environment variables vs dedicated <strong>secret managers</strong> (Vault, cloud secret stores) for larger setups.</li>
   <li>How <code>.gitignore</code> decides what git skips — and the habit of running <code>git status</code> before every commit to catch a stray <code>.env</code>.</li>
   <li>Why even <code>export KEY=...</code> in your shell beats hardcoding (it just vanishes when the shell closes).</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a></div>
+</aside>
 </section>
 <section id="11-reproducible-environments-uv">
 <h1>11 — Reproducible environments: uv and lockfiles</h1>
@@ -521,7 +540,7 @@ uv run python src/eval.py    # run inside that env — no activation needed</cod
   <li>Why <code>.venv</code> is gitignored but <code>uv.lock</code> is committed.</li>
   <li>How CI uses the same lockfile to test in a clean environment every run.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#19-database-migrations">19 · Database migrations: versioning your schema</a></div>
 </aside>
 </section>
 <section id="12-checkpoint-resume-and-retries">
@@ -553,7 +572,9 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
   <li>Which errors are safe to retry (transient: 429 / 500 / timeout) vs which aren't (400 bad request — retrying won't help).</li>
   <li><strong>Jitter</strong> — adding randomness to the backoff so many clients don't all retry in lockstep.</li>
   <li>Where the checkpoint should live — a CSV here; a database or queue for bigger jobs.</li>
-</ul>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
+</aside>
 </section>
 <section id="13-classes-vs-functions">
 <h1>13 — Classes vs functions: when to reach for a class</h1>
@@ -588,7 +609,7 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
   <li>"Composition over inheritance" — once I do have classes, how do I avoid deep class trees?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a> <a href="#17-layered-architecture">17 · Layered architecture: controller, service, repository</a></div>
 </aside>
 </section>
 <section id="14-constructors-and-dependency-injection">
@@ -634,7 +655,7 @@ var service = new NoteService(fakeRepo);</code></pre>
   <li>When a constructor needs many parameters, what patterns (builder, factory) keep it sane?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#01-structured-output-via-tool-use">01 · Structured output via tool use</a> <a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a> <a href="#17-layered-architecture">17 · Layered architecture: controller, service, repository</a> <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a></div>
 </aside>
 </section>
 <section id="15-semantic-versioning">
@@ -673,6 +694,220 @@ var service = new NoteService(fakeRepo);</code></pre>
   <li>Where's the line between MINOR and MAJOR when a change is <em>technically</em> compatible but shifts outputs enough that downstream results move?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#01-structured-output-via-tool-use">01 · Structured output via tool use</a> <a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a></div>
+</aside>
+</section>
+<section id="16-containers-and-docker">
+<h1>16 — Containers &amp; Docker: ship it the same everywhere</h1>
+<blockquote><strong>TL;DR</strong> "Works on my machine" usually means the <em>machine</em> is different, not the code. A <strong>container</strong> packs the OS, the runtime, the libraries, and your app into one sealed bundle that runs the same on your laptop, a teammate's, or the cloud. <strong>Docker</strong> is the tool that builds and runs those bundles.</blockquote>
+<h2>Plain idea</h2>
+<p>A container takes everything your app needs to run — a stripped-down Linux, Python 3.11, your pinned dependencies, and your source files — and seals it into one image. You build the image once and run it anywhere; the host barely matters because the container carries its own world with it.</p>
+<p>Two files do the work:</p>
+<ul>
+  <li><strong><code>Dockerfile</code></strong> — the recipe. Start from a base (<code>python:3.11-slim</code>), install the deps, copy in the code, say how to launch it. Human-edited.</li>
+  <li><strong><code>.dockerignore</code></strong> — the "don't pack this" list. Keeps junk and secrets out of the bundle so the image stays small and safe.</li>
+</ul>
+<p>This is the cross-language cousin of the lockfile idea in note 11: a lockfile pins your Python <em>dependencies</em>; a container pins the <strong>whole stack underneath them too</strong> — the OS, the Python version, the system libraries. The lockfile makes the deps reproducible; the container makes the entire environment reproducible.</p>
+<h2>Analogy</h2>
+<p>A lockfile is "this exact bag of flour." A container is the <strong>whole sealed test kitchen, shipped on a pallet</strong> — same oven, same brand of flour, same thermometer, already wired up. You don't reassemble the kitchen at the destination; you plug in the pallet and it runs.</p>
+<p>(The project notes call this a "lunchbox" — chef, kitchen, ingredients, and recipe sealed in one box. Same idea: the container carries its environment with it.)</p>
+<h2>In my project</h2>
+<p>The classifier has a real <code>Dockerfile</code> that packs the serving API:</p>
+<pre><code>FROM python:3.11-slim
+WORKDIR /app
+COPY requirements-api.txt .
+RUN pip install --no-cache-dir -r requirements-api.txt
+COPY src/api.py src/classify.py ./src/</code></pre>
+<p>A few deliberate choices in it:</p>
+<ul>
+  <li><strong>Lean on purpose.</strong> It installs only <code>requirements-api.txt</code> and copies only <code>api.py</code> + <code>classify.py</code>. The generator, the eval scripts, the data, and heavy <code>pandas</code> are left out — the drive-thru window doesn't need the grading kit.</li>
+  <li><strong>Layer caching.</strong> Deps are copied and installed <em>before</em> the source, so changing a line of code doesn't re-run the slow <code>pip install</code>.</li>
+  <li><strong>Runs as non-root</strong> (<code>useradd ... appuser</code>) — if the process is compromised it isn't root inside the container.</li>
+  <li><strong><code>$PORT</code> at runtime</strong> — the host injects the port; the image doesn't hardcode it.</li>
+</ul>
+<p>The <code>.dockerignore</code> is the secrets guard: it lists <code>.env</code> and <code>.env.*</code> so no API key ever gets baked into the image — exactly the rule from note 10 (secrets live in the environment, never in the artifact). It also drops <code>.git/</code>, <code>data/</code>, and <code>README.md</code> to keep the build context small.</p>
+<p>My other repo uses Docker a different way — a <code>docker-compose.yml</code> spins up a local <strong>Kafka</strong> broker plus a web UI with one <code>docker compose up</code>. Same tech, different job: one container to <em>ship</em> an app, several wired together to <em>run a dev stack</em> on my laptop.</p>
+<h2>Why it matters</h2>
+<p>It kills the "works on my machine" ghost for good. The image that passes on my laptop is the <em>same bytes</em> that run in the cloud — not a similar setup, the identical one. It also makes the runtime disposable and honest: a fresh container every time means no leftover state quietly keeping things alive, and the <code>.dockerignore</code> line means a leaked image can't leak a key.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li><strong>Layers and caching</strong> — why ordering <code>COPY</code>/<code>RUN</code> well makes rebuilds fast, and how a layer is reused until something above it changes.</li>
+  <li><strong>Multi-stage builds</strong> — build in a fat image, copy only the artifact into a slim one. (My Dockerfile skips this on purpose: pure-Python wheels, nothing to compile.)</li>
+  <li><strong>Image vs container</strong> — the image is the frozen recipe; the container is one running copy.</li>
+  <li><strong><code>docker compose</code></strong> — declaring several containers and their wiring in one file (the Kafka stack), vs a single shipped service.</li>
+  <li><strong>Where images live</strong> — registries, tags, and how CI builds and pushes them.</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a> <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a></div>
+</aside>
+</section>
+<section id="17-layered-architecture">
+<h1>17 — Layered architecture: controller, service, repository</h1>
+<blockquote><strong>TL;DR</strong> Split a backend into three stacked layers — a controller that speaks HTTP, a service that holds the rules, and a repository that talks to the database. Each layer knows only the one beneath it, so a request flows straight down and the answer travels straight back up.</blockquote>
+<h2>Plain idea</h2>
+<p>A request could be handled by one big function that reads the HTTP, runs the logic, and hits the database all at once. Layered architecture says: don't. Give each job its own layer.</p>
+<ul>
+  <li><strong>Controller</strong> — translates HTTP ↔ method calls. Paths, verbs, status codes. Nothing else.</li>
+  <li><strong>Service</strong> — the business rules. "What does an update mean?" "404 if it's missing?"</li>
+  <li><strong>Repository</strong> — reads and writes the database, and nothing above it.</li>
+</ul>
+<p>The dependencies only point <strong>downward</strong>: the controller knows the service, the service knows the repository, the repository knows the database. Nothing points back up — the database layer has no idea the web even exists. Each layer is a class with one responsibility (note 13), and each is handed the layer below it through its constructor (note 14).</p>
+<h2>Analogy</h2>
+<p>A restaurant. The <strong>waiter</strong> (controller) takes your order and brings your food — they talk to <em>you</em>, not the stove. The <strong>kitchen</strong> (service) decides how the dish is actually made. The <strong>pantry</strong> (repository) just stores and fetches ingredients. The waiter never cooks, the pantry never greets customers, and you never wander into the kitchen yourself. Everyone has one job, and the order flows one direction: front of house → kitchen → pantry, then the plate comes back.</p>
+<h2>In my project</h2>
+<p>In <code>notes-api</code>, follow one <code>POST /notes</code> with body <code>{&quot;title&quot;:&quot;Buy milk&quot;,&quot;content&quot;:&quot;2% and oat&quot;}</code>:</p>
+<ol>
+  <li><strong>Controller</strong> (<code>NoteController.create</code>) gets the HTTP request, builds a <code>Note</code> from the request, hands it to the service, wraps the result in a response. Two lines.</li>
+  <li><strong>Service</strong> (<code>NoteService.create</code>) applies the rules — for create it's just "save it," but <code>update</code> is a read-modify-write in a transaction and <code>findById</code> throws a 404 if missing.</li>
+  <li><strong>Repository</strong> (<code>NoteRepository.save</code>) does the actual database write — a method I never wrote, because Spring Data generated it.</li>
+  <li>The result travels back up: entity → <code>NoteResponse</code> → JSON → HTTP 201.</li>
+</ol>
+<p>The key discipline is that the <strong>entity never leaks out</strong>. The controller speaks <strong>DTOs</strong>, not the <code>Note</code> entity — <code>NoteRequest</code> coming in, <code>NoteResponse</code> going out. <code>NoteRequest</code> has no <code>id</code> or timestamp fields, so a client can't set server-owned data (the <em>mass assignment</em> bug). The DTO is the wall between the outside world and my storage shape: entities talk to the database, DTOs talk to the world.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>Test a layer alone.</strong> Hand <code>NoteService</code> a fake repository and test the rules with no web server and no database (<code>new NoteService(fakeRepo)</code> — note 14).</li>
+  <li><strong>Swap a layer.</strong> Move from H2 to PostgreSQL and only the repository cares. Add a CLI and only a new top layer changes; the rules stay put.</li>
+  <li><strong>Reason locally.</strong> A wrong status code is a controller bug. A wrong "valid update" is a service bug. The layout tells you where to look before you even open the file.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>Where does a cross-cutting concern (auth, logging, caching) live when it touches every layer?</li>
+  <li>The mapping cost — every boundary needs a DTO↔entity conversion. When is that worth it, and when is it ceremony?</li>
+  <li>"Skinny controller, fat service" — and the failure mode where logic leaks up into the controller or down into the entity.</li>
+  <li>How transactions span the service ↔ repository boundary, and why the service usually owns them.</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#13-classes-vs-functions">13 · Classes vs functions: when to reach for a class</a> <a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a></div>
+</aside>
+</section>
+<section id="18-event-driven-architecture">
+<h1>18 — Event-driven architecture: working through a message queue</h1>
+<blockquote><strong>TL;DR</strong> Instead of one component calling another directly and waiting for a reply, it <strong>publishes an event to a queue and moves on</strong>. Whoever cares subscribes and reacts on their own time. The two sides stop depending on each other being up.</blockquote>
+<h2>Plain idea</h2>
+<p>In the usual request-and-wait flow (note 17), component A calls component B and blocks until B answers. A has to know B exists, know how to reach it, and B has to be up — or A's request fails. They're chained together.</p>
+<p><strong>Event-driven architecture</strong> breaks that chain. A does its own job, then <strong>announces a fact</strong> ("a note was created") by dropping a message onto a queue. It returns immediately. It doesn't know or care who's listening. Later — on their own schedule — any interested consumers pick the message up and react.</p>
+<p>Three words carry most of it:</p>
+<ul>
+  <li><strong>Producer</strong> — the side that publishes the event (A).</li>
+  <li><strong>Consumer</strong> — the side that subscribes and reacts (B, and any others).</li>
+  <li><strong>Topic</strong> — the named stream the event goes onto. The queue in the middle (here, Kafka) holds events in a durable log, so a slow or absent consumer doesn't lose anything; the message waits until it's read.</li>
+</ul>
+<p>A topic is split into <strong>partitions</strong> (parallel lanes) living on <strong>brokers</strong> (the queue's servers). That's just how the queue scales and stays safe — more lanes serve more consumers at once, more brokers mean copies survive a machine dying. You can publish without thinking about either.</p>
+<h2>Analogy</h2>
+<p><strong>A phone call vs. a mailbox.</strong> The synchronous way is phoning someone: you both have to be on the line at the same time, and you wait while they think. The event-driven way is dropping a letter in a mailbox and walking off. You're done the moment it's posted. Whoever's interested checks the box later and acts — and you never had to know who they were.</p>
+<h2>In my project</h2>
+<p><code>notes-api</code> is where I felt this firsthand. <code>NoteService.create()</code> used to just save a note and return. Now it saves the note and then <strong>publishes a <code>NoteCreated</code> event</strong>:</p>
+<pre><code>Note saved = repository.save(note);
+NoteCreated event = new NoteCreated(saved.getId(), saved.getTitle(),
+        saved.getContent(), saved.getTags(), saved.getCreatedAt());
+kafkaTemplate.send(&quot;note-events&quot;, saved.getId().toString(), event);
+return saved;</code></pre>
+<p>That one <code>send</code> changed what kind of system it is. The <code>POST /notes</code> returns the instant the row is saved — it doesn't wait on anything downstream. The event lands on the <code>note-events</code> <strong>topic</strong>, <strong>keyed by the note id</strong> so every event about the same note stays in order on the same partition. A future classifier consumer could subscribe and tag the note on its own time; <code>notes-api</code> never has to know it exists.</p>
+<p>The honest catch is written right into the code's comments: the DB save and the Kafka send <strong>aren't atomic</strong>, so a crash between them could drop an event. That dual-write risk is accepted for now, with the <em>transactional outbox</em> noted as the real fix.</p>
+<h2>Why it matters</h2>
+<p>This is the asynchronous, decoupled alternative to the synchronous layered flow in note 17. It buys three things: <strong>decoupling</strong> (add a new consumer without touching the producer), <strong>resilience</strong> (a consumer being down doesn't break the producer — the event waits in the log), and <strong>responsiveness</strong> (slow work moves off the request path).</p>
+<p>The cost is honesty about <strong>eventual consistency</strong>: the note exists now, its tags show up a moment later. The flow also hops across services and time, which is harder to follow — the price you pay for not chaining everything together.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li><strong>Idempotent consumers</strong> — the queue may deliver the same event twice (at-least-once), so a consumer must handle a repeat without double-acting.</li>
+  <li><strong>The transactional outbox</strong> — the production fix for the dual-write problem above.</li>
+  <li><strong>Eventual consistency</strong> — when "correct in a moment" is fine and when it isn't.</li>
+  <li><strong>Replay</strong> — because the log keeps events by offset and doesn't delete on read, a brand-new consumer can read history from the start and backfill.</li>
+  <li>Tracing an event across services (distributed tracing) when there's no single top-to-bottom call to read.</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#17-layered-architecture">17 · Layered architecture: controller, service, repository</a></div>
+</aside>
+</section>
+<section id="19-database-migrations">
+<h1>19 — Database migrations: versioning your schema</h1>
+<blockquote><strong>TL;DR</strong> Your database <em>structure</em> — tables, columns, types — changes over time. A <strong>migration</strong> is one numbered, ordered change to that structure, applied exactly once. Keep them in source control and any environment can rebuild the same schema from scratch.</blockquote>
+<h2>Plain idea</h2>
+<p>Code isn't the only thing that evolves; the shape of your database does too. You add a <code>tags</code> table, you widen a column, you add an index. The naive way is to log into each database and hand-type the change — which means dev, CI, and production slowly drift apart and nobody can say what's actually in each one.</p>
+<p>A <strong>migration</strong> fixes that. It's a small SQL script with a version number, like <code>V1__create_notes_and_tags.sql</code>. A tool (here, <strong>Flyway</strong>) runs them in order, records each one it applied in a <code>flyway_schema_history</code> table, and never runs the same one twice. Start the app a second time and Flyway sees <code>V1</code> is already done and does nothing.</p>
+<p>The rule that makes it work: <strong>you never edit an applied migration.</strong> The next change is always a <em>new</em> file — <code>V2__...sql</code>. The history is append-only, so the schema is the sum of every migration replayed in order — reproducible anywhere.</p>
+<p>This is the same idea as the lockfile in note 11: there we pinned exact library versions so every machine builds the identical environment; here we pin the schema as ordered scripts so every database rebuilds identically — from source, not from someone's memory of what they typed last Tuesday.</p>
+<h2>Analogy</h2>
+<p>Migrations are the <strong>numbered chapters of a book</strong>. To get the current story you read chapters 1, 2, 3 in order — you don't rewrite chapter 1 once it's published, you write chapter 4. Anyone with the same book reads the same story. Flyway is the bookmark that remembers which chapter you've reached, so re-opening doesn't re-read what you've already finished.</p>
+<h2>In my project</h2>
+<p>The <code>notes-api</code> moved from <strong>H2</strong> (an in-memory database wiped on every restart) to <strong>PostgreSQL</strong> for durable storage, with Flyway owning the schema.</p>
+<p>The one migration, <code>src/main/resources/db/migration/V1__create_notes_and_tags.sql</code>, creates the <code>notes</code> and <code>note_tags</code> tables. The filename encodes the contract: <code>V</code> + version + <code>__</code> + description.</p>
+<p>On startup Flyway creates <code>flyway_schema_history</code> if missing, finds migrations newer than what's recorded, runs them, and logs each. Hibernate is set to:</p>
+<pre><code>spring.jpa.hibernate.ddl-auto=validate</code></pre>
+<p>So Hibernate <em>creates nothing</em> — Flyway owns the schema, and Hibernate only checks the Java entities still line up with the tables Flyway built. If they drift, the app refuses to start at boot instead of failing at 2 a.m.</p>
+<h2>Why it matters</h2>
+<p>Without migrations, your schema is an undocumented thing that exists differently in every environment, and "set up a fresh database" becomes tribal knowledge. With them, the schema is reviewable in a pull request, replayable on a clean machine, and identical in CI and production.</p>
+<p>It also surfaces a sharp lesson: a query that passed every H2 test blew up on Postgres (<code>function lower(bytea) does not exist</code>) because H2 isn't Postgres. Versioned, real-engine migrations are what let you catch dialect bugs <em>before</em> production instead of discovering them there.</p>
+<h2>Go deeper</h2>
+<ul>
+  <li><strong>The append-only rule</strong> — why you add <code>V2</code> instead of editing <code>V1</code>, and what <code>flyway_schema_history</code> actually stores.</li>
+  <li><strong><code>validate</code> vs <code>migrate</code> vs auto-create</strong> — letting Hibernate build tables is fine for H2/tests, dangerous for a real database (no history, no review).</li>
+  <li><strong>Rollbacks / down-migrations</strong> — most teams roll <em>forward</em> with a new fix migration rather than truly reversing one.</li>
+  <li><strong>Testing against the real engine</strong> (e.g. Testcontainers) so "green on H2" can't hide a Postgres-only bug.</li>
+  <li>Other migration tools in the same family: Liquibase (Java), Alembic (Python), Rails migrations.</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a></div>
+</aside>
+</section>
+<section id="20-testing-and-coverage">
+<h1>20 — Testing &amp; coverage: knowing what's exercised</h1>
+<blockquote><strong>TL;DR</strong> Tests catch a change that quietly broke something. <strong>Coverage</strong> measures how much of your code the tests actually ran — but "ran" isn't "checked," so high coverage of weak tests is still weak.</blockquote>
+<h2>Plain idea</h2>
+<p>A <strong>test</strong> is a small program that runs your real code with a known input and asserts the answer is what you expect. Run them after every change: if one goes red, you broke something you can <em>see</em>, before it ships. Tests are to code what evals are to the model (note 02): an automatic check that a change didn't break things.</p>
+<p>But a green test suite has a blind spot — it only tells you the tests you <em>wrote</em> passed. It says nothing about the code you forgot to test. <strong>Coverage</strong> fills that gap by recording which lines and branches actually executed during the run. It turns "I think that's tested" into a number.</p>
+<p>The catch worth tattooing on your hand: coverage measures what code was <em>exercised</em>, not that it's <em>correct</em>. A test with no real assertions still lights up coverage. High coverage of weak checks is still weak.</p>
+<h2>Analogy</h2>
+<p>Coverage is the <em>checklist</em> of rooms the cleaner walked through; it is not proof any room is actually clean. Walking into the kitchen counts as "covered" even if you never wiped a counter. The checklist finds the rooms nobody entered — a real blind spot — but it can't tell you whether the work inside was any good.</p>
+<h2>In my project</h2>
+<p>The <code>notes-api</code> repo makes both halves concrete. Its tests sit at three levels (a <em>test pyramid</em>): fast pure-logic unit tests with no framework, a repository slice against a real in-memory database, and one full-context boot. The lesson baked in: push most testing down to the fast unit level and use the slow, realistic tests sparingly.</p>
+<p>For coverage it uses <strong>JaCoCo</strong> (the JVM cousin of Python's <code>pytest-cov</code>). Line coverage reads high (~97%) but branch coverage is lower (~69%) — and that gap <em>is</em> the point. "Did this line run" is easy to max out; "did we test <em>both</em> sides of each <code>if</code>" is the stricter, more honest number. The remaining branch gaps are deliberately-skipped defensive paths, because coverage is a <strong>guide, not a target</strong> — chasing 100% just breeds low-value tests. Coverage's real win there was finding untested PUT/DELETE endpoints that no test touched at all.</p>
+<p>The defense-news-classifier enforces the same discipline as a gate: it runs</p>
+<pre><code>uv run pytest --cov=src --cov-report=term-missing</code></pre>
+<p>so every run prints exactly which lines weren't exercised. Untested code can't hide. The kind of fragile, real-world machinery worth wrapping in tests — checkpoint/resume and retries (note 12) — is exactly where an untested branch bites you later.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li>Tests turn "I changed something, hope it's fine" into a button you press that says yes or no.</li>
+  <li>Coverage finds the <strong>holes</strong> — code no test runs at all — which is a genuine, fixable blind spot.</li>
+  <li>But it stops there: it can't judge whether your assertions mean anything. Use it to find untested code, then make sure the tests filling those holes actually <em>check</em> something.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li><strong>Line vs. branch coverage</strong> — why branch is the honest one, and why a high line number can flatter you.</li>
+  <li>What does a <strong>good assertion</strong> look like, versus one that just executes code for the metric?</li>
+  <li>The <strong>test pyramid</strong>: why lots of fast unit tests plus a few slow integration tests beats the reverse.</li>
+  <li>How a coverage <strong>gate</strong> in CI keeps a number from quietly sliding down over time.</li>
+  <li>Mocks and fakes — testing one layer without booting the whole app.</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a></div>
+</aside>
+</section>
+<section id="21-test-driven-development">
+<h1>21 — Test-driven development: red, green, refactor</h1>
+<blockquote><strong>TL;DR</strong> Write a failing test <em>first</em> (red), write the smallest code that makes it pass (green), then clean up with the test holding your work in place (refactor). The test describes the behavior before the behavior exists, so the code is built to a spec instead of measured against one after the fact.</blockquote>
+<h2>Plain idea</h2>
+<p>Most people write the code, then write a test that agrees with whatever the code already does. TDD flips the order. First you write a test for behavior that doesn't exist yet, and you run it and watch it <strong>fail</strong> — that's <em>red</em>. Then you write the <em>minimum</em> code to make it pass — that's <em>green</em>. Then, with a passing test guarding you, you tidy the code — that's <em>refactor</em>. Repeat in tiny loops.</p>
+<p>The failing step isn't a formality. A test that's never seen red might be testing nothing — maybe it passes because of a typo, or because it asserts something always true. Watching it fail <em>for the right reason</em> proves the test can actually catch the bug it's meant to catch.</p>
+<p>Writing the test first also forces a design question before you've sunk effort into an answer: <em>what should this thing do, and how would I even call it?</em> You feel an awkward API while it's still cheap to change.</p>
+<h2>Analogy</h2>
+<p>It's writing the answer key before you write the exam. If you decide what "correct" looks like up front, you can't quietly redefine "correct" to match whatever you happened to produce. Tests written <em>after</em> the code grade the student who also wrote the answer key — they tend to confirm what's there, not catch what's missing.</p>
+<h2>In my project</h2>
+<p>I've leaned on this loop professionally, and both repos are shaped the way TDD leaves things — small tests that pin one behavior each.</p>
+<p>In <code>notes-api</code>, <code>NoteServiceTest</code> is a clean red-green target. Take a test like <code>delete_throws_andSkipsDelete_whenMissing</code>: red is writing it against a <code>delete()</code> that doesn't yet check existence — it fails because nothing throws. Green is adding the <code>existsById</code> guard and the <code>NoteNotFoundException</code>. The test also asserts <code>verify(repository, never()).deleteById(...)</code> — so the <em>refactor</em> step (reordering the guard, renaming things) is safe, because that line locks in "must not delete when missing." The service takes its repository through the constructor (note 14), so the test hands it a <code>@Mock</code> with no database — fast enough to run on every tiny loop.</p>
+<p><code>NoteControllerTest</code> shows the same loop at the HTTP edge: a test like <code>create_withBlankTitle_returns400_andSkipsService</code> states the rule first — a blank title is a 400 and the service is never touched — and you build validation until it goes green.</p>
+<p>On the Python side, <code>defense-news-classifier/tests</code> mirrors it: <code>test_classify.py</code>, <code>test_retrieve.py</code>, <code>test_eval.py</code>, each pinning one piece, with a <code>conftest.py</code> of shared fakes so a test never needs a real API call.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>The test can actually fail.</strong> Seeing red first proves the test isn't a green-painted no-op that would miss the real regression.</li>
+  <li><strong>It's a design tool, not just a safety net.</strong> Writing the call before the code surfaces an awkward interface while it's still cheap to fix.</li>
+  <li><strong>Refactoring stops being scary.</strong> Green tests are permission to clean up — if you break something, a test goes red the same second.</li>
+  <li><strong>Coverage comes out honest.</strong> The lines exist <em>because</em> a test demanded them, not the other way round (note 20 on testing &amp; coverage).</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>The model-world cousin: <strong>eval-driven development</strong> (note 02) — write the eval first, then improve the model toward it. Same "define correct before you change anything" instinct, applied to behavior you can't unit-test.</li>
+  <li>When does TDD <em>not</em> pay? (Throwaway spikes, exploratory code where you don't yet know the shape.)</li>
+  <li>"Test behavior, not implementation" — why over-specific tests (asserting <em>how</em>, not <em>what</em>) make refactoring harder, not easier.</li>
+  <li>Outside-in vs inside-out TDD — start from the HTTP test and drive inward, or from the unit and build out?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
 </aside>
 </section>
 </main>
