@@ -54,6 +54,7 @@ Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 - [x] 10 — Secrets and the `.env` pattern *(both)*
 - [x] 11 — Reproducible environments: uv and lockfiles *(both)*
 - [x] 12 — Checkpoint/resume and retries: surviving flaky API runs *(classifier)*
+- [x] 15 — Semantic versioning: a version number is a promise *(classifier)*
 
 ## Viewing the notes
 
