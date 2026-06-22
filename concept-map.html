@@ -22,6 +22,7 @@
   .link.prose { stroke:#9a8f7a; stroke-width:1.6; }
   .link.category { stroke-width:1; stroke-dasharray:3 4; opacity:.5; }
   .node circle { stroke:#fff; stroke-width:2; cursor:pointer; }
+  .node.pinned circle { stroke:#2b2b2b; stroke-width:3; }
   .node text.num { fill:#fff; font-weight:700; font-size:11px; text-anchor:middle;
     dominant-baseline:central; pointer-events:none; }
   .node text.label { fill:var(--fg); font-size:11px; pointer-events:none;
@@ -33,12 +34,13 @@
     font-size:.82rem; pointer-events:none; opacity:0; transition:opacity .12s; z-index:9; }
   #tip b { display:block; margin-bottom:3px; }
   #tip span { color:var(--muted); }
+  #tip span.open { display:block; margin-top:5px; color:#9a8f7a; font-size:.72rem; }
 </style>
 </head>
 <body>
 <header>
   <h1>Learning Notes — Concept Map</h1>
-  <span class="hint">14 notes · 15 prose links · drag to rearrange · hover to focus · click to read</span>
+  <span class="hint">14 notes · 15 prose links · hover to focus · click to pin · double-click to open</span>
   <div class="legend"><span class="chip"><i style="background:#3a6ea5"></i>Foundations</span>
 <span class="chip"><i style="background:#a5603a"></i>LLM app patterns</span>
 <span class="chip"><i style="background:#4a8c5f"></i>Data &amp; method</span>
@@ -66,7 +68,7 @@ svg.append("defs").append("marker")
   .append("path").attr("d", "M0,-4L9,0L0,4").attr("fill", "#9a8f7a");
 
 const root = svg.append("g");
-// Build a neighbour set so hover can highlight a node + everything it touches.
+// Build a neighbour set so focus can highlight a node + everything it touches.
 const neighbours = new Map(GRAPH.nodes.map(n => [n.id, new Set([n.id])]));
 GRAPH.links.forEach(l => {
   neighbours.get(l.source).add(l.target);
@@ -99,8 +101,9 @@ const link = root.append("g").selectAll("line")
 const node = root.append("g").selectAll("g")
   .data(GRAPH.nodes).join("g").attr("class", "node")
   .call(d3.drag().on("start", dragStart).on("drag", dragged).on("end", dragEnd))
-  .on("mouseover", focus).on("mouseout", unfocus)
-  .on("click", (e, d) => window.open("index.html#" + d.anchor, "_blank"));
+  .on("mouseover", hover).on("mouseout", hoverOut)
+  .on("click", pinToggle)
+  .on("dblclick", (event, d) => { event.preventDefault(); window.open("index.html#" + d.anchor, "_blank"); });
 
 node.append("circle").attr("r", radius).attr("fill", d => color(d.category));
 node.append("text").attr("class", "num").text(d => d.num);
@@ -134,22 +137,37 @@ function relabel() {
   labelSel.style("display", d => d.shown ? null : "none");
 }
 
-// Hover: spotlight the node and its neighbours; show a TL;DR tooltip.
+// Focus = spotlight a node + its neighbours and show a TL;DR tooltip. Hover focuses
+// transiently; a click PINS the focus so you can study one note's neighbourhood
+// (click the same node or empty space to release; double-click opens the note).
 const tip = document.getElementById("tip");
-function focus(event, d) {
+let pinned = null;
+function applyFocus(d) {
   const near = neighbours.get(d.id);
   node.classed("faded", n => !near.has(n.id));
+  node.classed("pinned", n => pinned && n.id === pinned.id);
   link.classed("faded", l => l.source.id !== d.id && l.target.id !== d.id);
-  tip.innerHTML = `<b>${d.num} — ${escapeHtml(d.title)}</b><span>${escapeHtml(d.tldr)}</span>`;
+  tip.innerHTML = `<b>${d.num} — ${escapeHtml(d.title)}</b><span>${escapeHtml(d.tldr)}</span>`
+    + `<span class="open">double-click to open →</span>`;
   tip.style.opacity = 1;
-  moveTip(event);
 }
-function unfocus() {
-  node.classed("faded", false);
+function clearFocus() {
+  node.classed("faded", false).classed("pinned", false);
   link.classed("faded", false);
   tip.style.opacity = 0;
 }
-node.on("mousemove", moveTip);
+function hover(event, d) { if (!pinned) { applyFocus(d); moveTip(event); } }
+function hoverOut() { if (!pinned) clearFocus(); }
+function pinToggle(event, d) {
+  event.stopPropagation();
+  if (pinned && pinned.id === d.id) { pinned = null; clearFocus(); return; }
+  pinned = d;
+  applyFocus(d);
+  moveTip(event);
+}
+// A click on empty canvas releases a pinned focus.
+svg.on("click", () => { if (pinned) { pinned = null; clearFocus(); } });
+node.on("mousemove", event => { if (!pinned) moveTip(event); });
 function moveTip(event) {
   const pad = 16;
   let x = event.clientX + pad, y = event.clientY + pad;
