@@ -84,3 +84,4 @@ nav:
       - 22 · Steering an AI agent with CLAUDE.md: 22-steering-an-ai-agent-with-claude-md.md
       - 23 · Permissions, allowlists & hooks: 23-permissions-allowlists-and-hooks.md
       - 24 · One concern, one branch — parallel sessions: 24-one-concern-one-branch-parallel-sessions.md
+      - 25 · Multi-agent workflows — fan-out & collisions: 25-multi-agent-workflows.md

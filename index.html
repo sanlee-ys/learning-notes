@@ -95,6 +95,7 @@ aside.related a:hover { background:#e9e4d8; }
 <a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a>
 <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a>
 <a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a>
+<a href="#25-multi-agent-workflows">25 · Multi-agent workflows: fan-out, and the collision boundary</a>
 </div>
 </nav>
 <main>
@@ -164,6 +165,7 @@ aside.related a:hover { background:#e9e4d8; }
   <li>[x] 22 — Steering an AI agent with CLAUDE.md <em>(all projects)</em></li>
   <li>[x] 23 — Permissions, allowlists &amp; hooks: guardrails for an agent <em>(all projects)</em></li>
   <li>[x] 24 — One concern, one branch: parallel agent sessions <em>(all projects)</em></li>
+  <li>[x] 25 — Multi-agent workflows: fan-out &amp; the collision boundary <em>(all projects)</em></li>
 </ul>
 <h2>Viewing the notes</h2>
 <p>Four ways to read these as more than raw text. The <code>.md</code> files always stay the source of truth — the viewers are regenerated, never hand-edited.</p>
@@ -1027,7 +1029,55 @@ return saved;</code></pre>
   <li>Where's the line where parallelism stops paying — when does coordinating N sessions cost more than just doing the work in one?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a> <a href="#25-multi-agent-workflows">25 · Multi-agent workflows: fan-out, and the collision boundary</a></div>
+</aside>
+</section>
+<section id="25-multi-agent-workflows">
+<h1>25 — Multi-agent workflows: fan-out, and the collision boundary</h1>
+<blockquote><strong>TL;DR</strong> Instead of one agent grinding through everything in sequence, spin up several focused agents that work in <strong>parallel</strong>. The catch is the same one from note 24: parallelizing by <em>task</em> when the tasks touch the same file or repo causes git races and merge conflicts. The rule is <strong>parallelize by independent file/repo, not by task</strong>. Four patterns keep it coherent: <em>read-only fan-out</em>, <em>by-repo write fan-out</em>, <em>freeze shared specs first</em>, and the <em>integrator</em> who owns the aggregate and runs last.</blockquote>
+<h2>Plain idea</h2>
+<p>A single agent doing a big job works through it one step at a time — read this repo, then that one, then write the change, then update the index. A lot of that is <em>independent</em> and doesn't need to be serial. Multi-agent (or "subagent") orchestration spins up several focused agents at once, each owning a slice, and lets them run in parallel. You get the slices back faster, and each agent keeps a tight, single-purpose context instead of one agent juggling everything.</p>
+<p><strong>When to use it:</strong></p>
+<ul>
+  <li><strong>Genuinely independent work</strong> — slices that don't depend on each other's output.</li>
+  <li><strong>Broad fan-out search or audit</strong> — "check all six repos for X"; each agent reads one.</li>
+  <li><strong>Parallel execution across separate repos or files</strong> — one lane per repo/file that nothing else in the batch touches.</li>
+</ul>
+<p>When the work is actually sequential (step B needs step A's result), or when every slice edits the same file, the parallelism is fake and you're better off with one agent.</p>
+<h2>The failure mode</h2>
+<p>This is the heart of the note. The tempting mistake is to split the work <strong>by task</strong> — "agent 1 does the rename, agent 2 adds the test, agent 3 updates the docs" — when those tasks all land in the <em>same file or repo</em>. The agents can't see each other's uncommitted work (note 24): they each branch off the same <code>main</code>, each edit the shared file blind, and when their branches come back you get git races and merge conflicts. Nothing was wrong with any one agent; the <em>partition</em> was wrong.</p>
+<p>The rule is the fix: <strong>parallelize by independent file/repo, not by task.</strong> Cut the work along boundaries where the slices physically cannot touch the same bytes. If two "separate" tasks both write <code>README.md</code> or both regenerate an index, they are not independent and must not be two parallel lanes.</p>
+<h2>The patterns that work</h2>
+<p>Four named shapes, ordered from "nothing to merge" to "merging is the whole job":</p>
+<ol>
+  <li><strong>Read-only fan-out</strong> — one agent per repo for an <em>audit</em>. Every agent only reads and reports; nobody writes. Fully independent, nothing to merge, so you can fan out as wide as you have repos. The cheapest and safest parallelism there is.</li>
+  <li><strong>By-repo write fan-out</strong> — one agent per repo, each making isolated commits on its own branch. Because the unit of parallelism is a whole repo, two agents never share a file. Safe to run wide; each lane lands on its own.</li>
+  <li><strong>Freeze shared specs first</strong> ("define once, implement many") — when several agents must <em>agree</em> on a contract (an API shape, a label schema, a data format), don't let each agent invent its own version in parallel — they'll drift. Pin the spec centrally <strong>first</strong>, then hand that one frozen spec to each agent so their independent implementations can't disagree.</li>
+  <li><strong>Integrator pattern</strong> — one agent owns the <em>aggregate</em>: the generated/registry files, or the final consistency sweep. It runs <strong>after</strong> the parallel content lands, never beside it. This is note 24's content-vs-wiring split as an orchestration rule: <strong>never parallelize edits to a generated file</strong> — registries, indexes, built HTML/SVG can't be merged, so a single hand updates them once, last.</li>
+</ol>
+<h2>In my project</h2>
+<p>All four showed up in real batches across my three repos (<code>defense-news-classifier</code>, <code>kb-agent</code>, <code>notes-api</code>) and this notes hub:</p>
+<ul>
+  <li><strong>Read-only fan-out:</strong> a six-repo audit — one agent per repo, each reading its tree and reporting findings, none of them writing. Fully independent, so it ran as wide as the repo count with nothing to reconcile at the end.</li>
+  <li><strong>By-repo write fan-out:</strong> a "quick wins" pass — one agent per repo applying small, isolated fixes on its own branch. Because each lane was a whole repo, no two agents ever reached for the same file.</li>
+  <li><strong>Freeze shared specs first + integrator:</strong> a cross-repo contract-hardening batch around the <code>/classify</code> seam. <code>kb-agent</code>'s <code>classify_snippet</code> tool POSTs to <code>defense-news-classifier</code>'s <code>/classify</code> endpoint, so the request/response contract is shared between repos. We <strong>froze that contract spec centrally first</strong>, then four repo-agents implemented their own side against the frozen spec in parallel — so their independent changes couldn't drift apart — and a final <strong>integrator</strong> did a consistency sweep once everything had landed.</li>
+</ul>
+<p>This very note was written as <strong>one lane of that batch</strong>: the note files are independent content, drafted in parallel, while the README registry, the <code>mkdocs.yml</code> nav, and the regenerated <code>index.html</code> / <code>concept-map.html</code> / category-map SVG are shared wiring the integrator rebuilds once, after the files exist (note 24).</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>Speed from parallelism</strong> — independent slices finish concurrently instead of one long serial crawl, and each agent keeps a smaller, sharper context.</li>
+  <li><strong>…but only if you respect the collision boundary.</strong> Partition by file/repo, not by task, or the parallelism you bought back gets spent resolving merge conflicts (note 24).</li>
+  <li>*<em>Freeze-specs keeps parallel work </em>consistent*** — pinning the contract first stops N independent implementations from quietly disagreeing.</li>
+  <li>*<em>The integrator keeps it </em>coherent*** — generated and aggregated files get updated once, by one hand, after the content lands, so nothing collides on the un-mergeable artifacts.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>How wide is too wide? At some point coordinating N agents (and reading N reports) costs more than doing the work in one — where's that line for an audit vs. a write batch?</li>
+  <li>Detecting collisions <em>before</em> you fan out: how do you tell two slices secretly share a file or a generated artifact, so you don't discover it at merge time?</li>
+  <li>The orchestrator's own role — does the parent agent stay a pure dispatcher, or can it also be the integrator? When does "one agent owns the merge" (note 24) beat a separate integrator lane?</li>
+  <li>Passing context between agents cheaply: how much does each subagent really need handed to it, versus re-deriving, to keep the fan-out fast?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a></div>
 </aside>
 </section>
 </main>

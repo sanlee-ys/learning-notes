@@ -68,6 +68,7 @@ Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 - [x] 22 — Steering an AI agent with CLAUDE.md *(all projects)*
 - [x] 23 — Permissions, allowlists & hooks: guardrails for an agent *(all projects)*
 - [x] 24 — One concern, one branch: parallel agent sessions *(all projects)*
+- [x] 25 — Multi-agent workflows: fan-out & the collision boundary *(all projects)*
 
 ## Viewing the notes
 
