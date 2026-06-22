@@ -73,3 +73,10 @@ nav:
       - 11 · Reproducible environments (uv): 11-reproducible-environments-uv.md
       - 12 · Checkpoint/resume & retries: 12-checkpoint-resume-and-retries.md
       - 15 · Semantic versioning: 15-semantic-versioning.md
+      - 20 · Testing & coverage: 20-testing-and-coverage.md
+      - 21 · Test-driven development: 21-test-driven-development.md
+  - Systems & infrastructure:
+      - 16 · Containers & Docker: 16-containers-and-docker.md
+      - 17 · Layered architecture: 17-layered-architecture.md
+      - 18 · Event-driven architecture: 18-event-driven-architecture.md
+      - 19 · Database migrations: 19-database-migrations.md

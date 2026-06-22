@@ -44,6 +44,7 @@ CATEGORY_COLORS = {
     "LLM app patterns": "#a5603a",   # rust
     "Data & method": "#4a8c5f",      # green
     "Engineering hygiene": "#8c6dae",# purple
+    "Systems & infrastructure": "#2f8f9d",  # teal
 }
 DEFAULT_COLOR = "#6b6b6b"
 
@@ -280,14 +281,15 @@ GRAPH.links.forEach(l => {{
   neighbours.get(l.target).add(l.source);
 }});
 
-// Each category gets an anchor on a 2x2 grid -> 4 tidy clusters. Defined before
-// the simulation because d3.forceX/forceY evaluate this accessor at setup time.
+// Each category gets an anchor evenly spaced on a ring, so the clusters stay tidy for
+// any number of categories (not just 4). Defined before the simulation because
+// d3.forceX/forceY evaluate this accessor at setup time.
 const CATS = Object.keys(COLORS);
 function anchorXY(d) {{
   const i = CATS.indexOf(d.category);
   if (i < 0) return [W / 2, H / 2];
-  const col = i % 2, row = Math.floor(i / 2);
-  return [W * (0.34 + 0.34 * col), H * (0.34 + 0.36 * row)];
+  const ang = -Math.PI / 2 + 2 * Math.PI * i / CATS.length;
+  return [W / 2 + W * 0.30 * Math.cos(ang), H / 2 + H * 0.32 * Math.sin(ang)];
 }}
 
 const sim = d3.forceSimulation(GRAPH.nodes)

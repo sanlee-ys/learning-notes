@@ -55,6 +55,14 @@ Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 - [x] 11 — Reproducible environments: uv and lockfiles *(both)*
 - [x] 12 — Checkpoint/resume and retries: surviving flaky API runs *(classifier)*
 - [x] 15 — Semantic versioning: a version number is a promise *(classifier)*
+- [x] 20 — Testing & coverage: knowing what's exercised *(both)*
+- [x] 21 — Test-driven development: red, green, refactor *(both)*
+
+### Systems & infrastructure
+- [x] 16 — Containers & Docker: ship it the same everywhere *(both)*
+- [x] 17 — Layered architecture: controller, service, repository *(notes-api)*
+- [x] 18 — Event-driven architecture: working through a message queue *(notes-api)*
+- [x] 19 — Database migrations: versioning your schema *(notes-api)*
 
 ## Viewing the notes
 
