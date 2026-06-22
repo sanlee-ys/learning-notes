@@ -11,7 +11,7 @@ concepts connect helps me see how my own projects fit together. The goal is to
          alt="Category map: each note category is a circle sized by how many notes it holds, with links where notes in one category reference another">
   </a>
   <br>
-  <em>The four note categories and how they connect — auto-generated from the notes, so it's never out of date.<br>
+  <em>The note categories and how they connect — auto-generated from the notes, so it's never out of date.<br>
   <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">▶ Open the full interactive map</a> — hover to focus a note, click to pin its neighbourhood, double-click to open it.</em>
 </p>
 
@@ -63,6 +63,11 @@ Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 - [x] 17 — Layered architecture: controller, service, repository *(notes-api)*
 - [x] 18 — Event-driven architecture: working through a message queue *(notes-api)*
 - [x] 19 — Database migrations: versioning your schema *(notes-api)*
+
+### Working with AI agents
+- [x] 22 — Steering an AI agent with CLAUDE.md *(all projects)*
+- [x] 23 — Permissions, allowlists & hooks: guardrails for an agent *(all projects)*
+- [x] 24 — One concern, one branch: parallel agent sessions *(all projects)*
 
 ## Viewing the notes
 

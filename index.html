@@ -91,6 +91,11 @@ aside.related a:hover { background:#e9e4d8; }
 <a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a>
 <a href="#19-database-migrations">19 · Database migrations: versioning your schema</a>
 </div>
+<div class="navgroup"><h3>Working with AI agents</h3>
+<a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a>
+<a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a>
+<a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a>
+</div>
 </nav>
 <main>
 <p id="noresults">No matching notes.</p>
@@ -103,7 +108,7 @@ aside.related a:hover { background:#e9e4d8; }
          alt="Category map: each note category is a circle sized by how many notes it holds, with links where notes in one category reference another">
   </a>
   <br>
-  <em>The four note categories and how they connect — auto-generated from the notes, so it's never out of date.<br>
+  <em>The note categories and how they connect — auto-generated from the notes, so it's never out of date.<br>
   <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">▶ Open the full interactive map</a> — hover to focus a note, click to pin its neighbourhood, double-click to open it.</em>
 </p>
 <h2>How to use this</h2>
@@ -153,6 +158,12 @@ aside.related a:hover { background:#e9e4d8; }
   <li>[x] 17 — Layered architecture: controller, service, repository <em>(notes-api)</em></li>
   <li>[x] 18 — Event-driven architecture: working through a message queue <em>(notes-api)</em></li>
   <li>[x] 19 — Database migrations: versioning your schema <em>(notes-api)</em></li>
+</ul>
+<h3>Working with AI agents</h3>
+<ul>
+  <li>[x] 22 — Steering an AI agent with CLAUDE.md <em>(all projects)</em></li>
+  <li>[x] 23 — Permissions, allowlists &amp; hooks: guardrails for an agent <em>(all projects)</em></li>
+  <li>[x] 24 — One concern, one branch: parallel agent sessions <em>(all projects)</em></li>
 </ul>
 <h2>Viewing the notes</h2>
 <p>Four ways to read these as more than raw text. The <code>.md</code> files always stay the source of truth — the viewers are regenerated, never hand-edited.</p>
@@ -518,7 +529,7 @@ uv run --env-file .env python src/eval.py   # inject the key for this run</code>
   <li>How <code>.gitignore</code> decides what git skips — and the habit of running <code>git status</code> before every commit to catch a stray <code>.env</code>.</li>
   <li>Why even <code>export KEY=...</code> in your shell beats hardcoding (it just vanishes when the shell closes).</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a></div>
 </aside>
 </section>
 <section id="11-reproducible-environments-uv">
@@ -702,6 +713,7 @@ var service = new NoteService(fakeRepo);</code></pre>
   <li>Where's the line between MINOR and MAJOR when a change is <em>technically</em> compatible but shifts outputs enough that downstream results move?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#01-structured-output-via-tool-use">01 · Structured output via tool use</a> <a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a> <a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a></div>
 </aside>
 </section>
 <section id="16-containers-and-docker">
@@ -884,7 +896,7 @@ return saved;</code></pre>
   <li>Mocks and fakes — testing one layer without booting the whole app.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a></div>
 </aside>
 </section>
 <section id="21-test-driven-development">
@@ -916,6 +928,104 @@ return saved;</code></pre>
   <li>Outside-in vs inside-out TDD — start from the HTTP test and drive inward, or from the unit and build out?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
+</aside>
+</section>
+<section id="22-steering-an-ai-agent-with-claude-md">
+<h1>22 — Steering an AI agent with CLAUDE.md</h1>
+<blockquote><strong>TL;DR</strong> <code>CLAUDE.md</code> is a file the agent reads at the <em>start of every session</em>, so you state your standing instructions once instead of re-explaining them each time. Two layers: a <strong>global</strong> file (<code>~/.claude/CLAUDE.md</code>) that applies to every project, and a <strong>project</strong> file checked into the repo. Global holds the durable <em>principles</em>; the project file holds the <em>specifics</em>. It's the difference between an assistant that forgets every morning and one that remembers the house rules.</blockquote>
+<h2>Plain idea</h2>
+<p>Left alone, an AI coding agent starts each session as a blank slate — it doesn't know your label definitions, your stack, or how you like to work, so you end up re-typing the same context. <code>CLAUDE.md</code> fixes that: it's a plain Markdown file the agent loads automatically and treats as instructions that <em>override its defaults</em>.</p>
+<p>There are two layers, and the split matters:</p>
+<ul>
+  <li><strong>Global</strong> (<code>~/.claude/CLAUDE.md</code>) — applies to <em>every</em> repo you touch. Put the things that are true regardless of project: how you want decisions explained, your working cadence, the general rules you follow everywhere.</li>
+  <li><strong>Project</strong> (<code>&lt;repo&gt;/CLAUDE.md</code>, committed) — applies to <em>this</em> repo. Put the specifics: the label schema, the tech stack, the build commands, the project's own conventions.</li>
+</ul>
+<p>The rule of thumb is <em>principle goes global, instantiation goes local</em>. A principle stated once at the top doesn't get duplicated into every repo, where copies drift out of sync.</p>
+<h2>Analogy</h2>
+<p>It's the onboarding handbook you hand every new contractor on day one. The company-wide handbook (global) covers "how we work here" — it's the same for everyone. The project binder (local) covers "here's what <em>this</em> job needs." You don't re-explain the company dress code on every project; you write it once, up top, and point new people at it.</p>
+<h2>In my project</h2>
+<p><code>defense-news-classifier/CLAUDE.md</code> carries the project specifics: the <code>{category, operational_domain}</code> label definitions, the uv-based stack, the multi-session git rules, and the semantic-versioning roadmap (note 15). My global <code>~/.claude/CLAUDE.md</code> carries the durable working style — small steps with checkpoints, "explain the why," surface design choices rather than silently deciding.</p>
+<p>The layering earned its keep recently: the "parallelize by file, not by task" rule (note 24) started life only in the project file, but it's true for <em>every</em> repo I run parallel sessions in — so it moved up to global, while the project kept its own concrete collision-hotspot list as the local instantiation. Same idea, stated once at the principle level and once at the specific level, instead of copy-pasted. The file also encodes hard constraints the agent must honor — e.g. "read the API key from an environment variable, never hardcode it" (note 10).</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>It stops the re-deriving.</strong> Context you'd otherwise repeat every session is read once, up front. Decisions you've made stay made.</li>
+  <li><strong>It's version-controlled.</strong> The project file lives in the repo, so every session — and every teammate — shares one source of truth, and changes to "how we work" show up in code review like anything else.</li>
+  <li><strong>It scales with layering.</strong> Global principles don't get duplicated into N repos where they'd drift; specifics stay where they're relevant. Guidance lives here; the <em>enforcement</em> of it lives in permissions and hooks (note 23) — telling the agent what to do is separate from constraining what it's allowed to do unsupervised.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>Precedence when global, project, and a personal local file all say something — which wins?</li>
+  <li>What belongs in <code>CLAUDE.md</code> versus the agent's persistent <em>memory</em>? (Instructions you author vs. facts the agent records as it learns how you work.)</li>
+  <li>When does a <code>CLAUDE.md</code> get too long to be useful — and how do you keep it from becoming a wall of rules the agent (or you) stops actually reading?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a></div>
+</aside>
+</section>
+<section id="23-permissions-allowlists-and-hooks">
+<h1>23 — Permissions, allowlists &amp; hooks: guardrails for an AI agent</h1>
+<blockquote><strong>TL;DR</strong> By default the agent asks before each tool runs. You shape that with an <strong>allowlist</strong> — <code>allow</code> rules that run silently, <code>ask</code> rules that still prompt, <code>deny</code> rules that block outright (precedence: <strong>deny &gt; ask &gt; allow</strong>). <strong>Hooks</strong> are a separate, programmable gate that inspects a command and can block it <em>regardless</em> of the allowlist. The goal: zero friction on the routine-and-reversible, a hard stop on the destructive.</blockquote>
+<h2>Plain idea</h2>
+<p>An agent that can run shell commands and edit files needs a leash, but a leash that prompts you for <em>everything</em> trains you to click "approve" without reading — which is worse than no leash. The fix is to be precise about what runs unattended:</p>
+<ul>
+  <li><strong><code>allow</code></strong> — pre-approved patterns (e.g. <code>Read</code>, <code>Edit</code>, <code>Bash(git commit:*)</code>). These run silently.</li>
+  <li><strong><code>ask</code></strong> — still prompt, even though something broader would allow them. This is how you carve a dangerous <em>exception</em> out of a permissive rule.</li>
+  <li><strong><code>deny</code></strong> — never run, no prompt.</li>
+</ul>
+<p>When rules overlap, <strong>deny beats ask beats allow</strong>, so a narrow <code>ask</code> for <code>git push --force</code> overrides a broad <code>allow</code> for <code>git push</code>.</p>
+<p><strong>Hooks</strong> are a different mechanism. A hook is a script the agent runs <em>before</em> (or after) a tool call; it sees the command and can veto it. Because it's code, it can enforce things a static allowlist can't express — "block any test run that isn't measuring coverage."</p>
+<h2>Analogy</h2>
+<p>A building access badge. Most doors open with a tap (allow). A couple of sensitive rooms need a second sign-off even though you have a badge (ask). The vault is off-limits to everyone (deny). The <strong>hook</strong> is the metal detector at the entrance — an automated check everyone walks through regardless of which badge they hold. Badge rules are about <em>who you are</em>; the detector is about <em>what you're carrying</em>.</p>
+<h2>In my project</h2>
+<p>My global <code>~/.claude/settings.json</code> allowlists the routine, reversible work — <code>Read</code>, <code>Edit</code>, <code>Write</code>, and everyday <code>git</code> / <code>python</code> / <code>uv</code> / <code>gh pr</code> commands — so the day-to-day stops prompting. <code>git push --force</code> sits in the <code>ask</code> list, so it still stops me even though plain <code>git push</code> is allowed. Genuinely destructive commands (<code>rm</code>, <code>git reset --hard</code>, <code>git clean</code>) are deliberately <em>left off</em> the allowlist, so they fall through to a prompt by default.</p>
+<p>Separately, a <strong>PreToolUse hook</strong> enforces test coverage: it denies a <code>pytest</code> run that doesn't pass <code>--cov</code>, <em>even though</em> <code>pytest</code> is allowlisted. That's the division of labor — the allowlist decided "pytest is fine to run unattended," and the hook adds "…but only if it's measuring coverage" (note 20). Instructions in <code>CLAUDE.md</code> (note 22) <em>tell</em> the agent to measure coverage; the hook makes it so the agent <em>can't</em> skip it. Guidance versus guardrail.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>It removes friction without removing the safety net.</strong> The 95% that's safe runs silently; the 5% that's irreversible or outward-facing still stops you. Approval fatigue — rubber- stamping every prompt — is itself a security risk, and a good allowlist cures it.</li>
+  <li><strong>Hooks turn a best practice into a guarantee.</strong> "Always measure coverage" or "never read <code>.env</code>" (note 10) stops being a thing you <em>hope</em> gets followed and becomes something that <em>can't</em> be skipped, by a human or an agent.</li>
+  <li><strong>Precedence makes exceptions cheap.</strong> You can allow a whole family of commands and still surgically force-prompt the one dangerous variant, without hand-listing every safe case.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>A <code>deny</code> rule that blocks reading secrets (<code>.env</code>, key files) — defense in depth on top of note 10's "never hardcode keys."</li>
+  <li>Scope: global vs project vs personal-local settings — where should an allowlist live so a teammate's machine isn't loosened by your preferences?</li>
+  <li>The blunt "bypass everything" mode — when (if ever) is turning the leash off entirely the right call, and what do you give up?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a></div>
+</aside>
+</section>
+<section id="24-one-concern-one-branch-parallel-sessions">
+<h1>24 — One concern, one branch: working in parallel agent sessions</h1>
+<blockquote><strong>TL;DR</strong> You can run several agent sessions at once, but they <strong>can't see each other's uncommitted work</strong> — the only shared coordination point is the repo's <code>main</code>. So: one concern per session → one short-lived branch → one PR → merge fast → delete. And *<em>parallelize by independent </em>file<em>, not by </em>task***, because generated/aggregated files (indexes, registries, build outputs) can't be merged and must be updated by a single hand.</blockquote>
+<h2>Plain idea</h2>
+<p>Running multiple sessions in parallel is tempting — more hands, more throughput. But each session is in its own sandbox and is <em>blind</em> to what the others are doing until their work lands on <code>main</code>. That blindness is the whole constraint, and a few rules fall straight out of it:</p>
+<ul>
+  <li><strong>One concern per session.</strong> If the deliverable doesn't fit in a sentence, it's two sessions.</li>
+  <li><strong>Branch from fresh <code>main</code>, merge fast, delete the branch.</strong> The longer a branch lives, the more it drifts from a <code>main</code> that other sessions are moving.</li>
+  <li><strong>Parallelize by file, not by task.</strong> Cut the work along files nothing else touches. Two sessions editing the same file will collide — and <em>generated or aggregated</em> files (a README index, a nav config, a built HTML/SVG) are the worst case, because there's no sensible way to merge two independently-regenerated copies.</li>
+</ul>
+<p>That last point has a name worth internalizing: the <strong>content-vs-wiring split</strong>. The independent <em>content</em> can be written in parallel; the shared <em>wiring</em> that stitches it together must be done once, by a single integrator, after the content lands.</p>
+<h2>Analogy</h2>
+<p>Several cooks in one kitchen sharing a single pantry (<code>main</code>). They can work different dishes at once with no problem — until two reach for the same ingredient (the same file). And the one shared shopping list taped to the fridge (an index or registry) has to be updated by <em>one</em> person; if three cooks each rewrite the whole list from memory, you don't get a merged list, you get three conflicting ones.</p>
+<h2>In my project</h2>
+<p>This rule exists because it was learned the hard way: parallel sessions once built the <em>same</em> CI workflow three times (PRs #4 / #5 / #6), each forking off a stale <code>main</code> and blind to the others. Nothing was wrong with any one session — the coordination was missing.</p>
+<p>The fix showed its worth when this notes hub gained a batch of new notes at once. The note <em>files</em> are independent content, so they were drafted in parallel — but the README registry, the nav config, and the regenerated <code>index.html</code> / <code>concept-map.html</code> / category-map SVG are shared <strong>wiring</strong>, so a single integrator did that registration-and-rebuild pass <em>once</em>, after the files existed. Generated files especially can't be merged, so keeping that wiring in one hand is what stops the duplicate-CI disaster from repeating. These rules are written down in <code>CLAUDE.md</code> (note 22) so every session starts already knowing them. Coordination on <code>main</code> is also where releases live — every milestone is a tag on <code>main</code> (note 15).</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>Short-lived branches barely drift,</strong> so merges stay clean and you skip most conflicts instead of resolving them.</li>
+  <li><strong>By-file parallelism avoids the collisions</strong> that by-task parallelism quietly creates — two "separate" tasks that both touch <code>README.md</code> are not actually independent.</li>
+  <li><strong>Serializing the wiring</strong> keeps generated/aggregated files coherent. The content scales out; the integration stays singular.</li>
+  <li>It's a genuinely <em>different</em> discipline from normal solo git flow — the new constraint is the blindness between sessions, and every rule here is just a response to it.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>The <strong>integrator</strong> role when many sessions run at once: one session owns merging to <code>main</code> and keeping it green; the others stay feature-scoped and rebase on its merges.</li>
+  <li>How do you <em>detect</em> that another session is mid-flight on a file before you start — branch names, open PRs, an unpushed commit on a shared checkout?</li>
+  <li>Where's the line where parallelism stops paying — when does coordinating N sessions cost more than just doing the work in one?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a></div>
 </aside>
 </section>
 </main>

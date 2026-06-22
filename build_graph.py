@@ -45,6 +45,7 @@ CATEGORY_COLORS = {
     "Data & method": "#4a8c5f",      # green
     "Engineering hygiene": "#8c6dae",# purple
     "Systems & infrastructure": "#2f8f9d",  # teal
+    "Working with AI agents": "#b04a7a",     # magenta-rose
 }
 DEFAULT_COLOR = "#6b6b6b"
 
