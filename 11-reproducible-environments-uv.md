@@ -43,6 +43,11 @@ upgrade *on purpose* by re-locking, never by surprise.
 
 ## Go deeper
 
+- **Official docs** ([Astral's uv](https://docs.astral.sh/uv/)): the
+  [Working on projects](https://docs.astral.sh/uv/guides/projects/) guide walks the
+  `uv sync` / `uv run` / `uv lock` loop end to end, and
+  [Projects concepts](https://docs.astral.sh/uv/concepts/projects/) explains the
+  `pyproject.toml` + lockfile split in depth.
 - "Abstract" deps (ranges, in `pyproject.toml`) vs "pinned" deps (exact, in the lockfile) —
   why you need both.
 - How and when to **update** the lockfile deliberately (re-resolve → test → commit).

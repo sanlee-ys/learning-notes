@@ -515,6 +515,7 @@ uv run python src/eval.py    # run inside that env — no activation needed</cod
 <p>Reproducibility is the difference between a bug you can recreate and a ghost you can't. Pinned versions also mean a dependency can't silently update overnight and break you — you upgrade <em>on purpose</em> by re-locking, never by surprise.</p>
 <h2>Go deeper</h2>
 <ul>
+  <li><strong>Official docs</strong> (<a href="https://docs.astral.sh/uv/">Astral's uv</a>): the <a href="https://docs.astral.sh/uv/guides/projects/">Working on projects</a> guide walks the <code>uv sync</code> / <code>uv run</code> / <code>uv lock</code> loop end to end, and <a href="https://docs.astral.sh/uv/concepts/projects/">Projects concepts</a> explains the <code>pyproject.toml</code> + lockfile split in depth.</li>
   <li>"Abstract" deps (ranges, in <code>pyproject.toml</code>) vs "pinned" deps (exact, in the lockfile) — why you need both.</li>
   <li>How and when to <strong>update</strong> the lockfile deliberately (re-resolve → test → commit).</li>
   <li>Why <code>.venv</code> is gitignored but <code>uv.lock</code> is committed.</li>
@@ -599,12 +600,26 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
 <h2>Analogy</h2>
 <p>A constructor is <em>new-hire onboarding</em> before someone's allowed to start: badge issued, laptop assigned, paperwork signed. You don't let a half-onboarded employee answer support tickets. Dependency injection is the company <em>handing</em> them the laptop on day one, rather than the employee buying a random one off the street — you control, and can swap, what they're given.</p>
 <h2>In my project</h2>
-<p>In <code>notes-api</code>:</p>
-<ul>
-  <li><strong>Valid-by-construction.</strong> <code>Note</code> has two constructors: a no-arg one Java's persistence layer needs to rebuild rows from the database, and <code>Note(title, content)</code> for my own code — which refuses to make a note missing its essentials.</li>
-  <li><strong>Dependency injection.</strong> <code>NoteService(NoteRepository repository)</code> takes its data layer through the constructor; the field is <code>final</code> (set once, never null), and in a unit test I can write <code>new NoteService(fakeRepo)</code> with no framework at all.</li>
-</ul>
-<p>The Python mirror: a constructor is <code>__init__</code>. The day <code>generate.py</code> (note 13) grows shared config, I'd give it a <code>DatasetGenerator.__init__(self, client, model=...)</code> — the same move, handing the client in once instead of threading it through every call.</p>
+<p>In <code>notes-api</code>, <strong>valid-by-construction</strong> shows up as two constructors on <code>Note</code> — a no-arg one Java's persistence layer needs to rebuild rows from the database, and one for my own code that refuses to make a note missing its essentials:</p>
+<pre><code>// The only way to make a Note in my own code — no blank, half-built notes.
+public Note(String title, String content) {
+    this.title = title;
+    this.content = content;
+}</code></pre>
+<p><strong>Dependency injection</strong> shows up in <code>NoteService</code>: it takes its data layer through the constructor, and the field is <code>final</code> (set once, never null), so the service simply can't exist without its repository — and a unit test can hand it a fake with no framework at all.</p>
+<pre><code>private final NoteRepository repository;         // set once, never reassigned
+
+public NoteService(NoteRepository repository) {  // the dependency is handed IN
+    this.repository = repository;
+}
+
+// In a test — no Spring, no database, just a stand-in:
+var service = new NoteService(fakeRepo);</code></pre>
+<p>The Python mirror: the constructor is <code>__init__</code>. The day <code>generate.py</code> (note 13) grows shared config, I'd hand the client in once instead of threading it through every call:</p>
+<pre><code>class DatasetGenerator:
+    def __init__(self, client, model=&quot;claude-...&quot;):  # __init__ = the constructor
+        self.client = client      # dependency injected here, reused by every method
+        self.model = model</code></pre>
 <p>Related: the immutable request object <code>NoteRequest</code> (a Java <code>record</code>) is a constructor that also <em>validates</em>, and it deliberately has no <code>id</code> field, so a client can't set one. That's the same "the schema is the contract" principle as structured output in note 01.</p>
 <h2>Why it matters</h2>
 <ul>
