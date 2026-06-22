@@ -42,6 +42,13 @@ as the project's #1 limitation, not buried:
 The honest v2 move is written down: re-run the eval against a small set of **human-labeled
 real** articles.
 
+**Update (v2):** *that move has since shipped. The classifier was graded on a 54-snippet
+human-labeled gold set of real news — the non-circular answer key v1 couldn't produce —
+scoring category accuracy 88.9% (macro-F1 0.906) and operational-domain accuracy 88.9%
+(macro-F1 0.894), with the once-weak `industry` label now at F1 1.000. The 79% / 97%
+figures below are the historical synthetic baseline; the circular-eval lesson is exactly
+why they couldn't be trusted on their own.*
+
 ## Why it matters
 
 Every eval has a quiet question behind it: *do I trust this number?* (ties to note 02).

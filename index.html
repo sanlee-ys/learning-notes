@@ -273,6 +273,7 @@ fn = ((df.true == label) &amp; (df.pred != label)).sum()   # was X, missed   ❌
 precision = tp / (tp + fp)
 recall    = tp / (tp + fn)</code></pre>
 <p>The payoff shows up in the <code>industry</code> label: <strong>precision 1.000, recall 0.217</strong>. Read that out loud — <em>every time it said "industry" it was right, but it only caught 1 in 5 of the real ones</em> (the rest got mislabeled <code>procurement</code>). Plain accuracy would never have told me that. It's also why my honest headline, macro-F1 (0.765), sits <em>below</em> category accuracy (0.79): that one weak label drags the equal-weighted average down.</p>
+<p><strong>Update (v2):</strong> <em>those figures are the v1 synthetic, self-graded baseline. v2 re-measured on a 54-snippet human-labeled gold set of real news: category accuracy 88.9% (macro-F1 0.906), operational-domain accuracy 88.9% (macro-F1 0.894) — and the <code>industry</code> label that this note flags as the weak spot is now F1 1.000, the blind spot closed. The v1 numbers stay here because the per-label reading is the lesson.</em></p>
 <h2>Why it matters</h2>
 <p>Choosing the metric is itself a decision. Headline accuracy would have let me brag; macro-F1 kept me honest <em>and</em> pointed a finger at the exact label to fix. Pick the number that exposes your weakness, not the one that flatters it.</p>
 <h2>Go deeper</h2>
@@ -301,7 +302,7 @@ recall    = tp / (tp + fn)</code></pre>
 <h2>In my projects</h2>
 <ul>
   <li><strong>Classifier</strong> — flavor (a). One tool, <code>classify_article</code>, <em>forced</em> every call. Pure output-shaping; the model never "decides" anything about tools.</li>
-  <li><strong>kb-agent</strong> — flavor (b). Two tools, <code>search_kb</code> and <code>list_projects</code>, and the model <em>chooses</em> when (and whether) to call them.</li>
+  <li><strong>kb-agent</strong> — flavor (b). Three tools, <code>search_kb</code>, <code>list_projects</code>, and <code>classify_snippet</code>, and the model <em>chooses</em> when (and whether) to call them. The last one is the side-effecting tool: it POSTs a snippet over HTTP to the sibling <code>defense-news-classifier</code> service, so the model can actually <em>drive</em> another project, not just read about it.</li>
 </ul>
 <p>A detail that matters: the tool's <strong>description</strong> is a prompt. kb-agent's schemas are deliberately prescriptive about <em>when</em> to call each one —</p>
 <pre><code>&quot;description&quot;: (&quot;Search the personal knowledge base of projects and libraries. &quot;
@@ -353,7 +354,7 @@ recall    = tp / (tp + fn)</code></pre>
     self.messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: tool_results})</code></pre>
 <p>Two things that are easy to get wrong: you <strong>must</strong> append the assistant turn (it carries the tool <em>request</em>) and you <strong>must</strong> send each tool result back with the matching <code>tool_use_id</code>. Mismatch those and the conversation breaks.</p>
 <h2>Why it matters</h2>
-<p>This little loop <em>is</em> what people mean by "AI agent." Seeing it written out demystifies the whole category. It also makes the failure modes obvious: runaway loops (hence the cap), and cost — every trip through the loop is another paid API call.</p>
+<p>This little loop <em>is</em> what people mean by "AI agent." Seeing it written out demystifies the whole category. It also makes the failure modes obvious: runaway loops (hence the cap), and cost — every trip through the loop is another paid API call. And not every tool is a harmless local read: of kb-agent's three tools (<code>search_kb</code>, <code>list_projects</code>, <code>classify_snippet</code>), the last one POSTs over HTTP to the sibling <code>defense-news-classifier</code> service — a network/side-effecting call the loop might fire on any iteration, which is exactly why the result comes back as a structured observation the model can react to.</p>
 <h2>Go deeper</h2>
 <ul>
   <li>How does the model "know" it's done? (It stops asking for tools.)</li>
@@ -455,6 +456,7 @@ return nothing relevant, say so plainly instead of guessing — do not invent de
 <p>The README and <code>decisions/003-synthetic-data-only.md</code> call this out <em>loudly</em> — it's listed as the project's #1 limitation, not buried:</p>
 <blockquote>the same model generates and classifies the data. Numbers measure in-distribution consistency, not generalization to real-world news.</blockquote>
 <p>The honest v2 move is written down: re-run the eval against a small set of <strong>human-labeled real</strong> articles.</p>
+<p><strong>Update (v2):</strong> <em>that move has since shipped. The classifier was graded on a 54-snippet human-labeled gold set of real news — the non-circular answer key v1 couldn't produce — scoring category accuracy 88.9% (macro-F1 0.906) and operational-domain accuracy 88.9% (macro-F1 0.894), with the once-weak <code>industry</code> label now at F1 1.000. The 79% / 97% figures below are the historical synthetic baseline; the circular-eval lesson is exactly why they couldn't be trusted on their own.</em></p>
 <h2>Why it matters</h2>
 <p>Every eval has a quiet question behind it: <em>do I trust this number?</em> (ties to note 02). Naming the circularity is what keeps the 79% / 97% figures honest. A number you <em>can't</em> trust is worse than no number — it feels like progress while telling you nothing.</p>
 <h2>Go deeper</h2>

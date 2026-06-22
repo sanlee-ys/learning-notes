@@ -32,8 +32,11 @@ The model is the brain; *you* are the hands. Nothing happens that you didn't run
 
 - **Classifier** — flavor (a). One tool, `classify_article`, *forced* every call. Pure
   output-shaping; the model never "decides" anything about tools.
-- **kb-agent** — flavor (b). Two tools, `search_kb` and `list_projects`, and the model
-  *chooses* when (and whether) to call them.
+- **kb-agent** — flavor (b). Three tools, `search_kb`, `list_projects`, and
+  `classify_snippet`, and the model *chooses* when (and whether) to call them. The last
+  one is the side-effecting tool: it POSTs a snippet over HTTP to the sibling
+  `defense-news-classifier` service, so the model can actually *drive* another project,
+  not just read about it.
 
 A detail that matters: the tool's **description** is a prompt. kb-agent's schemas are
 deliberately prescriptive about *when* to call each one —

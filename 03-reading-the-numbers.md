@@ -59,6 +59,12 @@ of the real ones* (the rest got mislabeled `procurement`). Plain accuracy would 
 have told me that. It's also why my honest headline, macro-F1 (0.765), sits *below*
 category accuracy (0.79): that one weak label drags the equal-weighted average down.
 
+**Update (v2):** *those figures are the v1 synthetic, self-graded baseline. v2 re-measured
+on a 54-snippet human-labeled gold set of real news: category accuracy 88.9%
+(macro-F1 0.906), operational-domain accuracy 88.9% (macro-F1 0.894) — and the `industry`
+label that this note flags as the weak spot is now F1 1.000, the blind spot closed. The v1
+numbers stay here because the per-label reading is the lesson.*
+
 ## Why it matters
 
 Choosing the metric is itself a decision. Headline accuracy would have let me brag;

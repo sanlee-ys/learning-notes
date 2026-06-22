@@ -60,7 +60,11 @@ the tool *request*) and you **must** send each tool result back with the matchin
 
 This little loop *is* what people mean by "AI agent." Seeing it written out demystifies
 the whole category. It also makes the failure modes obvious: runaway loops (hence the
-cap), and cost — every trip through the loop is another paid API call.
+cap), and cost — every trip through the loop is another paid API call. And not every tool
+is a harmless local read: of kb-agent's three tools (`search_kb`, `list_projects`,
+`classify_snippet`), the last one POSTs over HTTP to the sibling `defense-news-classifier`
+service — a network/side-effecting call the loop might fire on any iteration, which is
+exactly why the result comes back as a structured observation the model can react to.
 
 ## Go deeper
 
