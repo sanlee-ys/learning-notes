@@ -7,12 +7,12 @@ concepts connect helps me see how my own projects fit together. The goal is to
 
 <p align="center">
   <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">
-    <img src="assets/concept-map.png" width="760"
-         alt="Interactive concept map: each note is a node, colored by category and linked by its in-text cross-references">
+    <img src="assets/category-map.svg" width="760"
+         alt="Category map: each note category is a circle sized by how many notes it holds, with links where notes in one category reference another">
   </a>
   <br>
-  <em><a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">▶ Open the interactive map</a> — drag nodes, hover to read a note's TL;DR, click to open it.<br>
-  Nodes are colored by category: Foundations · LLM app patterns · Data &amp; method · Engineering hygiene.</em>
+  <em>The four note categories and how they connect — auto-generated from the notes, so it's never out of date.<br>
+  <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">▶ Open the full interactive map</a> — hover to focus a note, click to pin its neighbourhood, double-click to open it.</em>
 </p>
 
 ## How to use this
@@ -67,7 +67,8 @@ python build_site.py        # regenerates index.html
 ```
 
 Open **`index.html`** in any browser (double-click). One offline file — no server, no
-install, no internet — with a sidebar and a **search box** that filters notes as you type.
+install, no internet — with a **category-grouped sidebar**, a **search box** that filters
+notes as you type, and an auto **"References / Referenced by"** list under each note.
 Re-run `build_site.py` after editing or adding a note.
 
 ### 2. Polished site — MkDocs Material
@@ -99,14 +100,18 @@ project's README to run the chat UI.
 ### 4. See how they connect — concept map
 
 ```bash
-python build_graph.py       # regenerates concept-map.html
+python build_graph.py       # regenerates concept-map.html + assets/category-map.svg
 ```
 
 Open **`concept-map.html`** for a force-directed graph of every note: each note is a node
 (colored by category, larger when more notes point at it), and the lines are the in-text
-"note NN" cross-references. **Drag** nodes to rearrange, **hover** to focus a note and read
-its TL;DR, and **click** a node to jump straight to it in `index.html`. Needs internet on
-first open (D3 loads from a CDN). Re-run `build_graph.py` after editing or adding a note.
+"note NN" cross-references. **Drag** to rearrange, **hover** to focus a note and read its
+TL;DR, **click** to pin that focus on one note's neighbourhood, and **double-click** to jump
+straight to it in `index.html`. Needs internet on first open (D3 loads from a CDN).
+
+This step also regenerates **`assets/category-map.svg`** — the small category meta-map shown
+at the top of this README, built from the notes so it never needs a manual screenshot.
+Re-run `build_graph.py` after editing or adding a note.
 
 Or view it live, no install: **https://sanlee-ys.github.io/learning-notes/concept-map.html**
 

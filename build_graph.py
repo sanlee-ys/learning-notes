@@ -1,33 +1,42 @@
-"""Build an interactive concept map of the learning notes.
+"""Build the concept-map views of the learning notes.
 
-Reads README.md (for each note's category + project tag) and every NN-*.md note
-(for its title, TL;DR, and the in-text "note NN" cross-references), then writes a
-single self-contained concept-map.html — a force-directed graph you can drag around.
+Reads the shared note model (notes_data.load_notes) — each note's category, title,
+TL;DR, and the in-text "note NN" cross-references — and writes two things:
 
     python build_graph.py
 
-Like build_site.py, the .md files stay the single source of truth; this file is
-always regenerated, never hand-edited. D3 is loaded from a CDN, so the first open
-needs internet (after that the browser caches it).
+  1. concept-map.html — a self-contained, force-directed graph of every note. D3 is
+     loaded from a CDN, so the first open needs internet (then the browser caches it).
+  2. assets/category-map.svg — a small, stable meta-map of the CATEGORIES (node size
+     = notes in the category, edge width = cross-category references). Generated here
+     at build time, so it is deterministic and never a hand-taken screenshot. This is
+     the README hero image.
 
-What becomes what, in the graph:
+Like build_site.py, the .md files stay the single source of truth; both outputs are
+always regenerated, never hand-edited.
+
+What becomes what, in the interactive graph:
   * node            = one note. Number shown inside; title beside it.
   * node colour     = its README category (Foundations / LLM app patterns / ...).
   * node size       = how many other notes point AT it (so hubs like 02/03 grow).
   * solid arrow     = a real "note NN" reference you wrote in the prose (directional).
   * faint dashed    = same-category link, so orphans (10/11/12) still cluster.
-  * click a node    = jump to that note in your existing index.html (#anchor).
+  * hover a node    = spotlight its neighbourhood; click = pin that focus.
+  * double-click    = open that note in your existing index.html (#anchor).
 """
 
 from __future__ import annotations
 
 import html
 import json
-import re
+import math
 from pathlib import Path
+
+from notes_data import load_notes
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "concept-map.html"
+SVG_OUT = HERE / "assets" / "category-map.svg"
 
 # Category -> colour. Order here is also the legend order.
 CATEGORY_COLORS = {
@@ -39,119 +48,37 @@ CATEGORY_COLORS = {
 DEFAULT_COLOR = "#6b6b6b"
 
 
-# ---- Parse the README's "Concept map" list --------------------------------
+# ---- Graph data (from the shared note model) ------------------------------
 
-def parse_readme() -> dict[int, dict]:
-    """Map note number -> {category, project} by reading README's concept map.
+def collect(notes) -> tuple[list[dict], list[dict]]:
+    """Turn the shared Note list into D3 nodes + links.
 
-    The README groups notes under `### <Category>` headings, one bullet each:
-        - [x] 01 — Structured output via tool use *(both projects)*
-    We only read inside the `## Concept map` section so other lists don't leak in.
+    Edges are the directional "note NN" prose references; faint same-category links
+    are added so orphan notes still cluster. Node in-degree (how many prose refs
+    point at it) drives node size in the page.
     """
-    meta: dict[int, dict] = {}
-    readme = HERE / "README.md"
-    if not readme.exists():
-        return meta
+    nodes = [
+        {
+            "id": n.num,
+            "anchor": n.anchor,            # -> index.html#<anchor>
+            "num": f"{n.num:02d}",
+            "title": n.title,
+            "tldr": n.tldr,
+            "category": n.category,
+            "project": n.project,
+            "indegree": len(n.refs_in),
+        }
+        for n in notes
+    ]
 
-    category = None
-    in_map = False
-    for line in readme.read_text(encoding="utf-8").splitlines():
-        s = line.strip()
-        if s.startswith("## "):                 # entering/leaving a top section
-            in_map = s.lower().startswith("## concept map")
-            category = None
-            continue
-        if not in_map:
-            continue
-        if s.startswith("### "):                 # a category heading
-            category = s[4:].strip()
-            continue
-        m = re.match(r"-\s*\[.\]\s*(\d+)\s*—\s*(.*)", s)
-        if m:
-            num = int(m.group(1))
-            tag = re.search(r"\*\((.*?)\)\*", m.group(2))
-            meta[num] = {"category": category, "project": normalize_tag(tag.group(1) if tag else "")}
-    return meta
+    prose_edges = sorted({(n.num, d) for n in notes for d in n.refs_out})
 
-
-def normalize_tag(raw: str) -> str:
-    raw = raw.lower()
-    if "both" in raw:
-        return "both"
-    if "kb-agent" in raw:
-        return "kb-agent"
-    if "classifier" in raw:
-        return "classifier"
-    return "other"
-
-
-# ---- Parse each note ------------------------------------------------------
-
-def first_heading(text: str) -> str:
-    for raw in text.splitlines():
-        if raw.startswith("# "):
-            return raw[2:].strip()
-    return ""
-
-
-def short_title(heading: str) -> str:
-    """'01 — Structured output via tool use' -> 'Structured output via tool use'."""
-    return re.split(r"\s*—\s*", heading, maxsplit=1)[-1].strip()
-
-
-def extract_tldr(text: str) -> str:
-    """Grab the '> **TL;DR** ...' blockquote as a one-line tooltip string."""
-    quote: list[str] = []
-    collecting = False
-    for raw in text.splitlines():
-        s = raw.strip()
-        if s.startswith(">"):
-            collecting = True
-            quote.append(s.lstrip("> ").rstrip())
-        elif collecting:
-            break
-    joined = " ".join(quote)
-    joined = re.sub(r"\*\*TL;DR\*\*\s*", "", joined)   # drop the label
-    joined = re.sub(r"[*`]", "", joined)               # strip md emphasis
-    return joined.strip()
-
-
-def collect() -> tuple[list[dict], list[dict]]:
-    meta = parse_readme()
-    nodes: list[dict] = []
-    prose_edges: set[tuple[int, int]] = set()   # (src, dst) directional
-    numbers: set[int] = set()
-
-    for path in sorted(HERE.glob("[0-9][0-9]-*.md")):
-        num = int(path.stem[:2])
-        numbers.add(num)
-        body = path.read_text(encoding="utf-8")
-        heading = first_heading(body)
-        info = meta.get(num, {})
-        nodes.append({
-            "id": num,
-            "anchor": path.stem,                       # -> index.html#<anchor>
-            "num": f"{num:02d}",
-            "title": short_title(heading) or path.stem,
-            "tldr": extract_tldr(body),
-            "category": info.get("category") or "Uncategorized",
-            "project": info.get("project", "other"),
-        })
-        # In-text references: "note 07", "note 02", etc. -> directed edge.
-        for ref in re.findall(r"\bnote\s*0*(\d+)\b", body, flags=re.IGNORECASE):
-            dst = int(ref)
-            if dst != num:
-                prose_edges.add((num, dst))
-
-    # Keep only references to notes that actually exist.
-    prose_edges = {(a, b) for a, b in prose_edges if a in numbers and b in numbers}
-
-    # Faint category links: connect every pair within a category, but skip any
-    # pair already joined by a prose edge (so we never double-draw a connection).
+    # Faint category links: connect every pair within a category, but skip any pair
+    # already joined by a prose edge (so we never double-draw a connection).
     prose_pairs = {frozenset(e) for e in prose_edges}
     by_cat: dict[str, list[int]] = {}
-    for n in nodes:
-        by_cat.setdefault(n["category"], []).append(n["id"])
+    for nd in nodes:
+        by_cat.setdefault(nd["category"], []).append(nd["id"])
     cat_edges: list[dict] = []
     for ids in by_cat.values():
         for i in range(len(ids)):
@@ -159,21 +86,105 @@ def collect() -> tuple[list[dict], list[dict]]:
                 if frozenset((ids[i], ids[j])) not in prose_pairs:
                     cat_edges.append({"source": ids[i], "target": ids[j], "kind": "category"})
 
-    # In-degree (how many prose refs point at a node) -> node size.
-    indeg: dict[int, int] = {n["id"]: 0 for n in nodes}
-    for _src, dst in prose_edges:
-        indeg[dst] += 1
-    for n in nodes:
-        n["indegree"] = indeg[n["id"]]
-
-    links = [{"source": a, "target": b, "kind": "prose"} for a, b in sorted(prose_edges)] + cat_edges
+    links = [{"source": a, "target": b, "kind": "prose"} for a, b in prose_edges] + cat_edges
     return nodes, links
+
+
+# ---- Category meta-map SVG (the stable README hero) -----------------------
+
+def write_category_map_svg(notes, cats) -> Path:
+    """Render the small category meta-map as a static SVG.
+
+    One node per category (radius grows with how many notes it holds); an edge
+    between two categories when notes in one reference notes in the other (width
+    grows with how many such references). Fixed circular geometry → deterministic
+    output, no force simulation, no screenshot. A handful of nodes regardless of how
+    many notes exist, so it never becomes a hairball.
+    """
+    counts: dict[str, int] = {c: 0 for c in cats}
+    for n in notes:
+        counts[n.category] = counts.get(n.category, 0) + 1
+    by_num = {n.num: n for n in notes}
+
+    # Undirected cross-category reference weights.
+    pair_w: dict[tuple[str, str], int] = {}
+    for n in notes:
+        for d in n.refs_out:
+            c1, c2 = n.category, by_num[d].category
+            if c1 == c2:
+                continue
+            key = tuple(sorted((c1, c2)))
+            pair_w[key] = pair_w.get(key, 0) + 1
+
+    W, H = 760, 440
+    cx, cy, ring = W / 2, H / 2, 125.0
+    n_cats = len(cats) or 1
+    pos: dict[str, tuple[float, float]] = {}
+    for i, c in enumerate(cats):
+        ang = -math.pi / 2 + 2 * math.pi * i / n_cats  # first category at top
+        pos[c] = (cx + ring * math.cos(ang), cy + ring * math.sin(ang))
+
+    max_count = max(counts.values()) or 1
+    max_w = max(pair_w.values()) if pair_w else 1
+
+    def node_r(c: str) -> float:
+        return 26.0 + 30.0 * (counts[c] / max_count)
+
+    def edge_w(w: int) -> float:
+        return 1.5 + 6.0 * (w / max_w)
+
+    parts: list[str] = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
+        f'width="{W}" height="{H}" role="img" aria-labelledby="title desc" '
+        f'font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">',
+        '<title id="title">Learning notes — category map</title>',
+    ]
+    desc = "How the note categories connect. " + "; ".join(
+        f"{c}: {counts[c]} notes" for c in cats
+    )
+    parts.append(f'<desc id="desc">{html.escape(desc)}</desc>')
+    parts.append(f'<rect x="0" y="0" width="{W}" height="{H}" rx="12" fill="#fbfaf7"/>')
+
+    # Edges first, so node circles sit on top.
+    for (c1, c2), w in sorted(pair_w.items()):
+        x1, y1 = pos[c1]
+        x2, y2 = pos[c2]
+        parts.append(
+            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+            f'stroke="#c9c1b2" stroke-width="{edge_w(w):.1f}" stroke-linecap="round"/>'
+        )
+
+    # Category nodes + labels.
+    for c in cats:
+        x, y = pos[c]
+        r = node_r(c)
+        col = CATEGORY_COLORS.get(c, DEFAULT_COLOR)
+        parts.append(
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" fill="{col}" '
+            f'stroke="#fff" stroke-width="3"/>'
+        )
+        parts.append(
+            f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="middle" dominant-baseline="central" '
+            f'fill="#fff" font-weight="700" font-size="20">{counts[c]}</text>'
+        )
+        parts.append(
+            f'<text x="{x:.1f}" y="{y + r + 16:.1f}" text-anchor="middle" '
+            f'fill="#2b2b2b" font-size="13" font-weight="600">{html.escape(c)}</text>'
+        )
+
+    parts.append("</svg>")
+    SVG_OUT.parent.mkdir(exist_ok=True)
+    SVG_OUT.write_text("\n".join(parts) + "\n", encoding="utf-8")
+    return SVG_OUT
 
 
 # ---- Page assembly --------------------------------------------------------
 
 def build() -> None:
-    nodes, links = collect()
+    notes, cats = load_notes()
+    nodes, links = collect(notes)
+    svg_path = write_category_map_svg(notes, cats)
+
     graph_json = json.dumps({"nodes": nodes, "links": links}, ensure_ascii=False)
     colors_json = json.dumps(CATEGORY_COLORS, ensure_ascii=False)
     legend = "\n".join(
@@ -192,6 +203,7 @@ def build() -> None:
     )
     OUT.write_text(page, encoding="utf-8")
     print(f"Wrote {OUT}  ({len(nodes)} notes, {n_prose} prose links, {len(page):,} bytes)")
+    print(f"Wrote {svg_path}  (category meta-map, {len(cats)} categories)")
 
 
 PAGE = """<!DOCTYPE html>
@@ -218,6 +230,7 @@ PAGE = """<!DOCTYPE html>
   .link.prose {{ stroke:#9a8f7a; stroke-width:1.6; }}
   .link.category {{ stroke-width:1; stroke-dasharray:3 4; opacity:.5; }}
   .node circle {{ stroke:#fff; stroke-width:2; cursor:pointer; }}
+  .node.pinned circle {{ stroke:#2b2b2b; stroke-width:3; }}
   .node text.num {{ fill:#fff; font-weight:700; font-size:11px; text-anchor:middle;
     dominant-baseline:central; pointer-events:none; }}
   .node text.label {{ fill:var(--fg); font-size:11px; pointer-events:none;
@@ -229,12 +242,13 @@ PAGE = """<!DOCTYPE html>
     font-size:.82rem; pointer-events:none; opacity:0; transition:opacity .12s; z-index:9; }}
   #tip b {{ display:block; margin-bottom:3px; }}
   #tip span {{ color:var(--muted); }}
+  #tip span.open {{ display:block; margin-top:5px; color:#9a8f7a; font-size:.72rem; }}
 </style>
 </head>
 <body>
 <header>
   <h1>Learning Notes — Concept Map</h1>
-  <span class="hint">{n_notes} notes · {n_prose} prose links · drag to rearrange · hover to focus · click to read</span>
+  <span class="hint">{n_notes} notes · {n_prose} prose links · hover to focus · click to pin · double-click to open</span>
   <div class="legend">{legend}</div>
 </header>
 <svg></svg>
@@ -259,7 +273,7 @@ svg.append("defs").append("marker")
   .append("path").attr("d", "M0,-4L9,0L0,4").attr("fill", "#9a8f7a");
 
 const root = svg.append("g");
-// Build a neighbour set so hover can highlight a node + everything it touches.
+// Build a neighbour set so focus can highlight a node + everything it touches.
 const neighbours = new Map(GRAPH.nodes.map(n => [n.id, new Set([n.id])]));
 GRAPH.links.forEach(l => {{
   neighbours.get(l.source).add(l.target);
@@ -292,8 +306,9 @@ const link = root.append("g").selectAll("line")
 const node = root.append("g").selectAll("g")
   .data(GRAPH.nodes).join("g").attr("class", "node")
   .call(d3.drag().on("start", dragStart).on("drag", dragged).on("end", dragEnd))
-  .on("mouseover", focus).on("mouseout", unfocus)
-  .on("click", (e, d) => window.open("index.html#" + d.anchor, "_blank"));
+  .on("mouseover", hover).on("mouseout", hoverOut)
+  .on("click", pinToggle)
+  .on("dblclick", (event, d) => {{ event.preventDefault(); window.open("index.html#" + d.anchor, "_blank"); }});
 
 node.append("circle").attr("r", radius).attr("fill", d => color(d.category));
 node.append("text").attr("class", "num").text(d => d.num);
@@ -327,22 +342,37 @@ function relabel() {{
   labelSel.style("display", d => d.shown ? null : "none");
 }}
 
-// Hover: spotlight the node and its neighbours; show a TL;DR tooltip.
+// Focus = spotlight a node + its neighbours and show a TL;DR tooltip. Hover focuses
+// transiently; a click PINS the focus so you can study one note's neighbourhood
+// (click the same node or empty space to release; double-click opens the note).
 const tip = document.getElementById("tip");
-function focus(event, d) {{
+let pinned = null;
+function applyFocus(d) {{
   const near = neighbours.get(d.id);
   node.classed("faded", n => !near.has(n.id));
+  node.classed("pinned", n => pinned && n.id === pinned.id);
   link.classed("faded", l => l.source.id !== d.id && l.target.id !== d.id);
-  tip.innerHTML = `<b>${{d.num}} — ${{escapeHtml(d.title)}}</b><span>${{escapeHtml(d.tldr)}}</span>`;
+  tip.innerHTML = `<b>${{d.num}} — ${{escapeHtml(d.title)}}</b><span>${{escapeHtml(d.tldr)}}</span>`
+    + `<span class="open">double-click to open →</span>`;
   tip.style.opacity = 1;
-  moveTip(event);
 }}
-function unfocus() {{
-  node.classed("faded", false);
+function clearFocus() {{
+  node.classed("faded", false).classed("pinned", false);
   link.classed("faded", false);
   tip.style.opacity = 0;
 }}
-node.on("mousemove", moveTip);
+function hover(event, d) {{ if (!pinned) {{ applyFocus(d); moveTip(event); }} }}
+function hoverOut() {{ if (!pinned) clearFocus(); }}
+function pinToggle(event, d) {{
+  event.stopPropagation();
+  if (pinned && pinned.id === d.id) {{ pinned = null; clearFocus(); return; }}
+  pinned = d;
+  applyFocus(d);
+  moveTip(event);
+}}
+// A click on empty canvas releases a pinned focus.
+svg.on("click", () => {{ if (pinned) {{ pinned = null; clearFocus(); }} }});
+node.on("mousemove", event => {{ if (!pinned) moveTip(event); }});
 function moveTip(event) {{
   const pad = 16;
   let x = event.clientX + pad, y = event.clientY + pad;
