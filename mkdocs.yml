@@ -75,6 +75,7 @@ nav:
       - 15 · Semantic versioning: 15-semantic-versioning.md
       - 20 · Testing & coverage: 20-testing-and-coverage.md
       - 21 · Test-driven development: 21-test-driven-development.md
+      - 26 · Integration tests with Testcontainers: 26-integration-tests-with-testcontainers.md
   - Systems & infrastructure:
       - 16 · Containers & Docker: 16-containers-and-docker.md
       - 17 · Layered architecture: 17-layered-architecture.md
