@@ -84,6 +84,7 @@ aside.related a:hover { background:#e9e4d8; }
 <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a>
 <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a>
 <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a>
+<a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a>
 </div>
 <div class="navgroup"><h3>Systems &amp; infrastructure</h3>
 <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a>
@@ -152,6 +153,7 @@ aside.related a:hover { background:#e9e4d8; }
   <li>[x] 15 — Semantic versioning: a version number is a promise <em>(classifier)</em></li>
   <li>[x] 20 — Testing &amp; coverage: knowing what's exercised <em>(both)</em></li>
   <li>[x] 21 — Test-driven development: red, green, refactor <em>(both)</em></li>
+  <li>[x] 26 — Integration tests with Testcontainers: a real dependency, briefly <em>(both)</em></li>
 </ul>
 <h3>Systems &amp; infrastructure</h3>
 <ul>
@@ -564,7 +566,7 @@ uv run python src/eval.py    # run inside that env — no activation needed</cod
   <li>Why <code>.venv</code> is gitignored but <code>uv.lock</code> is committed.</li>
   <li>How CI uses the same lockfile to test in a clean environment every run.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#19-database-migrations">19 · Database migrations: versioning your schema</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#19-database-migrations">19 · Database migrations: versioning your schema</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
 </aside>
 </section>
 <section id="12-checkpoint-resume-and-retries">
@@ -762,6 +764,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li><strong>Where images live</strong> — registries, tags, and how CI builds and pushes them.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a> <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
 </aside>
 </section>
 <section id="17-layered-architecture">
@@ -839,6 +842,7 @@ return saved;</code></pre>
   <li>Tracing an event across services (distributed tracing) when there's no single top-to-bottom call to read.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#17-layered-architecture">17 · Layered architecture: controller, service, repository</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
 </aside>
 </section>
 <section id="19-database-migrations">
@@ -901,7 +905,7 @@ return saved;</code></pre>
   <li>Mocks and fakes — testing one layer without booting the whole app.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
 </aside>
 </section>
 <section id="21-test-driven-development">
@@ -1079,6 +1083,42 @@ return saved;</code></pre>
   <li>Passing context between agents cheaply: how much does each subagent really need handed to it, versus re-deriving, to keep the fan-out fast?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a></div>
+</aside>
+</section>
+<section id="26-integration-tests-with-testcontainers">
+<h1>26 — Integration tests with Testcontainers: a real dependency, briefly</h1>
+<blockquote><strong>TL;DR</strong> A unit test fakes everything around your code; an <strong>integration test</strong> runs it against a <em>real</em> dependency (a broker, a database) so it catches what a mock can't — wire formats, serialization, connection config. <strong>Testcontainers</strong> makes that cheap: it starts the real dependency in a throwaway Docker container for the test and tears it down after.</blockquote>
+<h2>Plain idea</h2>
+<p>Most tests should be <strong>unit tests</strong> (note 20): fast, no network, every external thing faked. They prove your code is right <em>given the inputs you imagined</em>. Their blind spot is the seam to the outside world — a unit test that mocks Kafka can't prove the message another service <em>actually</em> publishes deserializes the way you assumed.</p>
+<p>An <strong>integration test</strong> fills that gap by adding exactly one real dependency back in. The cost is that you now need that dependency running. The old ways were bad: a shared dev broker (someone else mutates it; tests flake), or "install Kafka on the CI box" (slow, brittle, drifts from prod).</p>
+<p><strong>Testcontainers</strong> is the modern answer: in the test itself you ask for a real Kafka/Postgres/Redis, it starts that as a <strong>Docker container</strong> scoped to the test, hands you its address, and removes it when the test ends. Real dependency, no shared state, cleaned up automatically. It exists for both Python (<code>testcontainers[kafka]</code>) and the JVM (<code>org.testcontainers</code>), with the <em>same</em> idea on both.</p>
+<h2>Analogy</h2>
+<p>A unit test is a <strong>flight simulator</strong> — cheap, safe, infinitely repeatable, but the weather is fake. An integration test is a <strong>short test flight in a rented plane</strong>: you give it back when you land (Testcontainers returns the container), but for those few minutes the air is real. You don't test-fly every change — you simulate most of them — but before you trust the seam, you want real air under the wings once.</p>
+<h2>In my project</h2>
+<p>The event loop is: <code>notes-api</code> publishes a <code>NoteCreated</code> event → Kafka topic <code>note-events</code> → the classifier's consumer tags the note. Both sides were unit-tested with the broker <strong>faked</strong>, so nothing proved a real round trip. I added a Testcontainers integration test on <strong>each</strong> side:</p>
+<ul>
+  <li><strong>Consumer side (Python)</strong> — <code>defense-news-classifier/tests/test_consumer_integration.py</code>: starts a real broker, publishes a <code>NoteCreated</code> the way notes-api does, and drives the consumer's real consume → deserialize → process path.</li>
+  <li><strong>Producer side (Java)</strong> — <code>notes-api/.../NoteEventPublishingIT.java</code>: boots the app against a real broker and asserts that creating a note lands a real <code>NoteCreated</code> on the topic, with the frozen wire shape (key = note id, plain JSON, no Java type headers).</li>
+</ul>
+<p>I knew Testcontainers from Python and had <strong>never written one in Java</strong> — and the useful discovery was that it's the <em>same concept</em>, only different machinery. The Rosetta:</p>
+<p>| Idea | Python (pytest) | Java (JUnit 5 / Spring Boot) | |---|---|---| | Start/stop the container | a fixture that starts it and <code>yield</code>s, stopping after | <code>@Testcontainers</code> + <code>@Container</code> on a <code>static</code> field (JUnit owns the lifecycle) | | Skip when Docker is absent | <code>pytest.skip(...)</code> in the fixture | <code>@Testcontainers(disabledWithoutDocker = true)</code> | | Point your client at it | read <code>container.get_bootstrap_server()</code> and pass it in | <code>@ServiceConnection</code> auto-wires it into <code>spring.kafka.*</code> (or <code>@DynamicPropertySource</code> to do it by hand) | | Keep it out of the fast lane | mark <code>integration</code>, deselect by default, run with <code>--run-integration</code> | name it <code>*IT</code> so <strong>Failsafe</strong> runs it in <code>verify</code>, while <strong>Surefire</strong> runs <code>*Test</code> units in <code>test</code> | | Read the topic to verify | kafka-python <code>KafkaConsumer</code> | <code>org.apache.kafka...KafkaConsumer</code> (same client, Java API) |</p>
+<p>The naming split is the one genuinely Java-specific thing: <code>./mvnw test</code> runs only the fast unit tests (<code>*Test</code>), and <code>./mvnw verify</code> additionally runs the integration tests (<code>*IT</code>) — so the opt-in is by <em>filename convention + build phase</em>, where Python does it with a marker + a CLI flag.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li>It catches the failures unit tests <strong>structurally cannot</strong>: a renamed field, a serializer that writes dates as numbers, a <code>bootstrap-servers</code> typo, a type-header setting the other language can't read. These only show up when a real broker is in the loop.</li>
+  <li>Testcontainers makes the realistic test <strong>disposable and parallel-safe</strong>, so "use realistic tests sparingly" (the test pyramid, note 20) stops meaning "use flaky shared infra."</li>
+  <li>Keep it opt-in. Integration tests are slow (they pull an image, boot a broker) and need Docker (note 16), so they belong in a separate lane — never gating the fast unit feedback loop.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li><strong><code>@ServiceConnection</code> vs <code>@DynamicPropertySource</code></strong> — the magic auto-wiring versus the explicit "set this property to the container's address," and when the explicit one is clearer.</li>
+  <li><strong>Surefire vs Failsafe</strong> — why the JVM splits unit (<code>*Test</code>) and integration (<code>*IT</code>) tests across two build phases, and how <code>verify</code> differs from <code>test</code>.</li>
+  <li><strong>Ryuk</strong>, the sidecar container Testcontainers starts to reap leftover containers even if the test process is killed — why cleanup is automatic.</li>
+  <li>Pinning the container <strong>image version</strong> for reproducibility (note 11), and the trade vs. always pulling the latest.</li>
+  <li>The deeper layer I haven't built: a full end-to-end test that drives the consumer's run-loop against a real broker <em>and</em> a stub of the downstream service, asserting offsets commit only after a successful write — versus the focused single-seam tests I have now.</li>
+  <li>How this connects to <strong>event-driven architecture</strong> (note 18): the contract between producer and consumer is exactly what an integration test on each side protects.</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a> <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
 </aside>
 </section>
 </main>

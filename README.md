@@ -57,6 +57,7 @@ Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 - [x] 15 — Semantic versioning: a version number is a promise *(classifier)*
 - [x] 20 — Testing & coverage: knowing what's exercised *(both)*
 - [x] 21 — Test-driven development: red, green, refactor *(both)*
+- [x] 26 — Integration tests with Testcontainers: a real dependency, briefly *(both)*
 
 ### Systems & infrastructure
 - [x] 16 — Containers & Docker: ship it the same everywhere *(both)*
