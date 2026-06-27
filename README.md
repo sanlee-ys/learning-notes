@@ -141,5 +141,6 @@ Or view it live, no install: **https://sanlee-ys.github.io/learning-notes/concep
   (what it's about + which domain). Built to *measure* how well it does.
 - **kb-agent** — an AI assistant that answers questions about my projects by searching
   a personal notebook of Markdown files (this is the "RAG" project).
-- **notes-api** — a small Spring Boot REST API for notes (Java); my "getting back into Java"
-  project, and where the OOP/class examples (notes 13–14) come from.
+- **notes-api** — a small notes REST API, now Python/FastAPI (originally Spring Boot/Java —
+  see the note at the top). The Java-era notes (13–14, 26) came from that first version and
+  are kept as a record of the learning.
