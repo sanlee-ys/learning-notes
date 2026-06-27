@@ -5,6 +5,10 @@ just for me; I've since made them **public** — as a backup, and because mappin
 concepts connect helps me see how my own projects fit together. The goal is to
 *understand* the concepts, not just have working code, and to keep adding over time.
 
+> **Note on notes-api:** notes-api has been ported to Python/FastAPI. The Java learning
+> notes below (sessions 13, 14, 17, 18, 19, 20, 21, 26) document that learning journey
+> and are preserved as a historical record.
+
 <p align="center">
   <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">
     <img src="assets/category-map.svg" width="760"
