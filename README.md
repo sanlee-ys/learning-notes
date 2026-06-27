@@ -5,6 +5,10 @@ just for me; I've since made them **public** — as a backup, and because mappin
 concepts connect helps me see how my own projects fit together. The goal is to
 *understand* the concepts, not just have working code, and to keep adding over time.
 
+> **Note on notes-api:** notes-api has been ported to Python/FastAPI. The Java learning
+> notes below (sessions 13, 14, 17, 18, 19, 20, 21, 26) document that learning journey
+> and are preserved as a historical record.
+
 <p align="center">
   <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">
     <img src="assets/category-map.svg" width="760"
@@ -137,5 +141,6 @@ Or view it live, no install: **https://sanlee-ys.github.io/learning-notes/concep
   (what it's about + which domain). Built to *measure* how well it does.
 - **kb-agent** — an AI assistant that answers questions about my projects by searching
   a personal notebook of Markdown files (this is the "RAG" project).
-- **notes-api** — a small Spring Boot REST API for notes (Java); my "getting back into Java"
-  project, and where the OOP/class examples (notes 13–14) come from.
+- **notes-api** — a small notes REST API, now Python/FastAPI (originally Spring Boot/Java —
+  see the note at the top). The Java-era notes (13–14, 26) came from that first version and
+  are kept as a record of the learning.
