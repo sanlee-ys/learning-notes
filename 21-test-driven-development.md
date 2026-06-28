@@ -33,21 +33,21 @@ what's there, not catch what's missing.
 I've leaned on this loop professionally, and both repos are shaped the way TDD leaves things —
 small tests that pin one behavior each.
 
-In `notes-api`, `NoteServiceTest` is a clean red-green target. Take a test like
-`delete_throws_andSkipsDelete_whenMissing`: red is writing it against a `delete()` that doesn't
-yet check existence — it fails because nothing throws. Green is adding the `existsById` guard and
-the `NoteNotFoundException`. The test also asserts `verify(repository, never()).deleteById(...)` —
-so the *refactor* step (reordering the guard, renaming things) is safe, because that line locks in
-"must not delete when missing." The service takes its repository through the constructor (note 14),
-so the test hands it a `@Mock` with no database — fast enough to run on every tiny loop.
+In `notes-api`, deleting a missing note is a clean red-green target. Write the test first —
+`DELETE /notes/{id}` on an id that doesn't exist should come back **404** and leave the store
+untouched — and run it against a `delete()` that blindly removes whatever it's handed: it fails,
+because nothing 404s. *Green* is routing the delete through `get_by_id`, which raises
+`HTTPException(404)` when the row is missing. The test pins both halves — the status *and* that no
+row was deleted — so the *refactor* step (moving the guard, renaming) stays safe. `NoteService`
+takes its database session through the constructor (note 14), so the test hands it a throwaway
+session and runs fast enough for every tiny loop.
 
-`NoteControllerTest` shows the same loop at the HTTP edge: a test like
-`create_withBlankTitle_returns400_andSkipsService` states the rule first — a blank title is a 400
-and the service is never touched — and you build validation until it goes green.
+The HTTP edge shows the same loop: a test stating "a blank title is rejected before the service is
+ever touched" goes red, and you add the rule until it's green — here the Pydantic `NoteRequest`
+schema does it, bouncing the request with a **422** before any handler code runs (note 14).
 
-On the Python side, `defense-news-classifier/tests` mirrors it: `test_classify.py`,
-`test_retrieve.py`, `test_eval.py`, each pinning one piece, with a `conftest.py` of shared fakes so
-a test never needs a real API call.
+On the classifier side, `defense-news-classifier/tests` mirrors it: small tests each pinning one
+piece, with a `conftest.py` of shared fakes so a test never needs a real API call.
 
 ## Why it matters
 

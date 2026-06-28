@@ -29,17 +29,18 @@ land (Testcontainers returns the container), but for those few minutes the air i
 test-fly every change — you simulate most of them — but before you trust the seam, you want real
 air under the wings once.
 
-## In my project
+## In my project — what these tested, and why they're now historical
 
-The event loop is: `notes-api` publishes a `NoteCreated` event → Kafka topic `note-events` → the
-classifier's consumer tags the note. Both sides were unit-tested with the broker **faked**, so
-nothing proved a real round trip. I added a Testcontainers integration test on **each** side:
+**v1 (the Kafka seam).** The system used to run an event loop: `notes-api` published a
+`NoteCreated` event → Kafka topic `note-events` → the classifier's consumer tagged the note
+(note 18). Both sides were unit-tested with the broker **faked**, so nothing proved a real round
+trip. I added a Testcontainers integration test on **each** side:
 
-- **Consumer side (Python)** — `defense-news-classifier/tests/test_consumer_integration.py`: starts
-  a real broker, publishes a `NoteCreated` the way notes-api does, and drives the consumer's real
+- **Consumer side (Python)** — `defense-news-classifier/tests/test_consumer_integration.py`: started
+  a real broker, published a `NoteCreated` the way notes-api did, and drove the consumer's real
   consume → deserialize → process path.
-- **Producer side (Java)** — `notes-api/.../NoteEventPublishingIT.java`: boots the app against a
-  real broker and asserts that creating a note lands a real `NoteCreated` on the topic, with the
+- **Producer side (Java)** — `notes-api/.../NoteEventPublishingIT.java`: booted the app against a
+  real broker and asserted that creating a note landed a real `NoteCreated` on the topic, with the
   frozen wire shape (key = note id, plain JSON, no Java type headers).
 
 I'd written integration tests with Testcontainers back in my Python days, so the *concept* wasn't
@@ -57,6 +58,13 @@ idea, different tooling; the Rosetta below is the map from what I'd done in Pyth
 The naming split is the one genuinely Java-specific thing: `./mvnw test` runs only the fast unit
 tests (`*Test`), and `./mvnw verify` additionally runs the integration tests (`*IT`) — so the
 opt-in is by *filename convention + build phase*, where Python does it with a marker + a CLI flag.
+
+**v2 (no broker).** The Java→Python port collapsed that event loop into an in-process
+`BackgroundTask` (note 18), so the Kafka seam these tests guarded no longer exists: the producer IT
+is gone with the Java code, and the consumer IT is preserved but inactive. The technique didn't go
+anywhere, though — it just points at v2's real seams now. The integration test I'd write next uses
+a **Postgres** Testcontainer to catch the SQLite-vs-Postgres dialect bugs note 19 warns about, and
+an **HTTP stub** of the classifier's `/classify` to prove the writeback `BackgroundTask` end to end.
 
 ## Why it matters
 
@@ -78,8 +86,9 @@ opt-in is by *filename convention + build phase*, where Python does it with a ma
   process is killed — why cleanup is automatic.
 - Pinning the container **image version** for reproducibility (note 11), and the trade vs. always
   pulling the latest.
-- The deeper layer I haven't built: a full end-to-end test that drives the consumer's run-loop
-  against a real broker *and* a stub of the downstream service, asserting offsets commit only after
-  a successful write — versus the focused single-seam tests I have now.
+- The v2 integration tests still worth building: a **Postgres** Testcontainer for the data layer
+  (so "green on SQLite" can't hide a Postgres dialect bug, note 19) and an **HTTP stub** of
+  `/classify` driving the writeback `BackgroundTask` end to end — the focused single-seam tests that
+  survive the move off Kafka.
 - How this connects to **event-driven architecture** (note 18): the contract between producer and
   consumer is exactly what an integration test on each side protects.

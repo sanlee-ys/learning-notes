@@ -32,7 +32,7 @@ The contrast shows up across two of my repos:
   two functions (`generate_combo`, `main`). It's a stateless pipeline: hand it a
   (category, domain) pair, get back a list of articles. Nothing to hold, no invariant to
   guard — so wrapping it in a class would be a function wearing a costume.
-- **notes-api — classes.** The Java notes API is all classes, because it has long-lived things
+- **notes-api — classes.** The notes API is all classes, because it has long-lived things
   with rules: a `Note` (must always have a title), a `NoteService` (owns the business rules).
   Each class is one *responsibility*.
 

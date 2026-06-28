@@ -31,13 +31,15 @@ and the order flows one direction: front of house → kitchen → pantry, then t
 
 In `notes-api`, follow one `POST /notes` with body `{"title":"Buy milk","content":"2% and oat"}`:
 
-1. **Controller** (`NoteController.create`) gets the HTTP request, builds a `Note` from the
-   request, hands it to the service, wraps the result in a response. Two lines.
+1. **Controller** (`router.py`'s `create_note`) receives the HTTP body as a validated
+   `NoteRequest`, hands it to the service, and returns the result. A couple of lines.
 2. **Service** (`NoteService.create`) applies the rules — for create it's just "save it," but
-   `update` is a read-modify-write in a transaction and `findById` throws a 404 if missing.
-3. **Repository** (`NoteRepository.save`) does the actual database write — a method I never
-   wrote, because Spring Data generated it.
-4. The result travels back up: entity → `NoteResponse` → JSON → HTTP 201.
+   `update` is a read-modify-write and `get_by_id` raises a 404 if missing.
+3. **Data layer** — the SQLAlchemy `Session` does the actual read/write (`self.db.add(note)`,
+   `self.db.query(Note)`). In the Java version this was a separate `NoteRepository` class that
+   Spring Data generated; the Python port folds that role into the ORM session, so the service
+   talks to it directly.
+4. The result travels back up: ORM `Note` → `NoteResponse` (a Pydantic model) → JSON → HTTP 201.
 
 The key discipline is that the **entity never leaks out**. The controller speaks **DTOs**, not
 the `Note` entity — `NoteRequest` coming in, `NoteResponse` going out. `NoteRequest` has no `id`
@@ -47,10 +49,10 @@ DTOs talk to the world.
 
 ## Why it matters
 
-- **Test a layer alone.** Hand `NoteService` a fake repository and test the rules with no web
-  server and no database (`new NoteService(fakeRepo)` — note 14).
-- **Swap a layer.** Move from H2 to PostgreSQL and only the repository cares. Add a CLI and only
-  a new top layer changes; the rules stay put.
+- **Test a layer alone.** Hand `NoteService` a throwaway session and test the rules with no web
+  server (`NoteService(test_session)` — note 14).
+- **Swap a layer.** Move from SQLite to PostgreSQL and only the data layer cares (it's one
+  `DATABASE_URL`). Add a CLI and only a new top layer changes; the rules stay put.
 - **Reason locally.** A wrong status code is a controller bug. A wrong "valid update" is a
   service bug. The layout tells you where to look before you even open the file.
 

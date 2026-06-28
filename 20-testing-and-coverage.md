@@ -28,19 +28,20 @@ the work inside was any good.
 
 ## In my project
 
-The `notes-api` repo makes both halves concrete. Its tests sit at three levels (a *test pyramid*):
-fast pure-logic unit tests with no framework, a repository slice against a real in-memory database,
-and one full-context boot. The lesson baked in: push most testing down to the fast unit level and
-use the slow, realistic tests sparingly.
+The `notes-api` repo makes both halves concrete. Its tests sit at a few levels (a *test pyramid*):
+fast pure-logic unit tests with no framework, API tests that drive real HTTP routes against a
+throwaway database, and a thin full-boot check. The lesson baked in: push most testing down to the
+fast unit level and use the slow, realistic tests sparingly.
 
-For coverage it uses **JaCoCo** (the JVM cousin of Python's `pytest-cov`). Line coverage reads high
-(~97%) but branch coverage is lower (~69%) — and that gap *is* the point. "Did this line run" is
-easy to max out; "did we test *both* sides of each `if`" is the stricter, more honest number. The
-remaining branch gaps are deliberately-skipped defensive paths, because coverage is a **guide, not
-a target** — chasing 100% just breeds low-value tests. Coverage's real win there was finding
-untested PUT/DELETE endpoints that no test touched at all.
+Coverage taught me the line-vs-branch lesson firsthand. Back when notes-api was Java it reported
+**~97% line but only ~69% branch** under **JaCoCo** — and that gap *is* the point. "Did this line
+run" is easy to max out; "did we test *both* sides of each `if`" is the stricter, more honest
+number. The remaining branch gaps were deliberately-skipped defensive paths, because coverage is a
+**guide, not a target** — chasing 100% just breeds low-value tests. Its real win was finding
+PUT/DELETE endpoints that no test touched at all.
 
-The defense-news-classifier enforces the same discipline as a gate: it runs
+The defense-news-classifier enforces the same discipline as a gate — and since the port, notes-api
+(now Python too) runs the same way, both on `pytest-cov`:
 
 ```bash
 uv run pytest --cov=src --cov-report=term-missing

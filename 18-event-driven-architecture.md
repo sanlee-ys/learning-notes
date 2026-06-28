@@ -35,28 +35,37 @@ the line at the same time, and you wait while they think. The event-driven way i
 letter in a mailbox and walking off. You're done the moment it's posted. Whoever's interested
 checks the box later and acts — and you never had to know who they were.
 
-## In my project
+## In my project — I built this, then deliberately took it out
 
-`notes-api` is where I felt this firsthand. `NoteService.create()` used to just save a note and
-return. Now it saves the note and then **publishes a `NoteCreated` event**:
+`notes-api` is where I felt this firsthand, and where I later learned the other half of the
+lesson: *when not to use it.*
 
-```java
-Note saved = repository.save(note);
-NoteCreated event = new NoteCreated(saved.getId(), saved.getTitle(),
-        saved.getContent(), saved.getTags(), saved.getCreatedAt());
-kafkaTemplate.send("note-events", saved.getId().toString(), event);
-return saved;
-```
+**v1 (Kafka).** `NoteService.create()` saved a note and then **published a `NoteCreated` event**
+to a `note-events` **topic**, keyed by the note id so every event about the same note stayed in
+order on one partition. `POST /notes` returned the instant the row was saved, never waiting on
+anything downstream. A separate classifier **consumer** subscribed and tagged the note on its own
+time; `notes-api` never had to know it existed. That one publish is what made it event-driven.
+The honest catch was that the DB save and the event send **weren't atomic**, so a crash between
+them could drop an event — a dual-write risk I'd accepted, with the *transactional outbox* noted
+as the real fix.
 
-That one `send` changed what kind of system it is. The `POST /notes` returns the instant the row
-is saved — it doesn't wait on anything downstream. The event lands on the `note-events` **topic**,
-**keyed by the note id** so every event about the same note stays in order on the same partition.
-A future classifier consumer could subscribe and tag the note on its own time; `notes-api` never
-has to know it exists.
+**v2 (no broker).** I then ported `notes-api` from Java/Spring Boot to Python/FastAPI and, in the
+process, **deliberately collapsed the queue away**. Enrichment now runs in-process: creating a
+note schedules a FastAPI `BackgroundTask` that calls the classifier's HTTP `/classify` and writes
+the labels back as tags. `POST /notes` still returns immediately, so I kept the *responsiveness*
+win, but I gave up the *decoupling* and *resilience* the durable log was buying.
 
-The honest catch is written right into the code's comments: the DB save and the Kafka send
-**aren't atomic**, so a crash between them could drop an event. That dual-write risk is accepted
-for now, with the *transactional outbox* noted as the real fix.
+**Why I made that trade.** For a single-writer hobby system with one consumer, Kafka was paying
+rent I wasn't using. There were no other subscribers to decouple from, no replay to backfill, no
+throughput that needed partitions — just a broker, a topic, and a dual-write hazard to babysit.
+The in-process task removes the broker, the dual-write window, and a whole class of operational
+surface, in exchange for losing what I was never actually using. If a second consumer or a real
+replay need ever shows up, the queue earns its place back. The old Kafka consumer is preserved,
+marked inactive, in the classifier repo as a reference implementation, and the idempotent
+prefixed-tag writeback it pioneered now lives in `notes-api`'s `tasks.py`.
+
+The rest of this note describes the pattern itself, which is worth knowing cold even when the
+right call is to *not* reach for it.
 
 ## Why it matters
 
