@@ -34,23 +34,22 @@ reached, so re-opening doesn't re-read what you've already finished.
 
 ## In my project
 
-The `notes-api` moved from **H2** (an in-memory database wiped on every restart) to **PostgreSQL**
-for durable storage, with Flyway owning the schema.
+`notes-api` has lived on both sides of this lesson.
 
-The one migration, `src/main/resources/db/migration/V1__create_notes_and_tags.sql`, creates the
-`notes` and `note_tags` tables. The filename encodes the contract: `V` + version + `__` +
-description.
+**v1 (Flyway).** As a Java/Spring Boot app on **PostgreSQL**, it let **Flyway** own the schema.
+One migration, `V1__create_notes_and_tags.sql`, created the `notes` and `note_tags` tables; the
+filename encodes the contract (`V` + version + `__` + description). On startup Flyway recorded each
+applied script in `flyway_schema_history` and never re-ran one, while Hibernate ran with
+`ddl-auto=validate` — creating nothing, only checking the entities still matched the tables Flyway
+built, so drift failed the app at boot instead of at 2 a.m.
 
-On startup Flyway creates `flyway_schema_history` if missing, finds migrations newer than what's
-recorded, runs them, and logs each. Hibernate is set to:
-
-```properties
-spring.jpa.hibernate.ddl-auto=validate
-```
-
-So Hibernate *creates nothing* — Flyway owns the schema, and Hibernate only checks the Java
-entities still line up with the tables Flyway built. If they drift, the app refuses to start at
-boot instead of failing at 2 a.m.
+**v2 (auto-create, on purpose).** The Python/FastAPI port has **no migration tool**. On startup it
+calls SQLAlchemy's `Base.metadata.create_all`, which builds any missing tables straight from the
+models, against a default **SQLite** file. That's exactly the auto-create approach the rest of this
+note warns against for a real database — and it's the right call *here*: a single-user hobby app on
+a throwaway SQLite file has no production schema to protect and nothing to drift from. The day it
+grows a real Postgres and a second schema change, the Python answer is **Alembic** (below), and
+that's the upgrade I'd make.
 
 ## Why it matters
 

@@ -104,7 +104,7 @@ aside.related a:hover { background:#e9e4d8; }
 <section id="overview">
 <h1>Learning Notes</h1>
 <p>Plain-language notes on the ideas behind my projects. These started as private notes just for me; I've since made them <strong>public</strong> — as a backup, and because mapping how the concepts connect helps me see how my own projects fit together. The goal is to <em>understand</em> the concepts, not just have working code, and to keep adding over time.</p>
-<blockquote><strong>Note on notes-api:</strong> notes-api has been ported to Python/FastAPI. The Java learning notes below (sessions 13, 14, 17, 18, 19, 20, 21, 26) document that learning journey and are preserved as a historical record.</blockquote>
+<blockquote><strong>Note on notes-api:</strong> notes-api was ported from Java/Spring Boot to <strong>Python/FastAPI</strong>, and its Kafka event loop collapsed into an in-process task. The notes that reference it (13, 14, 16–21, 26) have been <strong>updated to reflect that</strong> — several now trace the v1→v2 evolution and the tradeoffs behind it rather than freezing the Java version. See note 18 for the core change.</blockquote>
 <p align="center">
   <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">
     <img src="assets/category-map.svg" width="760"
@@ -192,7 +192,7 @@ uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :800
 <ul>
   <li><strong>defense-news-classifier</strong> — an AI that reads a defense-news snippet and labels it (what it's about + which domain). Built to <em>measure</em> how well it does.</li>
   <li><strong>kb-agent</strong> — an AI assistant that answers questions about my projects by searching a personal notebook of Markdown files (this is the "RAG" project).</li>
-  <li><strong>notes-api</strong> — a small notes REST API, now Python/FastAPI (originally Spring Boot/Java — see the note at the top). The Java-era notes (13–14, 26) came from that first version and are kept as a record of the learning.</li>
+  <li><strong>notes-api</strong> — a small notes REST API, now <strong>Python/FastAPI</strong> (originally Spring Boot/Java — see the note above and note 18 for why it changed); where the OOP/class examples (notes 13–14) come from.</li>
 </ul>
 </section>
 <section id="01-structured-output-via-tool-use">
@@ -620,7 +620,7 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
 <p>The contrast shows up across two of my repos:</p>
 <ul>
   <li><strong>classifier — functions.</strong> <code>defense-news-classifier/src/generate.py</code> is just constants and two functions (<code>generate_combo</code>, <code>main</code>). It's a stateless pipeline: hand it a (category, domain) pair, get back a list of articles. Nothing to hold, no invariant to guard — so wrapping it in a class would be a function wearing a costume.</li>
-  <li><strong>notes-api — classes.</strong> The Java notes API is all classes, because it has long-lived things with rules: a <code>Note</code> (must always have a title), a <code>NoteService</code> (owns the business rules). Each class is one <em>responsibility</em>.</li>
+  <li><strong>notes-api — classes.</strong> The notes API is all classes, because it has long-lived things with rules: a <code>Note</code> (must always have a title), a <code>NoteService</code> (owns the business rules). Each class is one <em>responsibility</em>.</li>
 </ul>
 <p>The tell that a <code>dict</code> secretly wants to be a class: in <code>generate.py</code> I rebuild <code>{&quot;id&quot;: ..., &quot;text&quot;: ..., &quot;category&quot;: ..., &quot;operational_domain&quot;: ...}</code> by hand every loop. That fixed shape with nothing enforcing it is exactly what a Python <code>@dataclass</code> (or a Java <code>record</code>) formalizes — see note 14.</p>
 <h2>Why it matters</h2>
@@ -648,27 +648,25 @@ def classify_with_retry(...):     # exponential backoff: 2s → 4s
 <h2>Analogy</h2>
 <p>A constructor is <em>new-hire onboarding</em> before someone's allowed to start: badge issued, laptop assigned, paperwork signed. You don't let a half-onboarded employee answer support tickets. Dependency injection is the company <em>handing</em> them the laptop on day one, rather than the employee buying a random one off the street — you control, and can swap, what they're given.</p>
 <h2>In my project</h2>
-<p>In <code>notes-api</code>, <strong>valid-by-construction</strong> shows up as two constructors on <code>Note</code> — a no-arg one Java's persistence layer needs to rebuild rows from the database, and one for my own code that refuses to make a note missing its essentials:</p>
-<pre><code>// The only way to make a Note in my own code — no blank, half-built notes.
-public Note(String title, String content) {
-    this.title = title;
-    this.content = content;
-}</code></pre>
-<p><strong>Dependency injection</strong> shows up in <code>NoteService</code>: it takes its data layer through the constructor, and the field is <code>final</code> (set once, never null), so the service simply can't exist without its repository — and a unit test can hand it a fake with no framework at all.</p>
-<pre><code>private final NoteRepository repository;         // set once, never reassigned
+<p>In <code>notes-api</code>, <strong>valid-by-construction</strong> lives in the request schema. <code>NoteRequest</code> is a <strong>Pydantic model</strong>, and its fields <em>are</em> the definition of valid — a note with no title simply can't be built:</p>
+<pre><code>class NoteRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+    content: str = Field(..., min_length=1, max_length=10000)
+    tags: list[str] = Field(default_factory=list)</code></pre>
+<p>A request missing its title never makes it past construction — FastAPI rejects it with a 422 before any of my code runs. It deliberately has no <code>id</code> field, so a client can't set server-owned data — the same "the schema is the contract" principle as structured output in note 01.</p>
+<p><strong>Dependency injection</strong> shows up in <code>NoteService</code>: it takes its database session through the constructor and stores it, so the service can't exist without one — and a unit test can hand it a throwaway session with no web server in sight:</p>
+<pre><code>class NoteService:
+    def __init__(self, db: Session) -&gt; None:  # the dependency is handed IN
+        self.db = db
 
-public NoteService(NoteRepository repository) {  // the dependency is handed IN
-    this.repository = repository;
-}
-
-// In a test — no Spring, no database, just a stand-in:
-var service = new NoteService(fakeRepo);</code></pre>
-<p>The Python mirror: the constructor is <code>__init__</code>. The day <code>generate.py</code> (note 13) grows shared config, I'd hand the client in once instead of threading it through every call:</p>
+# In a test — no FastAPI, just a session against a temp database:
+service = NoteService(test_session)</code></pre>
+<p>For real requests FastAPI supplies that session via <code>Depends(get_db)</code>, which opens one per request and closes it after — the framework doing the injection instead of me wiring it by hand.</p>
+<p>The same shape recurs in the classifier: the day <code>generate.py</code> (note 13) grows shared config, I'd hand the client in once through <code>__init__</code> rather than threading it through every call:</p>
 <pre><code>class DatasetGenerator:
     def __init__(self, client, model=&quot;claude-...&quot;):  # __init__ = the constructor
         self.client = client      # dependency injected here, reused by every method
         self.model = model</code></pre>
-<p>Related: the immutable request object <code>NoteRequest</code> (a Java <code>record</code>) is a constructor that also <em>validates</em>, and it deliberately has no <code>id</code> field, so a client can't set one. That's the same "the schema is the contract" principle as structured output in note 01.</p>
 <h2>Why it matters</h2>
 <ul>
   <li><strong>No half-built objects.</strong> Whole classes of "I forgot to set field X" bugs vanish — the constructor won't let you.</li>
@@ -753,7 +751,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li><strong><code>$PORT</code> at runtime</strong> — the host injects the port; the image doesn't hardcode it.</li>
 </ul>
 <p>The <code>.dockerignore</code> is the secrets guard: it lists <code>.env</code> and <code>.env.*</code> so no API key ever gets baked into the image — exactly the rule from note 10 (secrets live in the environment, never in the artifact). It also drops <code>.git/</code>, <code>data/</code>, and <code>README.md</code> to keep the build context small.</p>
-<p>My other repo uses Docker a different way — a <code>docker-compose.yml</code> spins up a local <strong>Kafka</strong> broker plus a web UI with one <code>docker compose up</code>. Same tech, different job: one container to <em>ship</em> an app, several wired together to <em>run a dev stack</em> on my laptop.</p>
+<p>Earlier, my other repo used Docker the other way too — a <code>docker-compose.yml</code> spun up a local <strong>Kafka</strong> broker plus a web UI in one <code>docker compose up</code>, back when the system was event-driven (note 18). That stack is retired now that enrichment runs in-process, but the distinction it taught still holds: one container to <em>ship</em> an app, several wired together to <em>run a dev stack</em>.</p>
 <h2>Why it matters</h2>
 <p>It kills the "works on my machine" ghost for good. The image that passes on my laptop is the <em>same bytes</em> that run in the cloud — not a similar setup, the identical one. It also makes the runtime disposable and honest: a fresh container every time means no leftover state quietly keeping things alive, and the <code>.dockerignore</code> line means a leaked image can't leak a key.</p>
 <h2>Go deeper</h2>
@@ -761,10 +759,10 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li><strong>Layers and caching</strong> — why ordering <code>COPY</code>/<code>RUN</code> well makes rebuilds fast, and how a layer is reused until something above it changes.</li>
   <li><strong>Multi-stage builds</strong> — build in a fat image, copy only the artifact into a slim one. (My Dockerfile skips this on purpose: pure-Python wheels, nothing to compile.)</li>
   <li><strong>Image vs container</strong> — the image is the frozen recipe; the container is one running copy.</li>
-  <li><strong><code>docker compose</code></strong> — declaring several containers and their wiring in one file (the Kafka stack), vs a single shipped service.</li>
+  <li><strong><code>docker compose</code></strong> — declaring several containers and their wiring in one file (like the retired Kafka dev stack), vs a single shipped service.</li>
   <li><strong>Where images live</strong> — registries, tags, and how CI builds and pushes them.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">References</span><a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a> <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a></div>
+<div class="rel-row"><span class="rel-label">References</span><a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a> <a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a> <a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a></div>
 <div class="rel-row"><span class="rel-label">Referenced by</span><a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
 </aside>
 </section>
@@ -784,16 +782,16 @@ COPY src/api.py src/classify.py ./src/</code></pre>
 <h2>In my project</h2>
 <p>In <code>notes-api</code>, follow one <code>POST /notes</code> with body <code>{&quot;title&quot;:&quot;Buy milk&quot;,&quot;content&quot;:&quot;2% and oat&quot;}</code>:</p>
 <ol>
-  <li><strong>Controller</strong> (<code>NoteController.create</code>) gets the HTTP request, builds a <code>Note</code> from the request, hands it to the service, wraps the result in a response. Two lines.</li>
-  <li><strong>Service</strong> (<code>NoteService.create</code>) applies the rules — for create it's just "save it," but <code>update</code> is a read-modify-write in a transaction and <code>findById</code> throws a 404 if missing.</li>
-  <li><strong>Repository</strong> (<code>NoteRepository.save</code>) does the actual database write — a method I never wrote, because Spring Data generated it.</li>
-  <li>The result travels back up: entity → <code>NoteResponse</code> → JSON → HTTP 201.</li>
+  <li><strong>Controller</strong> (<code>router.py</code>'s <code>create_note</code>) receives the HTTP body as a validated <code>NoteRequest</code>, hands it to the service, and returns the result. A couple of lines.</li>
+  <li><strong>Service</strong> (<code>NoteService.create</code>) applies the rules — for create it's just "save it," but <code>update</code> is a read-modify-write and <code>get_by_id</code> raises a 404 if missing.</li>
+  <li><strong>Data layer</strong> — the SQLAlchemy <code>Session</code> does the actual read/write (<code>self.db.add(note)</code>, <code>self.db.query(Note)</code>). In the Java version this was a separate <code>NoteRepository</code> class that Spring Data generated; the Python port folds that role into the ORM session, so the service talks to it directly.</li>
+  <li>The result travels back up: ORM <code>Note</code> → <code>NoteResponse</code> (a Pydantic model) → JSON → HTTP 201.</li>
 </ol>
 <p>The key discipline is that the <strong>entity never leaks out</strong>. The controller speaks <strong>DTOs</strong>, not the <code>Note</code> entity — <code>NoteRequest</code> coming in, <code>NoteResponse</code> going out. <code>NoteRequest</code> has no <code>id</code> or timestamp fields, so a client can't set server-owned data (the <em>mass assignment</em> bug). The DTO is the wall between the outside world and my storage shape: entities talk to the database, DTOs talk to the world.</p>
 <h2>Why it matters</h2>
 <ul>
-  <li><strong>Test a layer alone.</strong> Hand <code>NoteService</code> a fake repository and test the rules with no web server and no database (<code>new NoteService(fakeRepo)</code> — note 14).</li>
-  <li><strong>Swap a layer.</strong> Move from H2 to PostgreSQL and only the repository cares. Add a CLI and only a new top layer changes; the rules stay put.</li>
+  <li><strong>Test a layer alone.</strong> Hand <code>NoteService</code> a throwaway session and test the rules with no web server (<code>NoteService(test_session)</code> — note 14).</li>
+  <li><strong>Swap a layer.</strong> Move from SQLite to PostgreSQL and only the data layer cares (it's one <code>DATABASE_URL</code>). Add a CLI and only a new top layer changes; the rules stay put.</li>
   <li><strong>Reason locally.</strong> A wrong status code is a controller bug. A wrong "valid update" is a service bug. The layout tells you where to look before you even open the file.</li>
 </ul>
 <h2>Go deeper</h2>
@@ -822,15 +820,12 @@ COPY src/api.py src/classify.py ./src/</code></pre>
 <p>A topic is split into <strong>partitions</strong> (parallel lanes) living on <strong>brokers</strong> (the queue's servers). That's just how the queue scales and stays safe — more lanes serve more consumers at once, more brokers mean copies survive a machine dying. You can publish without thinking about either.</p>
 <h2>Analogy</h2>
 <p><strong>A phone call vs. a mailbox.</strong> The synchronous way is phoning someone: you both have to be on the line at the same time, and you wait while they think. The event-driven way is dropping a letter in a mailbox and walking off. You're done the moment it's posted. Whoever's interested checks the box later and acts — and you never had to know who they were.</p>
-<h2>In my project</h2>
-<p><code>notes-api</code> is where I felt this firsthand. <code>NoteService.create()</code> used to just save a note and return. Now it saves the note and then <strong>publishes a <code>NoteCreated</code> event</strong>:</p>
-<pre><code>Note saved = repository.save(note);
-NoteCreated event = new NoteCreated(saved.getId(), saved.getTitle(),
-        saved.getContent(), saved.getTags(), saved.getCreatedAt());
-kafkaTemplate.send(&quot;note-events&quot;, saved.getId().toString(), event);
-return saved;</code></pre>
-<p>That one <code>send</code> changed what kind of system it is. The <code>POST /notes</code> returns the instant the row is saved — it doesn't wait on anything downstream. The event lands on the <code>note-events</code> <strong>topic</strong>, <strong>keyed by the note id</strong> so every event about the same note stays in order on the same partition. A future classifier consumer could subscribe and tag the note on its own time; <code>notes-api</code> never has to know it exists.</p>
-<p>The honest catch is written right into the code's comments: the DB save and the Kafka send <strong>aren't atomic</strong>, so a crash between them could drop an event. That dual-write risk is accepted for now, with the <em>transactional outbox</em> noted as the real fix.</p>
+<h2>In my project — I built this, then deliberately took it out</h2>
+<p><code>notes-api</code> is where I felt this firsthand, and where I later learned the other half of the lesson: <em>when not to use it.</em></p>
+<p><strong>v1 (Kafka).</strong> <code>NoteService.create()</code> saved a note and then <strong>published a <code>NoteCreated</code> event</strong> to a <code>note-events</code> <strong>topic</strong>, keyed by the note id so every event about the same note stayed in order on one partition. <code>POST /notes</code> returned the instant the row was saved, never waiting on anything downstream. A separate classifier <strong>consumer</strong> subscribed and tagged the note on its own time; <code>notes-api</code> never had to know it existed. That one publish is what made it event-driven. The honest catch was that the DB save and the event send <strong>weren't atomic</strong>, so a crash between them could drop an event — a dual-write risk I'd accepted, with the <em>transactional outbox</em> noted as the real fix.</p>
+<p><strong>v2 (no broker).</strong> I then ported <code>notes-api</code> from Java/Spring Boot to Python/FastAPI and, in the process, <strong>deliberately collapsed the queue away</strong>. Enrichment now runs in-process: creating a note schedules a FastAPI <code>BackgroundTask</code> that calls the classifier's HTTP <code>/classify</code> and writes the labels back as tags. <code>POST /notes</code> still returns immediately, so I kept the <em>responsiveness</em> win, but I gave up the <em>decoupling</em> and <em>resilience</em> the durable log was buying.</p>
+<p><strong>Why I made that trade.</strong> For a single-writer hobby system with one consumer, Kafka was paying rent I wasn't using. There were no other subscribers to decouple from, no replay to backfill, no throughput that needed partitions — just a broker, a topic, and a dual-write hazard to babysit. The in-process task removes the broker, the dual-write window, and a whole class of operational surface, in exchange for losing what I was never actually using. If a second consumer or a real replay need ever shows up, the queue earns its place back. The old Kafka consumer is preserved, marked inactive, in the classifier repo as a reference implementation, and the idempotent prefixed-tag writeback it pioneered now lives in <code>notes-api</code>'s <code>tasks.py</code>.</p>
+<p>The rest of this note describes the pattern itself, which is worth knowing cold even when the right call is to <em>not</em> reach for it.</p>
 <h2>Why it matters</h2>
 <p>This is the asynchronous, decoupled alternative to the synchronous layered flow in note 17. It buys three things: <strong>decoupling</strong> (add a new consumer without touching the producer), <strong>resilience</strong> (a consumer being down doesn't break the producer — the event waits in the log), and <strong>responsiveness</strong> (slow work moves off the request path).</p>
 <p>The cost is honesty about <strong>eventual consistency</strong>: the note exists now, its tags show up a moment later. The flow also hops across services and time, which is harder to follow — the price you pay for not chaining everything together.</p>
@@ -843,7 +838,7 @@ return saved;</code></pre>
   <li>Tracing an event across services (distributed tracing) when there's no single top-to-bottom call to read.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#17-layered-architecture">17 · Layered architecture: controller, service, repository</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
 </aside>
 </section>
 <section id="19-database-migrations">
@@ -857,11 +852,9 @@ return saved;</code></pre>
 <h2>Analogy</h2>
 <p>Migrations are the <strong>numbered chapters of a book</strong>. To get the current story you read chapters 1, 2, 3 in order — you don't rewrite chapter 1 once it's published, you write chapter 4. Anyone with the same book reads the same story. Flyway is the bookmark that remembers which chapter you've reached, so re-opening doesn't re-read what you've already finished.</p>
 <h2>In my project</h2>
-<p>The <code>notes-api</code> moved from <strong>H2</strong> (an in-memory database wiped on every restart) to <strong>PostgreSQL</strong> for durable storage, with Flyway owning the schema.</p>
-<p>The one migration, <code>src/main/resources/db/migration/V1__create_notes_and_tags.sql</code>, creates the <code>notes</code> and <code>note_tags</code> tables. The filename encodes the contract: <code>V</code> + version + <code>__</code> + description.</p>
-<p>On startup Flyway creates <code>flyway_schema_history</code> if missing, finds migrations newer than what's recorded, runs them, and logs each. Hibernate is set to:</p>
-<pre><code>spring.jpa.hibernate.ddl-auto=validate</code></pre>
-<p>So Hibernate <em>creates nothing</em> — Flyway owns the schema, and Hibernate only checks the Java entities still line up with the tables Flyway built. If they drift, the app refuses to start at boot instead of failing at 2 a.m.</p>
+<p><code>notes-api</code> has lived on both sides of this lesson.</p>
+<p><strong>v1 (Flyway).</strong> As a Java/Spring Boot app on <strong>PostgreSQL</strong>, it let <strong>Flyway</strong> own the schema. One migration, <code>V1__create_notes_and_tags.sql</code>, created the <code>notes</code> and <code>note_tags</code> tables; the filename encodes the contract (<code>V</code> + version + <code>__</code> + description). On startup Flyway recorded each applied script in <code>flyway_schema_history</code> and never re-ran one, while Hibernate ran with <code>ddl-auto=validate</code> — creating nothing, only checking the entities still matched the tables Flyway built, so drift failed the app at boot instead of at 2 a.m.</p>
+<p><strong>v2 (auto-create, on purpose).</strong> The Python/FastAPI port has <strong>no migration tool</strong>. On startup it calls SQLAlchemy's <code>Base.metadata.create_all</code>, which builds any missing tables straight from the models, against a default <strong>SQLite</strong> file. That's exactly the auto-create approach the rest of this note warns against for a real database — and it's the right call <em>here</em>: a single-user hobby app on a throwaway SQLite file has no production schema to protect and nothing to drift from. The day it grows a real Postgres and a second schema change, the Python answer is <strong>Alembic</strong> (below), and that's the upgrade I'd make.</p>
 <h2>Why it matters</h2>
 <p>Without migrations, your schema is an undocumented thing that exists differently in every environment, and "set up a fresh database" becomes tribal knowledge. With them, the schema is reviewable in a pull request, replayable on a clean machine, and identical in CI and production.</p>
 <p>It also surfaces a sharp lesson: a query that passed every H2 test blew up on Postgres (<code>function lower(bytea) does not exist</code>) because H2 isn't Postgres. Versioned, real-engine migrations are what let you catch dialect bugs <em>before</em> production instead of discovering them there.</p>
@@ -874,6 +867,7 @@ return saved;</code></pre>
   <li>Other migration tools in the same family: Liquibase (Java), Alembic (Python), Rails migrations.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
 </aside>
 </section>
 <section id="20-testing-and-coverage">
@@ -886,9 +880,9 @@ return saved;</code></pre>
 <h2>Analogy</h2>
 <p>Coverage is the <em>checklist</em> of rooms the cleaner walked through; it is not proof any room is actually clean. Walking into the kitchen counts as "covered" even if you never wiped a counter. The checklist finds the rooms nobody entered — a real blind spot — but it can't tell you whether the work inside was any good.</p>
 <h2>In my project</h2>
-<p>The <code>notes-api</code> repo makes both halves concrete. Its tests sit at three levels (a <em>test pyramid</em>): fast pure-logic unit tests with no framework, a repository slice against a real in-memory database, and one full-context boot. The lesson baked in: push most testing down to the fast unit level and use the slow, realistic tests sparingly.</p>
-<p>For coverage it uses <strong>JaCoCo</strong> (the JVM cousin of Python's <code>pytest-cov</code>). Line coverage reads high (~97%) but branch coverage is lower (~69%) — and that gap <em>is</em> the point. "Did this line run" is easy to max out; "did we test <em>both</em> sides of each <code>if</code>" is the stricter, more honest number. The remaining branch gaps are deliberately-skipped defensive paths, because coverage is a <strong>guide, not a target</strong> — chasing 100% just breeds low-value tests. Coverage's real win there was finding untested PUT/DELETE endpoints that no test touched at all.</p>
-<p>The defense-news-classifier enforces the same discipline as a gate: it runs</p>
+<p>The <code>notes-api</code> repo makes both halves concrete. Its tests sit at a few levels (a <em>test pyramid</em>): fast pure-logic unit tests with no framework, API tests that drive real HTTP routes against a throwaway database, and a thin full-boot check. The lesson baked in: push most testing down to the fast unit level and use the slow, realistic tests sparingly.</p>
+<p>Coverage taught me the line-vs-branch lesson firsthand. Back when notes-api was Java it reported <strong>~97% line but only ~69% branch</strong> under <strong>JaCoCo</strong> — and that gap <em>is</em> the point. "Did this line run" is easy to max out; "did we test <em>both</em> sides of each <code>if</code>" is the stricter, more honest number. The remaining branch gaps were deliberately-skipped defensive paths, because coverage is a <strong>guide, not a target</strong> — chasing 100% just breeds low-value tests. Its real win was finding PUT/DELETE endpoints that no test touched at all.</p>
+<p>The defense-news-classifier enforces the same discipline as a gate — and since the port, notes-api (now Python too) runs the same way, both on <code>pytest-cov</code>:</p>
 <pre><code>uv run pytest --cov=src --cov-report=term-missing</code></pre>
 <p>so every run prints exactly which lines weren't exercised. Untested code can't hide. The kind of fragile, real-world machinery worth wrapping in tests — checkpoint/resume and retries (note 12) — is exactly where an untested branch bites you later.</p>
 <h2>Why it matters</h2>
@@ -920,9 +914,9 @@ return saved;</code></pre>
 <p>It's writing the answer key before you write the exam. If you decide what "correct" looks like up front, you can't quietly redefine "correct" to match whatever you happened to produce. Tests written <em>after</em> the code grade the student who also wrote the answer key — they tend to confirm what's there, not catch what's missing.</p>
 <h2>In my project</h2>
 <p>I've leaned on this loop professionally, and both repos are shaped the way TDD leaves things — small tests that pin one behavior each.</p>
-<p>In <code>notes-api</code>, <code>NoteServiceTest</code> is a clean red-green target. Take a test like <code>delete_throws_andSkipsDelete_whenMissing</code>: red is writing it against a <code>delete()</code> that doesn't yet check existence — it fails because nothing throws. Green is adding the <code>existsById</code> guard and the <code>NoteNotFoundException</code>. The test also asserts <code>verify(repository, never()).deleteById(...)</code> — so the <em>refactor</em> step (reordering the guard, renaming things) is safe, because that line locks in "must not delete when missing." The service takes its repository through the constructor (note 14), so the test hands it a <code>@Mock</code> with no database — fast enough to run on every tiny loop.</p>
-<p><code>NoteControllerTest</code> shows the same loop at the HTTP edge: a test like <code>create_withBlankTitle_returns400_andSkipsService</code> states the rule first — a blank title is a 400 and the service is never touched — and you build validation until it goes green.</p>
-<p>On the Python side, <code>defense-news-classifier/tests</code> mirrors it: <code>test_classify.py</code>, <code>test_retrieve.py</code>, <code>test_eval.py</code>, each pinning one piece, with a <code>conftest.py</code> of shared fakes so a test never needs a real API call.</p>
+<p>In <code>notes-api</code>, deleting a missing note is a clean red-green target. Write the test first — <code>DELETE /notes/{id}</code> on an id that doesn't exist should come back <strong>404</strong> and leave the store untouched — and run it against a <code>delete()</code> that blindly removes whatever it's handed: it fails, because nothing 404s. <em>Green</em> is routing the delete through <code>get_by_id</code>, which raises <code>HTTPException(404)</code> when the row is missing. The test pins both halves — the status <em>and</em> that no row was deleted — so the <em>refactor</em> step (moving the guard, renaming) stays safe. <code>NoteService</code> takes its database session through the constructor (note 14), so the test hands it a throwaway session and runs fast enough for every tiny loop.</p>
+<p>The HTTP edge shows the same loop: a test stating "a blank title is rejected before the service is ever touched" goes red, and you add the rule until it's green — here the Pydantic <code>NoteRequest</code> schema does it, bouncing the request with a <strong>422</strong> before any handler code runs (note 14).</p>
+<p>On the classifier side, <code>defense-news-classifier/tests</code> mirrors it: small tests each pinning one piece, with a <code>conftest.py</code> of shared fakes so a test never needs a real API call.</p>
 <h2>Why it matters</h2>
 <ul>
   <li><strong>The test can actually fail.</strong> Seeing red first proves the test isn't a green-painted no-op that would miss the real regression.</li>
@@ -1095,15 +1089,16 @@ return saved;</code></pre>
 <p><strong>Testcontainers</strong> is the modern answer: in the test itself you ask for a real Kafka/Postgres/Redis, it starts that as a <strong>Docker container</strong> scoped to the test, hands you its address, and removes it when the test ends. Real dependency, no shared state, cleaned up automatically. It exists for both Python (<code>testcontainers[kafka]</code>) and the JVM (<code>org.testcontainers</code>), with the <em>same</em> idea on both.</p>
 <h2>Analogy</h2>
 <p>A unit test is a <strong>flight simulator</strong> — cheap, safe, infinitely repeatable, but the weather is fake. An integration test is a <strong>short test flight in a rented plane</strong>: you give it back when you land (Testcontainers returns the container), but for those few minutes the air is real. You don't test-fly every change — you simulate most of them — but before you trust the seam, you want real air under the wings once.</p>
-<h2>In my project</h2>
-<p>The event loop is: <code>notes-api</code> publishes a <code>NoteCreated</code> event → Kafka topic <code>note-events</code> → the classifier's consumer tags the note. Both sides were unit-tested with the broker <strong>faked</strong>, so nothing proved a real round trip. I added a Testcontainers integration test on <strong>each</strong> side:</p>
+<h2>In my project — what these tested, and why they're now historical</h2>
+<p><strong>v1 (the Kafka seam).</strong> The system used to run an event loop: <code>notes-api</code> published a <code>NoteCreated</code> event → Kafka topic <code>note-events</code> → the classifier's consumer tagged the note (note 18). Both sides were unit-tested with the broker <strong>faked</strong>, so nothing proved a real round trip. I added a Testcontainers integration test on <strong>each</strong> side:</p>
 <ul>
-  <li><strong>Consumer side (Python)</strong> — <code>defense-news-classifier/tests/test_consumer_integration.py</code>: starts a real broker, publishes a <code>NoteCreated</code> the way notes-api does, and drives the consumer's real consume → deserialize → process path.</li>
-  <li><strong>Producer side (Java)</strong> — <code>notes-api/.../NoteEventPublishingIT.java</code>: boots the app against a real broker and asserts that creating a note lands a real <code>NoteCreated</code> on the topic, with the frozen wire shape (key = note id, plain JSON, no Java type headers).</li>
+  <li><strong>Consumer side (Python)</strong> — <code>defense-news-classifier/tests/test_consumer_integration.py</code>: started a real broker, published a <code>NoteCreated</code> the way notes-api did, and drove the consumer's real consume → deserialize → process path.</li>
+  <li><strong>Producer side (Java)</strong> — <code>notes-api/.../NoteEventPublishingIT.java</code>: booted the app against a real broker and asserted that creating a note landed a real <code>NoteCreated</code> on the topic, with the frozen wire shape (key = note id, plain JSON, no Java type headers).</li>
 </ul>
 <p>I'd written integration tests with Testcontainers back in my Python days, so the <em>concept</em> wasn't new — the refresher here was getting them running in <strong>Java</strong>, where the machinery differs. Same idea, different tooling; the Rosetta below is the map from what I'd done in Python to the Java side:</p>
 <p>| Idea | Python (pytest) | Java (JUnit 5 / Spring Boot) | |---|---|---| | Start/stop the container | a fixture that starts it and <code>yield</code>s, stopping after | <code>@Testcontainers</code> + <code>@Container</code> on a <code>static</code> field (JUnit owns the lifecycle) | | Skip when Docker is absent | <code>pytest.skip(...)</code> in the fixture | <code>@Testcontainers(disabledWithoutDocker = true)</code> | | Point your client at it | read <code>container.get_bootstrap_server()</code> and pass it in | <code>@ServiceConnection</code> auto-wires it into <code>spring.kafka.*</code> (or <code>@DynamicPropertySource</code> to do it by hand) | | Keep it out of the fast lane | mark <code>integration</code>, deselect by default, run with <code>--run-integration</code> | name it <code>*IT</code> so <strong>Failsafe</strong> runs it in <code>verify</code>, while <strong>Surefire</strong> runs <code>*Test</code> units in <code>test</code> | | Read the topic to verify | kafka-python <code>KafkaConsumer</code> | <code>org.apache.kafka...KafkaConsumer</code> (same client, Java API) |</p>
 <p>The naming split is the one genuinely Java-specific thing: <code>./mvnw test</code> runs only the fast unit tests (<code>*Test</code>), and <code>./mvnw verify</code> additionally runs the integration tests (<code>*IT</code>) — so the opt-in is by <em>filename convention + build phase</em>, where Python does it with a marker + a CLI flag.</p>
+<p><strong>v2 (no broker).</strong> The Java→Python port collapsed that event loop into an in-process <code>BackgroundTask</code> (note 18), so the Kafka seam these tests guarded no longer exists: the producer IT is gone with the Java code, and the consumer IT is preserved but inactive. The technique didn't go anywhere, though — it just points at v2's real seams now. The integration test I'd write next uses a <strong>Postgres</strong> Testcontainer to catch the SQLite-vs-Postgres dialect bugs note 19 warns about, and an <strong>HTTP stub</strong> of the classifier's <code>/classify</code> to prove the writeback <code>BackgroundTask</code> end to end.</p>
 <h2>Why it matters</h2>
 <ul>
   <li>It catches the failures unit tests <strong>structurally cannot</strong>: a renamed field, a serializer that writes dates as numbers, a <code>bootstrap-servers</code> typo, a type-header setting the other language can't read. These only show up when a real broker is in the loop.</li>
@@ -1116,10 +1111,10 @@ return saved;</code></pre>
   <li><strong>Surefire vs Failsafe</strong> — why the JVM splits unit (<code>*Test</code>) and integration (<code>*IT</code>) tests across two build phases, and how <code>verify</code> differs from <code>test</code>.</li>
   <li><strong>Ryuk</strong>, the sidecar container Testcontainers starts to reap leftover containers even if the test process is killed — why cleanup is automatic.</li>
   <li>Pinning the container <strong>image version</strong> for reproducibility (note 11), and the trade vs. always pulling the latest.</li>
-  <li>The deeper layer I haven't built: a full end-to-end test that drives the consumer's run-loop against a real broker <em>and</em> a stub of the downstream service, asserting offsets commit only after a successful write — versus the focused single-seam tests I have now.</li>
+  <li>The v2 integration tests still worth building: a <strong>Postgres</strong> Testcontainer for the data layer (so "green on SQLite" can't hide a Postgres dialect bug, note 19) and an <strong>HTTP stub</strong> of <code>/classify</code> driving the writeback <code>BackgroundTask</code> end to end — the focused single-seam tests that survive the move off Kafka.</li>
   <li>How this connects to <strong>event-driven architecture</strong> (note 18): the contract between producer and consumer is exactly what an integration test on each side protects.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">References</span><a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a> <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
+<div class="rel-row"><span class="rel-label">References</span><a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a> <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a> <a href="#19-database-migrations">19 · Database migrations: versioning your schema</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
 </aside>
 </section>
 </main>

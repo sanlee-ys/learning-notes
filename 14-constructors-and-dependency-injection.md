@@ -25,35 +25,39 @@ employee buying a random one off the street — you control, and can swap, what 
 
 ## In my project
 
-In `notes-api`, **valid-by-construction** shows up as two constructors on `Note` — a no-arg one
-Java's persistence layer needs to rebuild rows from the database, and one for my own code that
-refuses to make a note missing its essentials:
+In `notes-api`, **valid-by-construction** lives in the request schema. `NoteRequest` is a
+**Pydantic model**, and its fields *are* the definition of valid — a note with no title simply
+can't be built:
 
-```java
-// The only way to make a Note in my own code — no blank, half-built notes.
-public Note(String title, String content) {
-    this.title = title;
-    this.content = content;
-}
+```python
+class NoteRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+    content: str = Field(..., min_length=1, max_length=10000)
+    tags: list[str] = Field(default_factory=list)
 ```
 
-**Dependency injection** shows up in `NoteService`: it takes its data layer through the
-constructor, and the field is `final` (set once, never null), so the service simply can't exist
-without its repository — and a unit test can hand it a fake with no framework at all.
+A request missing its title never makes it past construction — FastAPI rejects it with a 422
+before any of my code runs. It deliberately has no `id` field, so a client can't set server-owned
+data — the same "the schema is the contract" principle as structured output in note 01.
 
-```java
-private final NoteRepository repository;         // set once, never reassigned
+**Dependency injection** shows up in `NoteService`: it takes its database session through the
+constructor and stores it, so the service can't exist without one — and a unit test can hand it a
+throwaway session with no web server in sight:
 
-public NoteService(NoteRepository repository) {  // the dependency is handed IN
-    this.repository = repository;
-}
+```python
+class NoteService:
+    def __init__(self, db: Session) -> None:  # the dependency is handed IN
+        self.db = db
 
-// In a test — no Spring, no database, just a stand-in:
-var service = new NoteService(fakeRepo);
+# In a test — no FastAPI, just a session against a temp database:
+service = NoteService(test_session)
 ```
 
-The Python mirror: the constructor is `__init__`. The day `generate.py` (note 13) grows shared
-config, I'd hand the client in once instead of threading it through every call:
+For real requests FastAPI supplies that session via `Depends(get_db)`, which opens one per
+request and closes it after — the framework doing the injection instead of me wiring it by hand.
+
+The same shape recurs in the classifier: the day `generate.py` (note 13) grows shared config, I'd
+hand the client in once through `__init__` rather than threading it through every call:
 
 ```python
 class DatasetGenerator:
@@ -61,10 +65,6 @@ class DatasetGenerator:
         self.client = client      # dependency injected here, reused by every method
         self.model = model
 ```
-
-Related: the immutable request object `NoteRequest` (a Java `record`) is a constructor that
-also *validates*, and it deliberately has no `id` field, so a client can't set one. That's the
-same "the schema is the contract" principle as structured output in note 01.
 
 ## Why it matters
 

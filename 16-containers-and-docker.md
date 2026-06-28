@@ -61,9 +61,10 @@ baked into the image — exactly the rule from note 10 (secrets live in the envi
 in the artifact). It also drops `.git/`, `data/`, and `README.md` to keep the build context
 small.
 
-My other repo uses Docker a different way — a `docker-compose.yml` spins up a local **Kafka**
-broker plus a web UI with one `docker compose up`. Same tech, different job: one container to
-*ship* an app, several wired together to *run a dev stack* on my laptop.
+Earlier, my other repo used Docker the other way too — a `docker-compose.yml` spun up a local
+**Kafka** broker plus a web UI in one `docker compose up`, back when the system was event-driven
+(note 18). That stack is retired now that enrichment runs in-process, but the distinction it
+taught still holds: one container to *ship* an app, several wired together to *run a dev stack*.
 
 ## Why it matters
 
@@ -79,6 +80,6 @@ keeping things alive, and the `.dockerignore` line means a leaked image can't le
 - **Multi-stage builds** — build in a fat image, copy only the artifact into a slim one. (My
   Dockerfile skips this on purpose: pure-Python wheels, nothing to compile.)
 - **Image vs container** — the image is the frozen recipe; the container is one running copy.
-- **`docker compose`** — declaring several containers and their wiring in one file (the Kafka
-  stack), vs a single shipped service.
+- **`docker compose`** — declaring several containers and their wiring in one file (like the
+  retired Kafka dev stack), vs a single shipped service.
 - **Where images live** — registries, tags, and how CI builds and pushes them.
