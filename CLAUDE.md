@@ -45,3 +45,11 @@ So:
 - After editing any source, **regenerate** (`python build_site.py` and/or
   `python build_graph.py`) and commit the regenerated output alongside the source
   so the two never drift.
+
+## Pull requests — batch related work
+
+Prefer **one PR per coherent unit of work**, not one PR per tweak. Group related
+changes (e.g. a fix plus its follow-up polish) and merge once the set is
+complete. One-PR-per-change fragments history and forces a branch re-sync with
+`main` between every merge. Open a separate PR only when changes are genuinely
+unrelated.
