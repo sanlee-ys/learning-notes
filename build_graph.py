@@ -139,7 +139,7 @@ def write_category_map_svg(notes, cats) -> Path:
 
     parts: list[str] = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
-        f'role="img" aria-labelledby="title desc" '
+        f'width="{W}" height="{H}" role="img" aria-labelledby="title desc" '
         f'font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">',
         '<title id="title">Learning notes — category map</title>',
     ]
