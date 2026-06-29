@@ -241,7 +241,27 @@ aside.related { margin-top:26px; padding-top:14px; border-top:1px solid var(--bo
 aside.related a { padding:2px 9px; background:var(--code-bg); border-radius:12px;
                   text-decoration:none; font-size:.82rem; color:var(--accent); }
 aside.related a:hover { background:#e9e4d8; }
-@media (max-width:780px) { nav { display:none; } main { padding:28px 20px 80px; } }
+img { max-width:100%; height:auto; }
+/* Mobile "Contents" overlay nav — the sidebar is hidden on small screens, so a
+   floating button reveals the same nav list as a full-screen overlay. */
+#navtoggle, #navclose { display:none; }
+@media (max-width:780px) {
+  nav { display:none; }
+  main { padding:28px 20px 80px; }
+  #navtoggle { display:inline-flex; align-items:center; gap:7px; position:fixed;
+    right:16px; bottom:16px; z-index:30; padding:11px 16px; border:none;
+    border-radius:22px; background:var(--accent); color:#fff;
+    font:600 .9rem/1 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    box-shadow:0 2px 10px rgba(0,0,0,.22); cursor:pointer; }
+  body.nav-open nav { display:block; position:fixed; inset:0; width:auto;
+    height:100dvh; z-index:40; background:var(--bg); border-right:none;
+    padding:22px 20px 90px; }
+  body.nav-open { overflow:hidden; }
+  #navclose { position:absolute; top:12px; right:14px; width:34px; height:34px;
+    border:1px solid var(--border); border-radius:50%; background:var(--card);
+    color:var(--fg); font-size:1.05rem; line-height:1; cursor:pointer; }
+  body.nav-open #navclose { display:block; }
+}
 """
 
 
@@ -270,6 +290,20 @@ q.addEventListener('input', () => {
   }
   noresults.style.display = shown ? 'none' : 'block';
 });
+
+// Mobile "Contents" overlay: toggle the otherwise-hidden sidebar, and close it
+// once a destination is picked (or Esc / the close button).
+const navToggle = document.getElementById('navtoggle');
+const navClose = document.getElementById('navclose');
+const navEl = document.querySelector('nav');
+function setNav(open) {
+  document.body.classList.toggle('nav-open', open);
+  if (navToggle) navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+if (navToggle) navToggle.addEventListener('click', () => setNav(true));
+if (navClose) navClose.addEventListener('click', () => setNav(false));
+if (navEl) navEl.addEventListener('click', e => { if (e.target.closest('a')) setNav(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setNav(false); });
 """
 
 
@@ -316,8 +350,9 @@ def build() -> None:
 <style>{CSS}</style>
 </head>
 <body>
+<button id="navtoggle" type="button" aria-label="Open contents" aria-expanded="false">☰ Contents</button>
 <div class="layout">
-<nav><h2>Learning Notes</h2>
+<nav><button id="navclose" type="button" aria-label="Close contents">✕</button><h2>Learning Notes</h2>
 <input id="search" type="search" placeholder="Search notes…" autocomplete="off" aria-label="Search notes">
 {nav}
 </nav>
