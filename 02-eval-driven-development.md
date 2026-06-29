@@ -18,9 +18,9 @@ outputs. The number catches what your eyes flatter.
 
 ## Analogy
 
-Stepping on a scale before and after a diet change, instead of judging from the
-mirror. The mirror lies (and flatters); the scale doesn't care how good the plan
-sounded.
+A blood test before and after a diet change, instead of going by how you feel.
+You can feel fine, even great, while your cholesterol quietly climbs; the lab
+number doesn't care how good the plan sounded.
 
 ## In my project
 
