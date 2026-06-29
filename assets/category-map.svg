@@ -17,13 +17,13 @@
 <text x="488.3" y="216.6" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">LLM app patterns</text>
 <circle cx="488.3" cy="282.5" r="34.6" fill="#4a8c5f" stroke="#fff" stroke-width="3"/>
 <text x="488.3" y="282.5" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">2</text>
-<text x="488.3" y="333.1" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Data &amp; method</text>
+<text x="532.1" y="307.8" text-anchor="start" fill="#2b2b2b" font-size="13" font-weight="600">Data &amp; method</text>
 <circle cx="380.0" cy="345.0" r="56.0" fill="#8c6dae" stroke="#fff" stroke-width="3"/>
 <text x="380.0" y="345.0" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">7</text>
 <text x="380.0" y="417.0" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Engineering hygiene</text>
 <circle cx="271.7" cy="282.5" r="43.1" fill="#2f8f9d" stroke="#fff" stroke-width="3"/>
 <text x="271.7" y="282.5" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">4</text>
-<text x="271.7" y="341.6" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Systems &amp; infrastructure</text>
+<text x="220.5" y="312.1" text-anchor="end" fill="#2b2b2b" font-size="13" font-weight="600">Systems &amp; infrastructure</text>
 <circle cx="271.7" cy="157.5" r="43.1" fill="#b04a7a" stroke="#fff" stroke-width="3"/>
 <text x="271.7" y="157.5" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700" font-size="20">4</text>
 <text x="271.7" y="216.6" text-anchor="middle" fill="#2b2b2b" font-size="13" font-weight="600">Working with AI agents</text>

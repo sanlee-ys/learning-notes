@@ -122,9 +122,11 @@ def write_category_map_svg(notes, cats) -> Path:
     cx, cy, ring = W / 2, H / 2, 125.0
     n_cats = len(cats) or 1
     pos: dict[str, tuple[float, float]] = {}
+    angs: dict[str, float] = {}
     for i, c in enumerate(cats):
         ang = -math.pi / 2 + 2 * math.pi * i / n_cats  # first category at top
         pos[c] = (cx + ring * math.cos(ang), cy + ring * math.sin(ang))
+        angs[c] = ang
 
     max_count = max(counts.values()) or 1
     max_w = max(pair_w.values()) if pair_w else 1
@@ -169,8 +171,18 @@ def write_category_map_svg(notes, cats) -> Path:
             f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="middle" dominant-baseline="central" '
             f'fill="#fff" font-weight="700" font-size="20">{counts[c]}</text>'
         )
+        # Bottom-side nodes (lower hemisphere, not the bottom pole) place their
+        # label diagonally outward so it clears the large bottom node's circle.
+        ca, sa = math.cos(angs[c]), math.sin(angs[c])
+        gap = 16
+        if sa > 0 and abs(ca) > 0.1:
+            lx = x + (r + gap) * ca
+            ly = y + (r + gap) * sa
+            anchor = "start" if ca > 0 else "end"
+        else:
+            lx, ly, anchor = x, y + r + gap, "middle"
         parts.append(
-            f'<text x="{x:.1f}" y="{y + r + 16:.1f}" text-anchor="middle" '
+            f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" '
             f'fill="#2b2b2b" font-size="13" font-weight="600">{html.escape(c)}</text>'
         )
 

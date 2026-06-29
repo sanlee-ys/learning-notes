@@ -53,6 +53,7 @@ aside.related a { padding:2px 9px; background:var(--code-bg); border-radius:12px
                   text-decoration:none; font-size:.82rem; color:var(--accent); }
 aside.related a:hover { background:#e9e4d8; }
 @media (max-width:780px) { nav { display:none; } main { padding:28px 20px 80px; } }
+img { max-width:100%; height:auto; }
 </style>
 </head>
 <body>
@@ -105,15 +106,16 @@ aside.related a:hover { background:#e9e4d8; }
 <h1>Learning Notes</h1>
 <p>Plain-language notes on the ideas behind my projects. These started as private notes just for me; I've since made them <strong>public</strong> — as a backup, and because mapping how the concepts connect helps me see how my own projects fit together. The goal is to <em>understand</em> the concepts, not just have working code, and to keep adding over time.</p>
 <blockquote><strong>Note on notes-api:</strong> notes-api was ported from Java/Spring Boot to <strong>Python/FastAPI</strong>, and its Kafka event loop collapsed into an in-process task. The notes that reference it (13, 14, 16–21, 26) have been <strong>updated to reflect that</strong> — several now trace the v1→v2 evolution and the tradeoffs behind it rather than freezing the Java version. See note 18 for the core change.</blockquote>
-<p align="center">
-  <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">
-    <img src="assets/category-map.svg" width="760"
+<div style="text-align:center">
+  <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html" style="display:block">
+    <img src="assets/category-map.svg"
+         style="width:100%;max-width:760px;height:auto;display:block;margin:0 auto"
          alt="Category map: each note category is a circle sized by how many notes it holds, with links where notes in one category reference another">
   </a>
   <br>
   <em>The note categories and how they connect — auto-generated from the notes, so it's never out of date.<br>
   <a href="https://sanlee-ys.github.io/learning-notes/concept-map.html">▶ Open the full interactive map</a> — hover to focus a note, click to pin its neighbourhood, double-click to open it.</em>
-</p>
+</div>
 <h2>How to use this</h2>
 <p>Each note is short and follows the same five-part shape:</p>
 <ol>
