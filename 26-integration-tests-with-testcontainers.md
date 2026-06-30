@@ -43,9 +43,10 @@ trip. I added a Testcontainers integration test on **each** side:
   real broker and asserted that creating a note landed a real `NoteCreated` on the topic, with the
   frozen wire shape (key = note id, plain JSON, no Java type headers).
 
-I'd written integration tests with Testcontainers back in my Python days, so the *concept* wasn't
-new — the refresher here was getting them running in **Java**, where the machinery differs. Same
-idea, different tooling; the Rosetta below is the map from what I'd done in Python to the Java side:
+I'd already written integration tests with Testcontainers in Python, so the *concept* wasn't new —
+the refresher here was getting them running in **Java**, the rustier side of my stack, where the
+machinery differs. Same idea, different tooling; the Rosetta below is the map from what I'd done in
+Python to the Java side:
 
 | Idea | Python (pytest) | Java (JUnit 5 / Spring Boot) |
 |---|---|---|
