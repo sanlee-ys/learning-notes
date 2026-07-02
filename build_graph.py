@@ -239,7 +239,7 @@ PAGE = """<!DOCTYPE html>
   .legend {{ display:flex; gap:14px; flex-wrap:wrap; margin-left:auto; }}
   .chip {{ display:inline-flex; align-items:center; gap:6px; font-size:.8rem; color:var(--muted); }}
   .chip i {{ width:11px; height:11px; border-radius:3px; display:inline-block; }}
-  svg {{ display:block; width:100vw; height:100vh; }}
+  svg {{ display:block; }}
   .link {{ stroke:#bdb7aa; }}
   .link.prose {{ stroke:#9a8f7a; stroke-width:1.6; }}
   .link.category {{ stroke-width:1; stroke-dasharray:3 4; opacity:.5; }}
@@ -251,7 +251,7 @@ PAGE = """<!DOCTYPE html>
     paint-order:stroke; stroke:var(--bg); stroke-width:3px; }}
   .node.faded {{ opacity:.2; }}
   .link.faded {{ opacity:.06; }}
-  #tip {{ position:fixed; max-width:300px; padding:9px 12px; background:var(--card);
+  #tip {{ position:fixed; max-width:min(300px, calc(100vw - 24px)); padding:9px 12px; background:var(--card);
     border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,.12);
     font-size:.82rem; pointer-events:none; opacity:0; transition:opacity .12s; z-index:9; }}
   #tip b {{ display:block; margin-bottom:3px; }}
@@ -277,8 +277,19 @@ const radius = d => 13 + 3.2 * (d.indegree || 0);
 const short = s => (s && s.length > 34) ? s.slice(0, 33).trimEnd() + "…" : s;
 
 const svg = d3.select("svg");
-let W = window.innerWidth, H = window.innerHeight;
-svg.attr("viewBox", [0, 0, W, H]);
+const ANCHOR_STRENGTH = 0.22;   // how tightly a node is pulled to its category's spot
+const NARROW_BREAKPOINT = 700;  // below this, stack categories instead of ringing them
+const MIN_NARROW_HEIGHT = 1500; // narrow screens get a taller canvas (scroll), never a wider one
+const HEADER_PAD = 170;         // clears the wrapped header/legend on narrow screens
+
+let W, H, narrow;
+function measure() {{
+  W = window.innerWidth;
+  narrow = W < NARROW_BREAKPOINT;
+  H = narrow ? Math.max(window.innerHeight, MIN_NARROW_HEIGHT) : window.innerHeight;
+}}
+measure();
+svg.attr("viewBox", [0, 0, W, H]).attr("width", W).attr("height", H);
 
 // Arrowhead for directional prose links.
 svg.append("defs").append("marker")
@@ -294,13 +305,19 @@ GRAPH.links.forEach(l => {{
   neighbours.get(l.target).add(l.source);
 }});
 
-// Each category gets an anchor evenly spaced on a ring, so the clusters stay tidy for
-// any number of categories (not just 4). Defined before the simulation because
-// d3.forceX/forceY evaluate this accessor at setup time.
+// Each category gets an anchor point, so the clusters stay tidy for any number of
+// categories (not just 4). On wide screens that's a ring; on narrow screens a ring
+// would need horizontal room we don't have, so categories stack in vertical bands
+// instead (mobile must never overflow horizontally — CLAUDE.md). Defined before the
+// simulation because d3.forceX/forceY evaluate this accessor at setup time.
 const CATS = Object.keys(COLORS);
 function anchorXY(d) {{
   const i = CATS.indexOf(d.category);
   if (i < 0) return [W / 2, H / 2];
+  if (narrow) {{
+    const bandH = (H - HEADER_PAD) / CATS.length;
+    return [W / 2, HEADER_PAD + bandH * (i + 0.5)];
+  }}
   const ang = -Math.PI / 2 + 2 * Math.PI * i / CATS.length;
   return [W / 2 + W * 0.30 * Math.cos(ang), H / 2 + H * 0.32 * Math.sin(ang)];
 }}
@@ -310,8 +327,8 @@ const sim = d3.forceSimulation(GRAPH.nodes)
     .distance(l => l.kind === "prose" ? 95 : 150).strength(l => l.kind === "prose" ? 0.55 : 0.06))
   .force("charge", d3.forceManyBody().strength(-360))
   .force("collide", d3.forceCollide(d => radius(d) + 20))
-  .force("x", d3.forceX(d => anchorXY(d)[0]).strength(0.12))
-  .force("y", d3.forceY(d => anchorXY(d)[1]).strength(0.12));
+  .force("x", d3.forceX(d => anchorXY(d)[0]).strength(ANCHOR_STRENGTH))
+  .force("y", d3.forceY(d => anchorXY(d)[1]).strength(ANCHOR_STRENGTH));
 
 const link = root.append("g").selectAll("line")
   .data(GRAPH.links).join("line")
@@ -333,6 +350,12 @@ const labelSel = node.append("text").attr("class", "label")
 labelSel.each(function(d) {{ d.labelW = this.getComputedTextLength(); }});
 
 sim.on("tick", () => {{
+  // Hard clamp, on top of the anchor force: guarantees no node's circle ever
+  // renders past the screen edge, regardless of how the forces balance out.
+  GRAPH.nodes.forEach(d => {{
+    const r = radius(d);
+    d.x = Math.max(r, Math.min(W - r, d.x));
+  }});
   link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
       .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
   node.attr("transform", d => `translate(${{d.x}},${{d.y}})`);
@@ -341,8 +364,11 @@ sim.on("tick", () => {{
 
 // Greedy label de-overlap: place labels by priority (hubs first); hide any that
 // would collide with one already placed. Keeps the resting map fully readable.
+// On narrow screens labels are dropped entirely (numbers + tap-to-pin instead) —
+// there's no width budget for side-running label text without overflowing.
 const labelOrder = GRAPH.nodes.slice().sort((a, b) => (b.indegree - a.indegree) || (a.id - b.id));
 function relabel() {{
+  if (narrow) {{ labelSel.style("display", "none"); return; }}
   const placed = [];
   for (const d of labelOrder) {{
     const w = d.labelW || 60, h = 13;
@@ -389,9 +415,14 @@ function pinToggle(event, d) {{
 svg.on("click", () => {{ if (pinned) {{ pinned = null; clearFocus(); }} }});
 node.on("mousemove", event => {{ if (!pinned) moveTip(event); }});
 function moveTip(event) {{
-  const pad = 16;
-  let x = event.clientX + pad, y = event.clientY + pad;
-  if (x + 320 > window.innerWidth) x = event.clientX - 320;
+  // Clamp against the tooltip's actual measured size, not an assumed width — on a
+  // narrow phone there isn't 320px to flip into either direction.
+  const pad = 12;
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let x = event.clientX + pad;
+  if (x + tw + pad > window.innerWidth) x = event.clientX - tw - pad;
+  x = Math.max(pad, Math.min(x, window.innerWidth - tw - pad));
+  const y = Math.max(pad, Math.min(event.clientY + pad, window.innerHeight - th - pad));
   tip.style.left = x + "px"; tip.style.top = y + "px";
 }}
 function escapeHtml(s) {{ const d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }}
@@ -401,10 +432,10 @@ function dragged(event, d) {{ d.fx = event.x; d.fy = event.y; }}
 function dragEnd(event, d) {{ if (!event.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }}
 
 window.addEventListener("resize", () => {{
-  W = window.innerWidth; H = window.innerHeight;
-  svg.attr("viewBox", [0, 0, W, H]);
-  sim.force("x", d3.forceX(d => anchorXY(d)[0]).strength(0.12));
-  sim.force("y", d3.forceY(d => anchorXY(d)[1]).strength(0.12));
+  measure();
+  svg.attr("viewBox", [0, 0, W, H]).attr("width", W).attr("height", H);
+  sim.force("x", d3.forceX(d => anchorXY(d)[0]).strength(ANCHOR_STRENGTH));
+  sim.force("y", d3.forceY(d => anchorXY(d)[1]).strength(ANCHOR_STRENGTH));
   sim.alpha(0.3).restart();
 }});
 </script>
