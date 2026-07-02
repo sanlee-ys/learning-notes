@@ -58,6 +58,23 @@ def _inline(text: str) -> str:
     return text
 
 
+def _is_table_sep(s: str) -> bool:
+    """True for a GFM table separator line like ``|---|:--:|---|``."""
+    if "-" not in s or "|" not in s:
+        return False
+    return bool(re.fullmatch(r"\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?", s))
+
+
+def _table_row(s: str) -> list[str]:
+    """Split a ``| a | b |`` row into trimmed cell strings."""
+    s = s.strip()
+    if s.startswith("|"):
+        s = s[1:]
+    if s.endswith("|"):
+        s = s[:-1]
+    return [c.strip() for c in s.split("|")]
+
+
 def md_to_html(text: str) -> str:
     lines = text.split("\n")
     out: list[str] = []
@@ -134,6 +151,26 @@ def md_to_html(text: str) -> str:
                 raw.append(lines[i])
                 i += 1
             out.append("\n".join(raw))
+            continue
+        elif stripped.startswith("|") and i + 1 < len(lines) and _is_table_sep(lines[i + 1].strip()):
+            # GFM pipe table: header row, a |---|---| separator, then body rows.
+            flush_blocks()
+            header = _table_row(stripped)
+            i += 2  # consume header + separator
+            body: list[str] = []
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                cells = _table_row(lines[i].strip())
+                cells = (cells + [""] * len(header))[: len(header)]  # pad/truncate to header
+                body.append("<tr>" + "".join(f"<td>{_inline(c)}</td>" for c in cells) + "</tr>")
+                i += 1
+            head_html = "".join(f"<th>{_inline(c)}</th>" for c in header)
+            out.append(
+                '<div class="table-wrap"><table><thead><tr>'
+                + head_html
+                + "</tr></thead><tbody>"
+                + "".join(body)
+                + "</tbody></table></div>"
+            )
             continue
         elif m := re.match(r"[-*]\s+(.*)", stripped):
             flush_para()
@@ -215,10 +252,22 @@ h2 { font-size:1.25rem; margin:1.6em 0 .4em; }
 h3 { font-size:1.05rem; margin:1.3em 0 .3em; }
 a { color:var(--accent); }
 code { background:var(--code-bg); padding:.12em .35em; border-radius:4px;
-       font:.88em "SF Mono", Consolas, "Liberation Mono", monospace; }
+       font:.88em "SF Mono", Consolas, "Liberation Mono", monospace;
+       overflow-wrap:anywhere; }
 pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
       padding:14px 16px; overflow-x:auto; }
-pre code { background:none; padding:0; font-size:.85rem; line-height:1.5; }
+/* Inline code may break long tokens (a long path/dotted-name can't force the
+   page wider than the phone). Code blocks keep their tokens intact and scroll
+   inside their own box instead — so restore normal wrapping under pre. */
+pre code { background:none; padding:0; font-size:.85rem; line-height:1.5;
+           overflow-wrap:normal; }
+/* Tables scroll inside their own box; cells wrap so a wide table can't widen
+   the page on a phone (the mobile-overflow contract). */
+.table-wrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9rem; }
+th, td { border:1px solid var(--border); padding:6px 10px; text-align:left;
+         vertical-align:top; }
+th { background:var(--code-bg); font-weight:700; }
 blockquote { margin:1em 0; padding:.8em 1.1em; background:var(--card);
              border-left:4px solid var(--accent); border-radius:0 8px 8px 0;
              box-shadow:0 1px 2px rgba(0,0,0,.04); }

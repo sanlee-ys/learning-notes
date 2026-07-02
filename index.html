@@ -26,10 +26,22 @@ h2 { font-size:1.25rem; margin:1.6em 0 .4em; }
 h3 { font-size:1.05rem; margin:1.3em 0 .3em; }
 a { color:var(--accent); }
 code { background:var(--code-bg); padding:.12em .35em; border-radius:4px;
-       font:.88em "SF Mono", Consolas, "Liberation Mono", monospace; }
+       font:.88em "SF Mono", Consolas, "Liberation Mono", monospace;
+       overflow-wrap:anywhere; }
 pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
       padding:14px 16px; overflow-x:auto; }
-pre code { background:none; padding:0; font-size:.85rem; line-height:1.5; }
+/* Inline code may break long tokens (a long path/dotted-name can't force the
+   page wider than the phone). Code blocks keep their tokens intact and scroll
+   inside their own box instead — so restore normal wrapping under pre. */
+pre code { background:none; padding:0; font-size:.85rem; line-height:1.5;
+           overflow-wrap:normal; }
+/* Tables scroll inside their own box; cells wrap so a wide table can't widen
+   the page on a phone (the mobile-overflow contract). */
+.table-wrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9rem; }
+th, td { border:1px solid var(--border); padding:6px 10px; text-align:left;
+         vertical-align:top; }
+th { background:var(--code-bg); font-weight:700; }
 blockquote { margin:1em 0; padding:.8em 1.1em; background:var(--card);
              border-left:4px solid var(--accent); border-radius:0 8px 8px 0;
              box-shadow:0 1px 2px rgba(0,0,0,.04); }
@@ -1122,7 +1134,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li><strong>Producer side (Java)</strong> — <code>notes-api/.../NoteEventPublishingIT.java</code>: booted the app against a real broker and asserted that creating a note landed a real <code>NoteCreated</code> on the topic, with the frozen wire shape (key = note id, plain JSON, no Java type headers).</li>
 </ul>
 <p>I'd already written integration tests with Testcontainers in Python, so the <em>concept</em> wasn't new — the refresher here was getting them running in <strong>Java</strong>, the rustier side of my stack, where the machinery differs. Same idea, different tooling; the Rosetta below is the map from what I'd done in Python to the Java side:</p>
-<p>| Idea | Python (pytest) | Java (JUnit 5 / Spring Boot) | |---|---|---| | Start/stop the container | a fixture that starts it and <code>yield</code>s, stopping after | <code>@Testcontainers</code> + <code>@Container</code> on a <code>static</code> field (JUnit owns the lifecycle) | | Skip when Docker is absent | <code>pytest.skip(...)</code> in the fixture | <code>@Testcontainers(disabledWithoutDocker = true)</code> | | Point your client at it | read <code>container.get_bootstrap_server()</code> and pass it in | <code>@ServiceConnection</code> auto-wires it into <code>spring.kafka.*</code> (or <code>@DynamicPropertySource</code> to do it by hand) | | Keep it out of the fast lane | mark <code>integration</code>, deselect by default, run with <code>--run-integration</code> | name it <code>*IT</code> so <strong>Failsafe</strong> runs it in <code>verify</code>, while <strong>Surefire</strong> runs <code>*Test</code> units in <code>test</code> | | Read the topic to verify | kafka-python <code>KafkaConsumer</code> | <code>org.apache.kafka...KafkaConsumer</code> (same client, Java API) |</p>
+<div class="table-wrap"><table><thead><tr><th>Idea</th><th>Python (pytest)</th><th>Java (JUnit 5 / Spring Boot)</th></tr></thead><tbody><tr><td>Start/stop the container</td><td>a fixture that starts it and <code>yield</code>s, stopping after</td><td><code>@Testcontainers</code> + <code>@Container</code> on a <code>static</code> field (JUnit owns the lifecycle)</td></tr><tr><td>Skip when Docker is absent</td><td><code>pytest.skip(...)</code> in the fixture</td><td><code>@Testcontainers(disabledWithoutDocker = true)</code></td></tr><tr><td>Point your client at it</td><td>read <code>container.get_bootstrap_server()</code> and pass it in</td><td><code>@ServiceConnection</code> auto-wires it into <code>spring.kafka.*</code> (or <code>@DynamicPropertySource</code> to do it by hand)</td></tr><tr><td>Keep it out of the fast lane</td><td>mark <code>integration</code>, deselect by default, run with <code>--run-integration</code></td><td>name it <code>*IT</code> so <strong>Failsafe</strong> runs it in <code>verify</code>, while <strong>Surefire</strong> runs <code>*Test</code> units in <code>test</code></td></tr><tr><td>Read the topic to verify</td><td>kafka-python <code>KafkaConsumer</code></td><td><code>org.apache.kafka...KafkaConsumer</code> (same client, Java API)</td></tr></tbody></table></div>
 <p>The naming split is the one genuinely Java-specific thing: <code>./mvnw test</code> runs only the fast unit tests (<code>*Test</code>), and <code>./mvnw verify</code> additionally runs the integration tests (<code>*IT</code>) — so the opt-in is by <em>filename convention + build phase</em>, where Python does it with a marker + a CLI flag.</p>
 <p><strong>v2 (no broker).</strong> The Java→Python port collapsed that event loop into an in-process <code>BackgroundTask</code> (note 18), so the Kafka seam these tests guarded no longer exists: the producer IT is gone with the Java code, and the consumer IT is preserved but inactive. The technique didn't go anywhere, though — it just points at v2's real seams now. The integration test I'd write next uses a <strong>Postgres</strong> Testcontainer to catch the SQLite-vs-Postgres dialect bugs note 19 warns about, and an <strong>HTTP stub</strong> of the classifier's <code>/classify</code> to prove the writeback <code>BackgroundTask</code> end to end.</p>
 <h2>Why it matters</h2>
@@ -1149,7 +1161,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
 <p>A measured failure mode of agentic tools, and how to stop repeating it.</p>
 <h2>The finding (measured, 2026-07-02)</h2>
 <p>A single multi-agent "deep-research" fan-out - dozens of sub-agents searching, reading, verifying, and synthesizing (note 25) - running <strong>entirely on a premium model</strong> consumed <strong>~95% of a 5-hour usage window in ~45 minutes</strong>, with no cost preview before launch. Straight from the run's own token accounting:</p>
-<p>| Metric | Value | |---|---| | Raw tokens | ~18.3M | | — cache reads (bill ~0.1x) | 15.9M (~87%) | | — fresh input | 483k | | — cache creation | 1.9M | | — output | 27k | | <strong>Billing-weighted total</strong> | <strong>~4.5M</strong> | | <strong>Share of 5-hour window</strong> | <strong>~95%</strong> | | Wall-clock | ~45 min | | Agents | ~50 (killed mid-verify; results salvaged) |</p>
+<div class="table-wrap"><table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody><tr><td>Raw tokens</td><td>~18.3M</td></tr><tr><td>— cache reads (bill ~0.1x)</td><td>15.9M (~87%)</td></tr><tr><td>— fresh input</td><td>483k</td></tr><tr><td>— cache creation</td><td>1.9M</td></tr><tr><td>— output</td><td>27k</td></tr><tr><td><strong>Billing-weighted total</strong></td><td><strong>~4.5M</strong></td></tr><tr><td><strong>Share of 5-hour window</strong></td><td><strong>~95%</strong></td></tr><tr><td>Wall-clock</td><td>~45 min</td></tr><tr><td>Agents</td><td>~50 (killed mid-verify; results salvaged)</td></tr></tbody></table></div>
 <p>Two things made it costly and invisible: it ran on a <strong>premium model</strong> (fastest window-draw), and <strong>nothing surfaced the likely cost before launch.</strong></p>
 <h2>What it implies</h2>
 <ul>
@@ -1164,7 +1176,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li><strong>Tier</strong> - inline (~10-100k weighted), small workflow / 3-6 agents (~0.3-1M), full fan-out / 30-50+ agents (~4-8M).</li>
   <li><strong>Model</strong> - the biggest lever, and the same choose-the-cheaper-tier-that-works logic as tiered model routing (note 09). Calibrated numbers:</li>
 </ul>
-<p>| Tier | Sonnet | Premium (Fable/Opus) | |---|---|---| | inline | ~0% window | 0-2% window | | small (3-6 agents) | 1-4% | 6-21% | | full fan-out | 17-34% | <strong>84-168% (exhausts)</strong> |</p>
+<div class="table-wrap"><table><thead><tr><th>Tier</th><th>Sonnet</th><th>Premium (Fable/Opus)</th></tr></thead><tbody><tr><td>inline</td><td>~0% window</td><td>0-2% window</td></tr><tr><td>small (3-6 agents)</td><td>1-4%</td><td>6-21%</td></tr><tr><td>full fan-out</td><td>17-34%</td><td><strong>84-168% (exhausts)</strong></td></tr></tbody></table></div>
 <p><strong>Rule: run fan-outs on Sonnet; reserve premium models for inline or tightly-capped work.</strong> A "small job" on a premium model still eats a fifth of your window.</p>
 <h2>The estimator</h2>
 <p><code>estimate-fanout-cost.py</code> (alongside this note) prints this tier x model matrix with a suggested cap. Calibrate <code>WINDOW_WEIGHTED_TOKENS</code> and the per-model weights to your plan (run one job, read the % consumed from your usage status, back out the total). Run it <em>before</em> anything above inline.</p>
