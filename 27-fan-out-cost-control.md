@@ -1,22 +1,36 @@
 # 27 — Fan-out cost control: a finding, and the guardrail
 
-> **TL;DR** A single multi-agent "deep-research" fan-out (note 25), run entirely
-> on a premium model, ate ~95% of a 5-hour usage window in ~45 minutes with no
-> cost preview. You can't predict an agentic run's exact cost — it depends on
-> how much the agents *choose* to read mid-flight — but you *can* know the two
-> biggest levers up front: **tier** (how many agents) and **model**. Run fan-outs
-> on Sonnet, reserve premium models for inline or tightly-capped work, and make
-> cost a contract: estimate the tier, set an explicit cap, get a go-ahead, put
-> the cap in the call. Cap, don't predict — enforce it with a hook (note 23).
+> **TL;DR** A scoped question got handed to a full multi-agent "deep-research"
+> fan-out (note 25) on a premium model — and it *silently* ate ~95% of a 5-hour
+> usage window in ~45 minutes. No preview, no warning, until the window was gone.
+> You can't predict an agentic run's exact cost — it depends on how much the
+> agents *choose* to read mid-flight — but you *can* know the two biggest levers
+> up front: **tier** (how many agents) and **model**. Run fan-outs on Sonnet,
+> reserve premium models for inline or tightly-capped work, and make cost a
+> contract: estimate the tier, set an explicit cap, get a go-ahead, put the cap
+> in the call. Cap, don't predict — enforce it with a hook (note 23).
 
 A measured failure mode of agentic tools, and how to stop repeating it.
 
+## What happened
+
+A scoped question — the kind a handful of inline searches would have answered —
+got handed to a full deep-research fan-out: 30-50+ agents, multi-round
+verification (note 25), running entirely on a premium model. Nobody *chose* that
+cost. The run went out **uncapped, with no preview**, and ~45 minutes later it
+had eaten **~95% of a 5-hour usage window**. The question never needed it.
+
+The shock isn't that deep research is expensive - it's that a whole window
+vanished on work that didn't call for it, on the most expensive model tier, and
+**nothing said a word until it was already gone.** That surprise is the reason
+this note exists. The lesson isn't "fan-outs cost tokens" (obvious) - it's that
+*an agent will spend your entire window on your behalf, silently, unless
+something stops it first.* Everything below is that something: the numbers that
+size the risk, and the guardrail that caps it before launch.
+
 ## The finding (measured, 2026-07-02)
 
-A single multi-agent "deep-research" fan-out - dozens of sub-agents searching,
-reading, verifying, and synthesizing (note 25) - running **entirely on a premium
-model** consumed **~95% of a 5-hour usage window in ~45 minutes**, with no cost
-preview before launch. Straight from the run's own token accounting:
+The receipts, straight from that run's own token accounting:
 
 | Metric | Value |
 |---|---|
