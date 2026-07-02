@@ -76,6 +76,7 @@ Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 - [x] 23 — Permissions, allowlists & hooks: guardrails for an agent *(all projects)*
 - [x] 24 — One concern, one branch: parallel agent sessions *(all projects)*
 - [x] 25 — Multi-agent workflows: fan-out & the collision boundary *(all projects)*
+- [x] 27 — Fan-out cost control: cap the spend before you launch *(all projects)*
 
 ## Viewing the notes
 

@@ -120,6 +120,7 @@ img { max-width:100%; height:auto; }
 <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a>
 <a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a>
 <a href="#25-multi-agent-workflows">25 · Multi-agent workflows: fan-out, and the collision boundary</a>
+<a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a>
 </div>
 </nav>
 <main>
@@ -192,6 +193,7 @@ img { max-width:100%; height:auto; }
   <li>[x] 23 — Permissions, allowlists &amp; hooks: guardrails for an agent <em>(all projects)</em></li>
   <li>[x] 24 — One concern, one branch: parallel agent sessions <em>(all projects)</em></li>
   <li>[x] 25 — Multi-agent workflows: fan-out &amp; the collision boundary <em>(all projects)</em></li>
+  <li>[x] 27 — Fan-out cost control: cap the spend before you launch <em>(all projects)</em></li>
 </ul>
 <h2>Viewing the notes</h2>
 <p>Four ways to read these as more than raw text. The <code>.md</code> files always stay the source of truth — the viewers are regenerated, never hand-edited.</p>
@@ -311,7 +313,7 @@ recall    = tp / (tp + fn)</code></pre>
   <li>How to read a <strong>confusion matrix</strong> (which label gets mistaken for which) at a glance.</li>
   <li>Macro vs <strong>micro</strong> vs weighted averages — what each one is really measuring.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a></div>
 </aside>
 </section>
 <section id="04-tool-use-the-general-idea">
@@ -531,7 +533,7 @@ return nothing relevant, say so plainly instead of guessing — do not invent de
   <li>Break-even math — escalating costs more per call, but only on a slice; does it net out?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a></div>
 </aside>
 </section>
 <section id="10-secrets-and-env">
@@ -1019,7 +1021,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>The blunt "bypass everything" mode — when (if ever) is turning the leash off entirely the right call, and what do you give up?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#22-steering-an-ai-agent-with-claude-md">22 · Steering an AI agent with CLAUDE.md</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a></div>
 </aside>
 </section>
 <section id="24-one-concern-one-branch-parallel-sessions">
@@ -1101,6 +1103,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>Passing context between agents cheaply: how much does each subagent really need handed to it, versus re-deriving, to keep the fan-out fast?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a></div>
 </aside>
 </section>
 <section id="26-integration-tests-with-testcontainers">
@@ -1138,6 +1141,55 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>How this connects to <strong>event-driven architecture</strong> (note 18): the contract between producer and consumer is exactly what an integration test on each side protects.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a> <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a> <a href="#19-database-migrations">19 · Database migrations: versioning your schema</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
+</aside>
+</section>
+<section id="27-fan-out-cost-control">
+<h1>27 — Fan-out cost control: a finding, and the guardrail</h1>
+<blockquote><strong>TL;DR</strong> A single multi-agent "deep-research" fan-out (note 25), run entirely on a premium model, ate ~95% of a 5-hour usage window in ~45 minutes with no cost preview. You can't predict an agentic run's exact cost — it depends on how much the agents <em>choose</em> to read mid-flight — but you <em>can</em> know the two biggest levers up front: <strong>tier</strong> (how many agents) and <strong>model</strong>. Run fan-outs on Sonnet, reserve premium models for inline or tightly-capped work, and make cost a contract: estimate the tier, set an explicit cap, get a go-ahead, put the cap in the call. Cap, don't predict — enforce it with a hook (note 23).</blockquote>
+<p>A measured failure mode of agentic tools, and how to stop repeating it.</p>
+<h2>The finding (measured, 2026-07-02)</h2>
+<p>A single multi-agent "deep-research" fan-out - dozens of sub-agents searching, reading, verifying, and synthesizing (note 25) - running <strong>entirely on a premium model</strong> consumed <strong>~95% of a 5-hour usage window in ~45 minutes</strong>, with no cost preview before launch. Straight from the run's own token accounting:</p>
+<p>| Metric | Value | |---|---| | Raw tokens | ~18.3M | | — cache reads (bill ~0.1x) | 15.9M (~87%) | | — fresh input | 483k | | — cache creation | 1.9M | | — output | 27k | | <strong>Billing-weighted total</strong> | <strong>~4.5M</strong> | | <strong>Share of 5-hour window</strong> | <strong>~95%</strong> | | Wall-clock | ~45 min | | Agents | ~50 (killed mid-verify; results salvaged) |</p>
+<p>Two things made it costly and invisible: it ran on a <strong>premium model</strong> (fastest window-draw), and <strong>nothing surfaced the likely cost before launch.</strong></p>
+<h2>What it implies</h2>
+<ul>
+  <li>The 5-hour window holds <strong>~4.75M billing-weighted tokens at premium rates.</strong> That is the calibration anchor.</li>
+  <li>On a premium model, a <strong>full fan-out is roughly your whole window.</strong> The same fan-out on Sonnet is about <strong>5x cheaper</strong> (~17-34% of the window) - Sonnet draws ~0.2x the premium rate per token. (Only the premium point is measured; the cross-model ratio is an estimate - calibrate it.)</li>
+  <li>Raw "18M tokens" wildly overstates cost: ~87% were cache reads at ~0.1x billing. Judge by the <strong>weighted</strong> number (~4.5M) and by <strong>output</strong> (a trivial 27k), never by raw throughput. (Reading the numbers, not the headline: note 03.)</li>
+</ul>
+<h2>Why there's no exact pre-estimate</h2>
+<p>The cost of an agentic run is unknowable before it runs: it depends on how many tool calls and how much reading the agents <em>decide</em> to do mid-flight. You can't quote it exactly - the same way you can't quote a legal bill before knowing how many depositions happen. So don't predict the cost. <strong>Bound it.</strong></p>
+<h2>What you CAN know up front: tier and model</h2>
+<ul>
+  <li><strong>Tier</strong> - inline (~10-100k weighted), small workflow / 3-6 agents (~0.3-1M), full fan-out / 30-50+ agents (~4-8M).</li>
+  <li><strong>Model</strong> - the biggest lever, and the same choose-the-cheaper-tier-that-works logic as tiered model routing (note 09). Calibrated numbers:</li>
+</ul>
+<p>| Tier | Sonnet | Premium (Fable/Opus) | |---|---|---| | inline | ~0% window | 0-2% window | | small (3-6 agents) | 1-4% | 6-21% | | full fan-out | 17-34% | <strong>84-168% (exhausts)</strong> |</p>
+<p><strong>Rule: run fan-outs on Sonnet; reserve premium models for inline or tightly-capped work.</strong> A "small job" on a premium model still eats a fifth of your window.</p>
+<h2>The estimator</h2>
+<p><code>estimate-fanout-cost.py</code> (alongside this note) prints this tier x model matrix with a suggested cap. Calibrate <code>WINDOW_WEIGHTED_TOKENS</code> and the per-model weights to your plan (run one job, read the % consumed from your usage status, back out the total). Run it <em>before</em> anything above inline.</p>
+<h2>The pre-flight protocol</h2>
+<ol>
+  <li>State the tier + a rough token/time estimate (use the estimator).</li>
+  <li>Set an explicit token cap the run cannot cross.</li>
+  <li>Get an explicit go-ahead.</li>
+  <li>Include the cap in the call.</li>
+</ol>
+<h2>The guardrail</h2>
+<p>A <code>PreToolUse</code> hook can hard-block any uncapped fan-out, forcing the estimate + cap + go-ahead before a launch is even possible - the same permissions-and-hooks guardrail pattern from note 23, pointed at cost instead of file access. Cap, don't predict.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>One un-previewed launch can cost a whole window.</strong> The expensive part isn't a bug or a loop - it's a <em>normal</em> fan-out on the wrong model with nobody bounding it.</li>
+  <li><strong>The cheap levers are the ones you know before you start.</strong> Tier and model are both decided up front; that's exactly where a cap belongs.</li>
+  <li><strong>Making cost a contract, not a surprise.</strong> Set the direction, the contracts, and the bar - and make cost one of the contracts, not something you learn about 45 minutes and a whole window later.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>Calibrating the cross-model ratio properly: the Sonnet/Haiku weights here are estimates off a single premium anchor. One small job per model, read the % consumed, back out each weight - how stable is it run to run?</li>
+  <li>Where's the crossover where a fan-out is cheaper <em>and</em> better than one agent doing it serially, once you price the window? (Note 25's "how wide is too wide?", answered in tokens.)</li>
+  <li>Cache economics: ~87% of the tokens billed at ~0.1x. How much of "cost control" is really <em>cache</em> control - structuring a run so more of it is cache reads?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#25-multi-agent-workflows">25 · Multi-agent workflows: fan-out, and the collision boundary</a></div>
 </aside>
 </section>
 </main>
