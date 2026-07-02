@@ -97,11 +97,11 @@ Re-run `build_site.py` after editing or adding a note.
 ### 2. Polished site — MkDocs Material
 
 A themed, fully searchable site with dark mode. Uses a one-time toolchain via uv (no
-permanent install). From this folder:
+permanent install). From the `mkdocs/` folder:
 
 ```bash
-uv run --no-project --with mkdocs-material mkdocs build   # → ../learning-notes-site/
-uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :8000
+uv run --no-project --with mkdocs-material==9.7.6 mkdocs build   # → ../../learning-notes-site/
+uv run --no-project --with mkdocs-material==9.7.6 mkdocs serve   # live preview at :8000
 ```
 
 Then open **`../learning-notes-site/index.html`** to read it offline. Note: the

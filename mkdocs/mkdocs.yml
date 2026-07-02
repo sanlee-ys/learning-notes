@@ -1,19 +1,23 @@
 # MkDocs Material site for the learning notes (the "polished" viewer).
-# The notes themselves stay flat in this folder; this config just renders them.
+# The notes stay flat in the parent folder; this config just renders them.
+# This file lives in its own mkdocs/ subdirectory because MkDocs rejects a
+# docs_dir that's the same directory as mkdocs.yml itself — docs_dir: ..
+# points back at the notes without requiring them to move. (Note: NOT named
+# "site/" — that's already .gitignore'd as the conventional build-output dir.)
 #
-# Build (one-time toolchain, no permanent install) from THIS folder:
-#   uv run --no-project --with mkdocs-material mkdocs build
-# Then open ../learning-notes-site/index.html in a browser.
+# Build (one-time toolchain, no permanent install) from the mkdocs/ folder:
+#   uv run --no-project --with mkdocs-material==9.7.6 mkdocs build
+# Then open ../../learning-notes-site/index.html in a browser.
 #
 # Live preview while editing:
-#   uv run --no-project --with mkdocs-material mkdocs serve
+#   uv run --no-project --with mkdocs-material==9.7.6 mkdocs serve
 #
 # When you add a note: add one line under nav: below (the single-page index.html
 # from build_site.py picks new notes up automatically; this site needs the line).
 site_name: Learning Notes
 site_description: Plain-language notes on the ideas behind my projects.
-docs_dir: .
-site_dir: ../learning-notes-site
+docs_dir: ..
+site_dir: ../../learning-notes-site
 use_directory_urls: false   # flat .html files so the site opens offline via file://
 
 theme:
@@ -50,7 +54,7 @@ plugins:
 exclude_docs: |
   build_site.py
   index.html
-  mkdocs.yml
+  mkdocs/
 
 nav:
   - Overview: README.md
