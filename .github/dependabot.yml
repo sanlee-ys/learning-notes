@@ -1,0 +1,21 @@
+# Dependabot: automated dependency-update PRs.
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates
+#
+# NOTE: only GitHub Actions are tracked here. The top-level Python scripts
+# (build_site.py, build_graph.py, notes_data.py) import only the standard
+# library — no third-party manifest exists to scan. The mkdocs subproject
+# pins mkdocs-material==9.7.6 inline via `uv run --with`, not in a manifest
+# file, so that pin isn't Dependabot-trackable either (a CI change, not a
+# scanning one — out of scope here).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    groups:
+      github-actions:
+        update-types: ["minor", "patch"]
