@@ -76,6 +76,12 @@ def _table_row(s: str) -> list[str]:
 
 
 def md_to_html(text: str) -> str:
+    """Convert the notes' Markdown subset to HTML, line by line.
+
+    Handles headings, lists, tables, fenced code, blockquotes, and raw
+    block-level HTML (the README hero) — just what these notes actually use,
+    not general CommonMark.
+    """
     lines = text.split("\n")
     out: list[str] = []
     para: list[str] = []
@@ -196,6 +202,7 @@ def md_to_html(text: str) -> str:
 # ---- Page assembly ---------------------------------------------------------
 
 def first_heading(text: str, fallback: str) -> str:
+    """Return the text's first "# " heading line, or fallback if it has none."""
     for raw in text.split("\n"):
         if raw.startswith("# "):
             return raw[2:].strip()
@@ -359,6 +366,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') setNav(false
 
 
 def build() -> None:
+    """Render every note plus the README overview into index.html."""
     notes, cat_order = load_notes()
     by_num = {n.num: n for n in notes}
 

@@ -41,6 +41,7 @@ TIERS = {
 
 
 def band(frac):
+    """Classify a window-fraction into a verdict label."""
     if frac < 0.15:
         return "SAFE"
     if frac < 0.50:
@@ -51,11 +52,13 @@ def band(frac):
 
 
 def rec_cap(low):
+    """Suggest a round token cap (e.g. "+150k") based on a tier's low estimate."""
     k = max(50, round(int(low) / 1000 / 2))
     return f"+{k}k"
 
 
 def row(tier, model):
+    """Format one printable estimate row for a (tier, model) combination."""
     low, high = TIERS[tier]
     w = MODEL_WEIGHT[model]
     flo = low * w / WINDOW_WEIGHTED_TOKENS
@@ -67,6 +70,12 @@ def row(tier, model):
 
 
 def main():
+    """Print the fan-out cost table for the requested tiers/models, or all of them.
+
+    Reads tier and model from sys.argv: with exactly two positional args,
+    prints just that (tier, model) row; otherwise prints every tier x model
+    combination.
+    """
     args = sys.argv[1:]
     models = ["haiku", "sonnet", "opus", "fable"]
     tiers = ["inline", "small", "full"]

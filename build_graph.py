@@ -195,6 +195,7 @@ def write_category_map_svg(notes, cats) -> Path:
 # ---- Page assembly --------------------------------------------------------
 
 def build() -> None:
+    """Render concept-map.html and assets/category-map.svg from the note model."""
     notes, cats = load_notes()
     nodes, links = collect(notes)
     svg_path = write_category_map_svg(notes, cats)

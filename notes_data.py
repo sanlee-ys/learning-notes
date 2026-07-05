@@ -39,6 +39,7 @@ class Note:
 
 
 def normalize_tag(raw: str) -> str:
+    """Map a free-text project tag from the README to one of the known buckets."""
     raw = raw.lower()
     if "both" in raw:
         return "both"
@@ -52,12 +53,13 @@ def normalize_tag(raw: str) -> str:
 def parse_readme() -> tuple[dict[int, dict], list[str]]:
     """Read the README "## Concept map" list.
 
-    Returns (meta, category_order):
-      * meta maps note number -> {"category", "project"}.
-      * category_order is the order the "### Category" headings appear, so callers
-        group and colour consistently.
-    Only lines inside the "## Concept map" section are read, so other lists in the
-    README can't leak in.
+    Only lines inside the "## Concept map" section are read, so other lists in
+    the README can't leak in.
+
+    Returns:
+        A (meta, category_order) tuple: meta maps note number -> {"category",
+        "project"}; category_order is the order the "### Category" headings
+        appear, so callers group and colour consistently.
     """
     meta: dict[int, dict] = {}
     order: list[str] = []
@@ -92,6 +94,7 @@ def parse_readme() -> tuple[dict[int, dict], list[str]]:
 
 
 def first_heading(text: str) -> str:
+    """Return the note's first "# " heading line, or "" if it has none."""
     for raw in text.splitlines():
         if raw.startswith("# "):
             return raw[2:].strip()
@@ -99,7 +102,10 @@ def first_heading(text: str) -> str:
 
 
 def short_title(heading: str) -> str:
-    """'01 — Structured output via tool use' -> 'Structured output via tool use'."""
+    """Strip the leading "NN — " prefix from a note heading.
+
+    '01 — Structured output via tool use' -> 'Structured output via tool use'.
+    """
     return re.split(r"\s*—\s*", heading, maxsplit=1)[-1].strip()
 
 
@@ -123,9 +129,12 @@ def extract_tldr(text: str) -> str:
 def load_notes() -> tuple[list[Note], list[str]]:
     """Parse every NN-*.md note + the README registry into a connected model.
 
-    Returns (notes_sorted_by_number, category_order). Cross-reference edges are
-    resolved both ways (refs_out / refs_in) and filtered to notes that exist, so a
-    typo'd "note 99" never produces a dangling link.
+    Cross-reference edges are resolved both ways (refs_out / refs_in) and
+    filtered to notes that exist, so a typo'd "note 99" never produces a
+    dangling link.
+
+    Returns:
+        A (notes_sorted_by_number, category_order) tuple.
     """
     meta, order = parse_readme()
     notes: list[Note] = []
