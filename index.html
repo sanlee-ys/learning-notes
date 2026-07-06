@@ -213,9 +213,9 @@ img { max-width:100%; height:auto; }
 <pre><code>python build_site.py        # regenerates index.html</code></pre>
 <p>Open <strong><code>index.html</code></strong> in any browser (double-click). One offline file — no server, no install, no internet — with a <strong>category-grouped sidebar</strong>, a <strong>search box</strong> that filters notes as you type, and an auto <strong>"References / Referenced by"</strong> list under each note. Re-run <code>build_site.py</code> after editing or adding a note.</p>
 <h3>2. Polished site — MkDocs Material</h3>
-<p>A themed, fully searchable site with dark mode. Uses a one-time toolchain via uv (no permanent install). From this folder:</p>
-<pre><code>uv run --no-project --with mkdocs-material mkdocs build   # → ../learning-notes-site/
-uv run --no-project --with mkdocs-material mkdocs serve   # live preview at :8000</code></pre>
+<p>A themed, fully searchable site with dark mode. Uses a one-time toolchain via uv (no permanent install). From the <code>mkdocs/</code> folder:</p>
+<pre><code>uv run --no-project --with mkdocs-material==9.7.6 mkdocs build   # → ../../learning-notes-site/
+uv run --no-project --with mkdocs-material==9.7.6 mkdocs serve   # live preview at :8000</code></pre>
 <p>Then open <strong><code>../learning-notes-site/index.html</code></strong> to read it offline. Note: the <strong>dark-mode toggle only works when the site is served over HTTP</strong> (<code>mkdocs serve</code> above, at http://127.0.0.1:8000) — opened as a bare <code>file://</code> page the light/dark switch can't run, though layout, search, and everything else do. When you add a note, add one line to <code>mkdocs.yml</code>'s <code>nav:</code> (option 1 picks new notes up automatically; this one needs the line).</p>
 <blockquote><strong>Gotcha:</strong> if you've set <code>UV_ENV_FILE=.env</code> globally (the convention from the classifier project), these <code>uv</code> commands fail here looking for a <code>.env</code>. Prefix them with <code>UV_ENV_FILE= </code> (note the trailing space) or run <code>unset UV_ENV_FILE</code> first.</blockquote>
 <h3>3. Chat with them — kb-agent</h3>

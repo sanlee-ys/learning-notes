@@ -15,3 +15,25 @@ jobs:
       - name: Build MkDocs site
         working-directory: mkdocs
         run: uv run --no-project --with mkdocs-material==9.7.6 mkdocs build
+
+  # The deployed site is the repo-root static output of build_site.py /
+  # build_graph.py (deploy-pages.yml uploads "."), NOT the mkdocs build above.
+  # Those generated files had no CI, so a source edit with a forgotten rebuild
+  # shipped a stale page. This gate regenerates from source (stdlib only, no
+  # deps) and fails if the committed output drifts — the "edit the source, not
+  # the output" rule in CLAUDE.md, mechanically enforced.
+  generated-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Regenerate and check for drift
+        run: |
+          python build_site.py
+          python build_graph.py
+          if ! git diff --exit-code -- index.html concept-map.html assets/category-map.svg; then
+            echo "::error::Generated files are stale — run build_site.py and build_graph.py and commit the output."
+            exit 1
+          fi
