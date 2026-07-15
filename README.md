@@ -51,6 +51,7 @@ Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 - [x] 05 — The agentic tool-use loop: letting the model decide *(kb-agent)*
 - [x] 06 — RAG: answering from your own documents *(kb-agent)*
 - [x] 07 — Embeddings & vector stores: search by meaning *(kb-agent)*
+- [x] 28 — Tracing an agent loop: seeing where the time and tokens go *(kb-agent)*
 
 ### Data & method
 - [x] 08 — Synthetic data and the "circular eval" trap *(classifier)*
