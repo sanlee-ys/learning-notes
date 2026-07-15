@@ -107,6 +107,7 @@ img { max-width:100%; height:auto; }
 <a href="#05-the-agentic-tool-use-loop">05 · The agentic tool-use loop</a>
 <a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a>
 <a href="#07-embeddings-and-vector-stores">07 · Embeddings &amp; vector stores: search by meaning</a>
+<a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a>
 </div>
 <div class="navgroup"><h3>Data &amp; method</h3>
 <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a>
@@ -176,6 +177,7 @@ img { max-width:100%; height:auto; }
   <li>[x] 05 — The agentic tool-use loop: letting the model decide <em>(kb-agent)</em></li>
   <li>[x] 06 — RAG: answering from your own documents <em>(kb-agent)</em></li>
   <li>[x] 07 — Embeddings &amp; vector stores: search by meaning <em>(kb-agent)</em></li>
+  <li>[x] 28 — Tracing an agent loop: seeing where the time and tokens go <em>(kb-agent)</em></li>
 </ul>
 <h3>Data &amp; method</h3>
 <ul>
@@ -285,7 +287,7 @@ uv run --no-project --with mkdocs-material==9.7.6 mkdocs serve   # live preview 
   <li>Precision vs recall vs F1 — what each one actually means (note 03).</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
 </aside>
 </section>
 <section id="03-reading-the-numbers">
@@ -325,7 +327,7 @@ recall    = tp / (tp + fn)</code></pre>
   <li>How to read a <strong>confusion matrix</strong> (which label gets mistaken for which) at a glance.</li>
   <li>Macro vs <strong>micro</strong> vs weighted averages — what each one is really measuring.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
 </aside>
 </section>
 <section id="04-tool-use-the-general-idea">
@@ -404,7 +406,7 @@ recall    = tp / (tp + fn)</code></pre>
   <li>When to hand-roll the loop vs use the SDK's built-in tool runner.</li>
   <li>Guardrails: capping iterations, capping spend, and what to do when the cap is hit.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#04-tool-use-the-general-idea">04 · Tool use / function calling, the general idea</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#04-tool-use-the-general-idea">04 · Tool use / function calling, the general idea</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
 </aside>
 </section>
 <section id="06-rag-answering-from-your-own-docs">
@@ -937,7 +939,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>Mocks and fakes — testing one layer without booting the whole app.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
 </aside>
 </section>
 <section id="21-test-driven-development">
@@ -1205,6 +1207,39 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>Cache economics: ~87% of the tokens billed at ~0.1x. How much of "cost control" is really <em>cache</em> control - structuring a run so more of it is cache reads?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#25-multi-agent-workflows">25 · Multi-agent workflows: fan-out, and the collision boundary</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
+</aside>
+</section>
+<section id="28-tracing-an-agent-loop">
+<h1>28 — Tracing an agent loop: seeing where the time and tokens go</h1>
+<blockquote><strong>TL;DR</strong> An agent loop (note 05) is a little distributed system: one question fans out into several model calls and tool calls. When it's slow or expensive, "which part?" is unanswerable by staring at the code — you need a <strong>trace</strong>: a timed, nested record of every step. I added OpenTelemetry to my kb-agent so each <code>ask()</code> emits a span tree — the turn, each model call, each tool call — carrying token counts, per-step latency, and each tool's status. The design trick that keeps it from being a tax: instrument against the tracing <em>API</em> always, but only turn the <em>recording</em> on when you ask for it, so it's a genuine no-op by default.</blockquote>
+<h2>Plain idea</h2>
+<p>A single agent turn isn't one thing that happens — it's a loop. The model thinks, asks for a tool, you run it, feed the result back, it thinks again, maybe asks for another tool, and eventually answers. Three model calls and two tool calls can hide behind one <code>ask(&quot;...&quot;)</code>.</p>
+<p>So when a turn takes eight seconds, "why?" has many possible answers: a slow tool? a big model call? too many loop passes? And when a turn costs more than you expected, "where did the tokens go?" is just as murky. You can't fix what you can't see, and a <code>print()</code> here and there doesn't compose into an answer.</p>
+<p>A <strong>trace</strong> does. It's a tree of <strong>spans</strong>, where each span is one operation with a start time, an end time, and some labelled facts (<strong>attributes</strong>). Nest them and you get a picture of the whole turn:</p>
+<pre><code>kb_agent.ask                     (2.9s, 2 passes)
+├─ chat sonnet                   (0.8s, in=120 out=8)
+├─ execute_tool search_kb        (1.4s, status=success)
+└─ chat sonnet                   (0.7s, in=210 cache_read=120)</code></pre>
+<p>Now the questions answer themselves: the tool was the slow part, and the second model call read 120 tokens <em>from cache</em> instead of paying for them again (note 27's world — the cost levers you actually have). That last fact is invisible in the code; the trace surfaces it.</p>
+<h2>What to hang on each span</h2>
+<p>The span <em>is</em> the measurement, so put the deciding numbers on it:</p>
+<ul>
+  <li><strong>On each model call:</strong> input / output tokens, and the cache counts if you use prompt caching. This is where cost lives (notes 03 and 09 — reading the numbers, and paying for the big model only when it pays).</li>
+  <li><strong>On each tool call:</strong> the tool's name and its result status — and you get its latency for free, because that's just the span's duration.</li>
+  <li><strong>On the whole turn:</strong> how many loop passes it took. A turn that quietly takes nine passes is a different problem from one that takes two.</li>
+</ul>
+<p>There's a small standard for these names — OpenTelemetry's <strong>GenAI semantic conventions</strong> (<code>gen_ai.usage.input_tokens</code>, <code>gen_ai.tool.name</code>, and so on). Using the standard names instead of inventing your own means any off-the-shelf viewer (Jaeger, Tempo, Honeycomb) understands your traces with no configuration.</p>
+<h2>The design trick: instrument always, record on demand</h2>
+<p>The trap with observability is that it becomes a tax — overhead on every run, noise in every log, a hard dependency the tests have to work around. The fix is a split that's worth internalising, because it's how mature tracing libraries are built:</p>
+<ul>
+  <li>Your code talks to the tracing <strong>API</strong>. Its default implementation is a <strong>no-op</strong> — it accepts your spans and throws them away, costing essentially nothing.</li>
+  <li>The <strong>SDK</strong> — the part that actually records spans and ships them somewhere — is wired up <em>only when you ask for it</em>, behind an environment variable.</li>
+</ul>
+<p>So the instrumentation lives in the code permanently, but it's inert until you flip <code>KB_AGENT_TRACING=1</code>. A normal run pays nothing. The offline test suite (note 20) is untouched. And when you <em>do</em> want to see inside a turn, you turn it on and the spans start flowing — to the console while you're poking at it, or to a real collector when you want to keep them. One more guard: only compute the expensive attributes when a recording span is actually listening (<code>if span.is_recording()</code>), so "off" is truly free, not just quiet.</p>
+<h2>Why this is the same instinct as everything else here</h2>
+<p>"Build the eval before you trust the model" (note 02). "Read the numbers, don't trust the vibe" (note 03). "Know the cost before you launch the fan-out" (note 27). Tracing is that instinct pointed at a running agent: <strong>don't guess where the time and tokens went — measure it, per step.</strong> The loop in note 05 is where the work happens; this is how you see it happen.</p><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#05-the-agentic-tool-use-loop">05 · The agentic tool-use loop</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a></div>
 </aside>
 </section>
 </main>
