@@ -53,7 +53,7 @@ function afterward, in the same process, no separate infrastructure required.
 write the labels back as tags after a note is created — the caller gets a fast response, and
 the classify-and-tag step happens right after. This replaced an earlier Kafka-based design;
 for a single-process, personal-scale system, a broker was infrastructure the problem didn't
-need. See `system/SYS-005`.
+need. See `architecture/decisions/SYS-005`.
 
 **Related:** idempotency (why the writeback step is safe even if it runs more than once),
 contract (the `/classify` and tags-writeback shapes this task calls)
@@ -73,8 +73,11 @@ No AI required. Fast, reliable, and great when the user's query uses the same wo
 document. Falls apart when the query and document use *different words for the same idea*
 (see: vector search).
 
-**In my projects:** BM25 is one retrieval strategy available to `kb-agent` when searching
-the knowledge base.
+**In my projects:** I measured BM25 as a grounding layer for the *classifier* and cut it —
++1.9% category accuracy, +0.0% domain, not worth the retrieval complexity. `kb-agent`
+retrieves with dense embeddings only (`all-MiniLM-L6-v2`); adding BM25 alongside them as a
+hybrid retriever is a candidate for a later version, gated on an eval showing it earns its
+place.
 
 **Related:** vector search (the meaning-based alternative), RAG (the broader pattern)
 
@@ -88,9 +91,11 @@ Automatically sorting items into labeled bins based on what they are.
 trained a system to learn the rules and do it for you. Show it enough examples of "this is
 procurement" and "this is geopolitics" and it learns to tell them apart.
 
-**In my projects:** the classifier reads a defense news article and assigns two labels: what
-*domain* it belongs to (e.g., land, air, maritime) and what *category* it is (e.g.,
-procurement, policy, technology). That's what makes the knowledge base queryable later.
+**In my projects:** the classifier reads a defense news article and assigns three labels:
+*category* (procurement, operations, policy, technology, industry), *operational domain*
+(air, land, sea, cyber, space, multi), and *region* (indo-pacific, europe, middle-east,
+africa, americas, global). The region axis landed in v3.0.0. That's what makes the knowledge
+base queryable later.
 
 **Related:** eval (how you check if the classifier is doing this well)
 
@@ -111,9 +116,9 @@ The numbers that tell you how well the classifier is sorting items. See also: **
 **Why F1 instead of accuracy?** If 95% of your articles are "procurement" and you just label
 everything "procurement," you get 95% accuracy while being useless. F1 catches this.
 
-**In my projects:** current classifier scores — category F1 ≈ 0.906, operational-domain
-F1 ≈ 0.894. The ceiling is label ambiguity (industry vs. procurement both involve defense
-companies and money), not model power.
+**In my projects:** current classifier scores (v3.0.0) — macro-F1 0.911 category, 0.933
+operational domain, 0.927 region. The ceiling is label ambiguity (industry vs. procurement
+both involve defense companies and money), not model power.
 
 ---
 
@@ -146,7 +151,9 @@ the outlet shape stays the same.
 
 **In my projects:** `notes-api` calls the classifier's `/classify` endpoint and writes labels
 back as tags. The classifier promises the `/classify` shape (SYS-004); `notes-api` promises
-the tags writeback shape (SYS-005). Neither service knows how the other works internally.
+the tags writeback shape (SYS-005) and the `GET /notes` read shape (SYS-006). All three are
+frozen and guarded by contract tests in CI, so breaking one fails a PR instead of a consumer.
+Neither service knows how the other works internally.
 
 **Related:** idempotency (what a contract can safely promise about repeated calls),
 API (the technical form a contract takes)
@@ -203,8 +210,10 @@ systematic rather than optional.
 The upgrade path: eval CSV → scoring script → wired into CI → a PR that drops accuracy
 gets caught before it merges.
 
-**In my projects:** wiring the classifier eval into GitHub Actions is the next milestone
-(evals-as-CI, SYS-007).
+**In my projects:** the classifier's eval runs as a CI gate now — an offline scoring job on
+every PR that costs nothing, plus a scheduled live job that spends real API budget against
+the model (classifier `ADR-007`). Extending the same pattern to `kb-agent`'s retrieval eval
+is the next milestone.
 
 **Related:** eval, contract (what the harness enforces)
 
@@ -226,8 +235,9 @@ same message twice. If your handler isn't idempotent, a harmless retry becomes a
 them. Reprocessing the same note five times lands identically to processing it once — 200,
 no duplicates.
 
-**Related:** contract (what the API promises), Kafka (at-least-once delivery makes this
-necessary)
+**Related:** contract (what the API promises), Kafka (at-least-once delivery is what makes
+idempotency necessary in broker-based designs — and making the writeback idempotent is part
+of why this system could drop the broker)
 
 ---
 
@@ -307,9 +317,9 @@ the source.
 The "retrieval" step is what makes this work — you can't hand the AI your entire knowledge
 base (it won't fit). So you search for the relevant pages first, then hand only those over.
 
-**In my projects:** `kb-agent` uses RAG to answer questions over the defense-news knowledge
-base. It retrieves relevant notes (via BM25 or vector search), hands them to the LLM as
-context, and the LLM answers based on what it read.
+**In my projects:** `kb-agent` uses RAG to answer questions over my own knowledge base of
+projects, libraries, and notes. It retrieves the relevant chunks by vector search over local
+embeddings, hands them to the LLM as context, and the LLM answers based on what it read.
 
 **Related:** BM25 and vector search (retrieval strategies), context window (why you
 can't hand over everything), embeddings (how vector search finds relevant docs)
