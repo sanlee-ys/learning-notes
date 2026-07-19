@@ -65,8 +65,8 @@ on a 54-snippet human-labeled gold set of real news: category accuracy 88.9%
 label that this note flags as the weak spot is now F1 1.000, the blind spot closed. The v1
 numbers stay here because the per-label reading is the lesson.*
 
-**Update (v3, current):** *the shipped classifier now scores <!-- metric:category_accuracy -->**92.6%**
-category (macro-F1 <!-- metric:category_macro_f1 -->0.911) and <!-- metric:domain_accuracy -->**92.6%**
+**Update (v3, current):** *the shipped classifier now scores <!-- metric:category_accuracy -->92.6%
+category (macro-F1 <!-- metric:category_macro_f1 -->0.911) and <!-- metric:domain_accuracy -->92.6%
 operational-domain (macro-F1 <!-- metric:domain_macro_f1 -->0.933) on that same gold set, plus a third
 axis, `region`, at <!-- metric:region_accuracy -->87.0% (macro-F1 <!-- metric:region_macro_f1 -->0.927). The v1 and v2 figures above stay put — they are
 what each measurement actually said at the time, and the whole point of this note is that
