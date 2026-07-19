@@ -16,6 +16,22 @@ jobs:
         working-directory: mkdocs
         run: uv run --no-project --with mkdocs-material==9.7.6 mkdocs build
 
+  # Note 03 teaches how to read eval numbers using the classifier's own runs, so it
+  # quotes them. kb-agent indexes this repo, which makes a stale figure here not just
+  # wrong on a page but speakable by an agent as the current number — the propagation
+  # path SYS-017 recorded when a bad citation reached the glossary. Marked figures are
+  # asserted against the producer's published artifact; historical v1/v2 blocks are
+  # deliberately unmarked, because superseded numbers are this note's actual lesson.
+  published-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Check quoted metrics against the classifier artifact
+        run: python scripts/check_published_metrics.py
+
   # The deployed site is the repo-root static output of build_site.py /
   # build_graph.py (deploy-pages.yml uploads "."), NOT the mkdocs build above.
   # Those generated files had no CI, so a source edit with a forgotten rebuild
