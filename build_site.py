@@ -75,13 +75,24 @@ def _table_row(s: str) -> list[str]:
     return [c.strip() for c in s.split("|")]
 
 
+# Source-only annotations consumed by scripts/check_published_metrics.py, which asserts
+# the classifier figures quoted in the notes against the producer's published artifact.
+# They must be stripped BEFORE rendering: this renderer html.escape()s its input, so a
+# comment left in place ships to the live page as visible "&lt;!-- metric:... --&gt;"
+# text. Caught by looking at the built output rather than assuming markdown comments
+# pass through — they do on GitHub, which is exactly why the assumption was tempting.
+METRIC_MARKER = re.compile(r"<!--\s*metric:[A-Za-z0-9_]+\s*-->")
+
+
 def md_to_html(text: str) -> str:
     """Convert the notes' Markdown subset to HTML, line by line.
 
     Handles headings, lists, tables, fenced code, blockquotes, and raw
     block-level HTML (the README hero) — just what these notes actually use,
-    not general CommonMark.
+    not general CommonMark. Metric markers are stripped first; they annotate the
+    source for CI and have no rendered form.
     """
+    text = METRIC_MARKER.sub("", text)
     lines = text.split("\n")
     out: list[str] = []
     para: list[str] = []
