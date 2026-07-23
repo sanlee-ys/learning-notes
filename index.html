@@ -112,6 +112,7 @@ img { max-width:100%; height:auto; }
 <div class="navgroup"><h3>Data &amp; method</h3>
 <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a>
 <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a>
+<a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a>
 </div>
 <div class="navgroup"><h3>Engineering hygiene</h3>
 <a href="#10-secrets-and-env">10 · Secrets and the `.env` pattern</a>
@@ -183,6 +184,7 @@ img { max-width:100%; height:auto; }
 <ul>
   <li>[x] 08 — Synthetic data and the "circular eval" trap <em>(classifier)</em></li>
   <li>[x] 09 — Tiered model routing: paying for the big model only when it pays <em>(classifier v2)</em></li>
+  <li>[x] 29 — Ablate your own scaffolding: was the hand-written part doing anything? <em>(all projects)</em></li>
 </ul>
 <h3>Engineering hygiene</h3>
 <ul>
@@ -287,7 +289,7 @@ uv run --no-project --with mkdocs-material==9.7.6 mkdocs serve   # live preview 
   <li>Precision vs recall vs F1 — what each one actually means (note 03).</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#06-rag-answering-from-your-own-docs">06 · RAG: answering from your own documents</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#15-semantic-versioning">15 · Semantic versioning: a version number is a promise</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a> <a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a></div>
 </aside>
 </section>
 <section id="03-reading-the-numbers">
@@ -328,7 +330,7 @@ recall    = tp / (tp + fn)</code></pre>
   <li>How to read a <strong>confusion matrix</strong> (which label gets mistaken for which) at a glance.</li>
   <li>Macro vs <strong>micro</strong> vs weighted averages — what each one is really measuring.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a> <a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a></div>
 </aside>
 </section>
 <section id="04-tool-use-the-general-idea">
@@ -940,7 +942,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>Mocks and fakes — testing one layer without booting the whole app.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a> <a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a></div>
 </aside>
 </section>
 <section id="21-test-driven-development">
@@ -972,6 +974,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>Outside-in vs inside-out TDD — start from the HTTP test and drive inward, or from the unit and build out?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#14-constructors-and-dependency-injection">14 · Constructors &amp; dependency injection</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a></div>
 </aside>
 </section>
 <section id="22-steering-an-ai-agent-with-claude-md">
@@ -1241,6 +1244,41 @@ COPY src/api.py src/classify.py ./src/</code></pre>
 <h2>Why this is the same instinct as everything else here</h2>
 <p>"Build the eval before you trust the model" (note 02). "Read the numbers, don't trust the vibe" (note 03). "Know the cost before you launch the fan-out" (note 27). Tracing is that instinct pointed at a running agent: <strong>don't guess where the time and tokens went — measure it, per step.</strong> The loop in note 05 is where the work happens; this is how you see it happen.</p><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#05-the-agentic-tool-use-loop">05 · The agentic tool-use loop</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a></div>
+</aside>
+</section>
+<section id="29-ablate-your-own-scaffolding">
+<h1>29 — Ablate your own scaffolding: was the hand-written part doing anything?</h1>
+<blockquote><strong>TL;DR</strong> I hand-wrote a detailed spec to help an AI implement a tricky algorithm, and it worked. Then I deleted the spec and ran it again — <strong>same result, same quality, first try.</strong> The scaffolding I was proud of had been doing nothing, and I'd never have known without deliberately removing it.</blockquote>
+<h2>Plain idea</h2>
+<p>When you build something with an AI agent, you usually add scaffolding: a carefully written contract, a worked example, a list of edge cases, a nudge about the tricky part. Then it works, and you conclude the scaffolding is why.</p>
+<p>That conclusion is unearned. You ran <strong>one</strong> condition. You have no idea what the run without your scaffolding looks like, because you never did it.</p>
+<p>The fix is borrowed from experimental science and called an <strong>ablation</strong>: remove one component, hold everything else fixed, re-run, compare. If the result doesn't move, that component wasn't carrying the weight you thought.</p>
+<p>I tried this on a job where the model had to implement a genuinely fiddly piece of networking logic — the kind with interacting timers where a naive fix makes other cases fail. I'd written a detailed contract describing the algorithm's rules. The run passed <strong>38 of 38</strong> checks after one repair pass.</p>
+<p>Then I stripped the contract out of the prompt, leaving only the task and the automated grader, and ran it again.</p>
+<p>Identical outcome. 38 of 38, one pass, and the code it produced implemented the actual standardized algorithm — correctly, unprompted. The model already knew. My contract had been <strong>a very confident restatement of something already in the weights.</strong></p>
+<h2>Analogy</h2>
+<p>You put a lucky charm in your pocket before every exam and keep passing. Obvious conclusion: the charm works. The only way to find out is to leave it at home once — and the reason nobody does is that the test is scary and passing feels too important to risk.</p>
+<p>Ablating your own work has the same flavour. You're deliberately running the condition that could show your contribution was decorative.</p>
+<h2>What made the comparison trustworthy</h2>
+<p>An ablation is only as good as the thing measuring it. Two conditions producing "looks fine" tells you nothing.</p>
+<p>What made this readable was an <strong>automated grader that had been built before the implementation existed</strong> and that produced a hard number — 38 discrete checks, pass or fail, no judgment call at the end. Both runs were scored by the same grader on the same cases, so "identical" meant identical, not "seemed similar."</p>
+<p>The order matters more than it sounds. Build the grader first and it encodes what correct means, independent of whatever the model happens to produce. Build it after, and you'll unconsciously write checks the existing output already passes (note 02, note 21 — same red-then-green instinct as TDD).</p>
+<p>And the grader itself needs checking. Feed it <strong>deliberately broken inputs</strong> and confirm it catches each one for the right reason. A grader that silently never fires gives you a flawless score and zero information — that's the same failure as a test suite that passes because it asserts nothing (note 20).</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>You're usually measuring your own effort, not its effect.</strong> The scaffolding felt load-bearing because writing it was work. Effort spent is not evidence of effect.</li>
+  <li><strong>A negative result is cheap and final.</strong> One extra run answered a question I'd otherwise have carried for months, and it redirected the whole project. That's a better return than most features.</li>
+  <li><strong>Model capability moves under you.</strong> A contract that was genuinely necessary a year ago may be dead weight now, and nothing in your setup will tell you. The scaffolding doesn't announce when it stops mattering.</li>
+  <li><strong>It's the honest version of "I used AI to build this."</strong> "It worked" is a story. "It worked, and here's the run proving my part wasn't the reason" is a finding.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li><strong>Which scaffolding survives ablation?</strong> Task framing, worked examples, edge-case lists, and output-format contracts are all doing different jobs. Ablate them one at a time and some almost certainly still earn their place.</li>
+  <li><strong>Where does the effect come back?</strong> Presumably there's a difficulty threshold below which the model doesn't need your help and above which it does. Finding that boundary is more useful than one data point on either side.</li>
+  <li><strong>n=1 is not a result.</strong> Same ablation, several runs, on a task with any randomness in it — does the delta stay at zero, or was one run lucky? (Note 03 on why a single number without spread is hard to read.)</li>
+  <li><strong>The uncomfortable generalization:</strong> how much of what we call prompt engineering would survive its own ablation?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a></div>
 </aside>
 </section>
 </main>
