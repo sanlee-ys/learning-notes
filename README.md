@@ -56,6 +56,7 @@ Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
 ### Data & method
 - [x] 08 — Synthetic data and the "circular eval" trap *(classifier)*
 - [x] 09 — Tiered model routing: paying for the big model only when it pays *(classifier v2)*
+- [x] 29 — Ablate your own scaffolding: was the hand-written part doing anything? *(all projects)*
 
 ### Engineering hygiene
 - [x] 10 — Secrets and the `.env` pattern *(both)*
