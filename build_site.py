@@ -263,6 +263,9 @@ nav a { display:block; padding:5px 8px; color:var(--fg); text-decoration:none;
         border-radius:6px; font-size:.9rem; }
 nav a:hover { background:var(--code-bg); color:var(--accent); }
 main { flex:1; min-width:0; padding:40px 48px 120px; }
+main > footer { margin-top:56px; padding-top:20px; border-top:1px solid var(--border);
+                color:var(--muted); font-size:.9rem; }
+main > footer a { color:var(--accent); }
 section { margin-bottom:56px; padding-bottom:8px; border-bottom:1px dashed var(--border); }
 section:last-child { border-bottom:none; }
 h1 { font-size:1.9rem; margin:.2em 0 .6em; }
@@ -429,6 +432,9 @@ def build() -> None:
 <main>
 <p id="noresults">No matching notes.</p>
 {body}
+<footer>
+<p>Notes by <a href="https://sanlee.me/">San Lee</a>, written while building an eval-driven LLM system in the open.</p>
+</footer>
 </main>
 </div>
 <script>{SCRIPT}</script>
