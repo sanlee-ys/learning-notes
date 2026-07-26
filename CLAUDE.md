@@ -14,8 +14,16 @@ Treat every user-facing change as something that must work on a phone, not just 
 desktop browser. This is a standing directive — apply it even when a request
 doesn't mention mobile.
 
-- Verify at a narrow viewport (~390px wide): **no horizontal overflow**, no
-  content cut off, text remains readable without pinch-zoom.
+**There is no gate script in this repo.** The sibling `portfolio` repo has one
+(`scripts/mobile-qa.cjs` — renders every page at 320/360/390/430px and fails on
+horizontal overflow); porting it here is the right fix and hasn't been done. Until it
+is, "verify" means you actually rendered the page and looked at it, and the honest
+report says which widths you checked and which you didn't. **"Looks responsive" from
+reading the CSS is not a check** — say it's unverified instead, the same way an
+unverified link gets labelled rather than sent.
+
+- Render at a narrow viewport (~390px wide, and 320px if the change touches layout):
+  **no horizontal overflow**, no content cut off, text readable without pinch-zoom.
 - Images and SVGs must scale to the viewport (`max-width:100%; height:auto`),
   never force a fixed pixel width wider than the screen.
 - Interactive controls need real tap targets (~44px) and a way to be dismissed.
