@@ -5,6 +5,29 @@ Plain language, analogies first. Alphabetical order.
 
 ---
 
+## ablation
+
+Removing one piece of a system on purpose, re-running the eval, and seeing what actually
+changes.
+
+**Analogy:** you suspect one ingredient is carrying the whole recipe. Cook the dish without
+it. If nobody notices, the ingredient was ceremony; if the dish collapses, now you know
+exactly what it was doing. Either way you stop guessing.
+
+The point is that a component's contribution gets *measured*, not assumed — things earn
+their place by the delta they produce, not by how sensible they sound in the design doc.
+
+**In my projects:** BM25 grounding was ablated out of the classifier (+1.9% category,
++0.0% domain — cut); `kb-agent`'s hybrid-retrieval experiment was the same discipline run
+forward (measure before adopting, and it measured as a wash).
+
+**See note:** [29 — Ablate your own scaffolding](29-ablate-your-own-scaffolding.md)
+
+**Related:** eval (the measuring stick), false green (the risk of *assuming* a component
+does its job)
+
+---
+
 ## agent
 
 An AI that doesn't just answer questions — it takes actions in a loop until a job is done.
@@ -83,6 +106,27 @@ place.
 
 ---
 
+## CI gate
+
+An automated check that runs on every proposed change and can refuse to let it merge.
+
+**Analogy:** a bouncer with an actual checklist. Not a sign on the wall saying "please
+behave" — a person who physically doesn't open the door until every item passes. A
+convention can be forgotten on a busy day; a gate can't be.
+
+The property that matters: a gate turns "someone should check this" into "this *cannot
+land* unchecked." The failure mode is a gate that only looks like it's checking — see
+false green.
+
+**In my projects:** the classifier's eval runs as a CI gate, so a PR that drops accuracy
+goes red before it merges. The portfolio site runs fourteen gates on every change — links,
+contrast measured on the rendered pixel, mobile overflow, font coverage.
+
+**Related:** eval-as-a-harness (an eval promoted into a gate), false green (a gate that
+can't fail)
+
+---
+
 ## classification
 
 Automatically sorting items into labeled bins based on what they are.
@@ -116,9 +160,33 @@ The numbers that tell you how well the classifier is sorting items. See also: **
 **Why F1 instead of accuracy?** If 95% of your articles are "procurement" and you just label
 everything "procurement," you get 95% accuracy while being useless. F1 catches this.
 
-**In my projects:** current classifier scores (v3.0.0) — macro-F1 0.911 category, 0.933
-operational domain, 0.927 region. The ceiling is label ambiguity (industry vs. procurement
-both involve defense companies and money), not model power.
+**In my projects:** current classifier scores (v3.2.0) — macro-F1 0.911 category, 0.933
+operational domain. The region macro-F1 (0.927) is support-limited on the 54-row gold set
+(two region classes have one or two examples), so the scale eval at n=300 is the honest
+region read. The ceiling is label ambiguity (industry vs. procurement both involve defense
+companies and money), not model power.
+
+---
+
+## Cohen's kappa (κ)
+
+A score for how much two graders actually agree, after subtracting the agreement they'd
+get by pure luck.
+
+**Analogy:** two teachers grade the same 100 essays pass/fail and match on 88. Impressive?
+If both teachers pass almost everyone, they'd match on ~80 just by their habits colliding —
+so only a sliver of that 88 is real agreement. Kappa measures the sliver: 1.0 is perfect
+agreement, 0 is no better than chance.
+
+**Why it matters:** raw agreement flatters graders whenever the answers are unbalanced —
+which is exactly the situation when an LLM judge grades mostly-faithful summaries.
+
+**In my projects:** `faithfulness-judge` scores judges against my own gold labels with κ —
+Opus lands at 0.751, Sonnet at 0.716, and the confidence intervals overlap, so the data
+doesn't crown either judge.
+
+**Related:** LLM-as-judge (the grader being graded), classifier metrics (accuracy has the
+same flattery problem — see "Why F1 instead of accuracy?")
 
 ---
 
@@ -215,7 +283,55 @@ every PR that costs nothing, plus a scheduled live job that spends real API budg
 the model (classifier `ADR-007`). Extending the same pattern to `kb-agent`'s retrieval eval
 is the next milestone.
 
-**Related:** eval, contract (what the harness enforces)
+**Related:** eval, contract (what the harness enforces), false green (a harness that
+can't fail is worse than none)
+
+---
+
+## false green
+
+A check that reports success without actually being able to fail.
+
+**Analogy:** a smoke detector with the battery removed. The little green light stays on.
+The house *feels* protected precisely because the thing that would tell you otherwise is
+the thing that's broken. A check that cannot fail is indistinguishable from a check that
+passes.
+
+The insidious part: the run looks identical whether the check worked or silently did
+nothing, so the failure only surfaces when you audit the checker itself. The diagnostic
+question: *what is this green measuring, and can it tell "passed" from "never ran"?*
+
+**In my projects:** an audit of my own repos found six of these — including a mobile
+gate measuring unstyled pages, a review lane with no file access, and a counter logging
+"zero denials" off a key the log never carried. Writeup:
+[False Green](https://sanlee.me/projects/false-green.html).
+
+**Related:** CI gate (what these were all supposed to be), eval (a number is only as
+trustworthy as the thing that measured it)
+
+---
+
+## fan-out
+
+Splitting one task across many agents (or workers) running at the same time.
+
+**Analogy:** instead of one person reading a 300-page report, tear out thirty chapters
+and hand them to thirty readers. Wall-clock time collapses — and so does your budget,
+thirty times faster. If the readers were dispatched without a cap, nobody actually
+*decided* to spend that.
+
+Two disciplines make it safe: cap it before it runs (spend is a decision, not a default),
+and cut the work along pieces that don't share state, so the readers never fight over
+one page.
+
+**In my projects:** an uncapped fan-out once burned a five-hour usage window in
+forty-five minutes — thirty-plus agents on the most expensive model tier. The fix is a
+hook that mechanically blocks any uncapped run, not a resolution to be more careful.
+
+**See notes:** [25 — Multi-agent workflows](25-multi-agent-workflows.md),
+[27 — Fan-out cost control](27-fan-out-cost-control.md)
+
+**Related:** agent (the thing being multiplied), token (the unit the budget burns in)
 
 ---
 
@@ -284,6 +400,28 @@ agent (an LLM with tools and a loop)
 
 ---
 
+## LLM-as-judge
+
+Using one model to grade another model's output, so evaluation can scale past what you
+can review by hand.
+
+**Analogy:** a teaching assistant grading homework with an answer key the professor
+wrote. The grading scales — but now there's a new question: is the *TA* grading
+correctly? You spot-check the grader before you trust the grades.
+
+That second question is the whole discipline. A judge is itself a model with failure
+modes, so it gets its own eval — measured against human labels before its verdicts
+count for anything.
+
+**In my projects:** the classifier's real-text eval uses an Opus judge to cross-check
+labels at a scale hand-review can't reach; `faithfulness-judge` inverts the question and
+evals the judge itself, measuring judge-vs-my-labels agreement (κ) before the judge
+earns any authority.
+
+**Related:** Cohen's kappa (how judge agreement is scored honestly), eval
+
+---
+
 ## prompt
 
 The instruction sheet you hand an AI before it does anything.
@@ -323,6 +461,29 @@ embeddings, hands them to the LLM as context, and the LLM answers based on what 
 
 **Related:** BM25 and vector search (retrieval strategies), context window (why you
 can't hand over everything), embeddings (how vector search finds relevant docs)
+
+---
+
+## recall@k and MRR
+
+The numbers that score a *retriever* — did the right document come back at all, and how
+high up the list was it?
+
+**Analogy:** you ask a librarian for the one book that answers your question, and they
+hand you a stack of five. **Recall@5:** was the right book anywhere in the stack?
+**Recall@1:** was it on top? **MRR (mean reciprocal rank):** on average, how deep do you
+dig — top position scores 1.0, second 0.5, third 0.33.
+
+**Why both:** recall@k says whether the answer was *present*; MRR says whether you'd
+have *found* it before giving up.
+
+**In my projects:** `kb-agent`'s retrieval eval runs on recall@1/3/5 and MRR. Filtering
+boilerplate out of the index lifted recall@1 from 0.630 to 0.741; the same harness then
+scored the hybrid-retrieval experiment as a wash (MRR identical to four decimal places),
+so dense-only stayed the default. The harness gets to say no.
+
+**Related:** RAG (retrieval is the R), BM25 and vector search (the retrievers being
+scored), eval (same discipline, aimed at search)
 
 ---
 
