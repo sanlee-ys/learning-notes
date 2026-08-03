@@ -160,8 +160,8 @@ The numbers that tell you how well the classifier is sorting items. See also: **
 **Why F1 instead of accuracy?** If 95% of your articles are "procurement" and you just label
 everything "procurement," you get 95% accuracy while being useless. F1 catches this.
 
-**In my projects:** current classifier scores (v3.2.0) — macro-F1 0.911 category, 0.933
-operational domain. The region macro-F1 (0.927) is support-limited on the 54-row gold set
+**In my projects:** current classifier scores (v3.2.1) — macro-F1 0.930 category, 0.982
+operational domain. The region macro-F1 (0.975) is support-limited on the 54-row gold set
 (two region classes have one or two examples), so the scale eval at n=300 is the honest
 region read. The ceiling is label ambiguity (industry vs. procurement both involve defense
 companies and money), not model power.

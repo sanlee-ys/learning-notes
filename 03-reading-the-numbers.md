@@ -65,14 +65,26 @@ on a 54-snippet human-labeled gold set of real news: category accuracy 88.9%
 label that this note flags as the weak spot is now F1 1.000, the blind spot closed. The v1
 numbers stay here because the per-label reading is the lesson.*
 
-**Update (v3, current):** *the shipped classifier now scores <!-- metric:category_accuracy -->92.6%
-category (macro-F1 <!-- metric:category_macro_f1 -->0.911) and <!-- metric:domain_accuracy -->92.6%
-operational-domain (macro-F1 <!-- metric:domain_macro_f1 -->0.933) on that same gold set, plus a third
-axis, `region`, at <!-- metric:region_accuracy -->87.0% (macro-F1 <!-- metric:region_macro_f1 -->0.927). The v1 and v2 figures above stay put — they are
+**Update (v3, current):** *the shipped classifier now scores <!-- metric:category_accuracy -->94.4%
+category (macro-F1 <!-- metric:category_macro_f1 -->0.930) and <!-- metric:domain_accuracy -->98.1%
+operational-domain (macro-F1 <!-- metric:domain_macro_f1 -->0.982) on that same gold set, plus a third
+axis, `region`, at <!-- metric:region_accuracy -->94.4% (macro-F1 <!-- metric:region_macro_f1 -->0.975). The v1 and v2 figures above stay put — they are
 what each measurement actually said at the time, and the whole point of this note is that
 the number you quote is inseparable from how it was measured. The live figures are published
 as [`evals/metrics.json`](https://github.com/sanlee-ys/defense-news-classifier/blob/main/evals/metrics.json);
 prefer it over any number retyped into prose, including these.*
+
+**Update (v3.2.1) — and this one is the note's own lesson happening live:** *region moved
+87.0% → 94.4% because the prompt gained one bullet, not because the model or the gold set
+changed. Worth knowing how that bullet earned its way in. It was measured once and*
+**reverted** *at p=0.0522 against a threshold of p<0.05 written down beforehand — then
+re-run against a ruler twice the size, where the identical bullet came back at p=0.0002 and
+shipped. Same clause, same bar, different amount of evidence. The first run had roughly a
+coin flip's chance of detecting its own effect, so "we couldn't tell" is what it actually
+measured, and that is different from "it doesn't work." Two numbers here are worth reading
+against each other for the same reason: `domain` accuracy rose to 98.1%, while the judge's
+agreement with the human labels on `region` fell from a perfect 100.0% to 96.3%. A single
+headline figure would have hidden both.*
 
 ## Why it matters
 
