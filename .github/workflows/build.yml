@@ -32,6 +32,22 @@ jobs:
       - name: Check quoted metrics against the classifier artifact
         run: python scripts/check_published_metrics.py
 
+  # The rules in that checker whose failure mode is a QUIET PASS need their own tests:
+  # a marker placed where it breaks the rendered page still reports a clean run, so
+  # nothing but a test says the rule works. The check itself needs the network (it
+  # fetches the producer's artifact); these do not, and run on literal markdown.
+  published-metrics-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install pytest
+        run: python -m pip install --disable-pip-version-check pytest
+      - name: Run the checker's tests
+        run: python -m pytest tests/ -q
+
   # The deployed site is the repo-root static output of build_site.py /
   # build_graph.py (deploy-pages.yml uploads "."), NOT the mkdocs build above.
   # Those generated files had no CI, so a source edit with a forgotten rebuild
