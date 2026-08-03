@@ -19,9 +19,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
+import check_published_metrics as cpm  # noqa: E402
 from check_published_metrics import (  # noqa: E402
     check_documents,
+    check_placement,
+    placement_problems,
     same_value,
+    sweep_paths,
 )
 
 PUBLISHED: dict[str, object] = {
@@ -109,6 +113,110 @@ def test_line_initial_marker_fails_even_when_its_value_is_correct() -> None:
     """The placement is the defect. A correct value does not excuse a broken render."""
     markdown = "Text above\n<!-- metric:category_accuracy -->92.6%\n"
     assert problems_for(markdown), "a correct value must not suppress the placement rule"
+
+
+# --- the placement rule sweeps subdirectories; the value rules do not ------------
+#
+# `main()` reads notes with a NON-RECURSIVE root glob, so a note in a subdirectory is
+# invisible to every rule here. That set is empty today — which is the argument for the
+# sweep, not against it: the first note to move into a subdirectory would silently leave
+# the checker's reach, and the failure it would then be free to commit is invisible in
+# the source. The same fixture discipline as above applies: a marker sits after text on
+# its line unless line-initial placement is the thing under test.
+
+
+def test_the_sweep_reaches_a_subdirectory_note(tmp_path) -> None:
+    (tmp_path / "ROOT.md").write_text("root note\n", encoding="utf-8")
+    (tmp_path / "archive").mkdir()
+    (tmp_path / "archive" / "OLD.md").write_text("archived note\n", encoding="utf-8")
+    swept = {p.relative_to(tmp_path).as_posix() for p in sweep_paths(tmp_path)}
+    assert swept == {"archive/OLD.md"}, "root notes are already read by main()'s glob"
+
+
+def test_a_line_initial_marker_in_a_subdirectory_is_caught(tmp_path) -> None:
+    (tmp_path / "archive").mkdir()
+    (tmp_path / "archive" / "OLD.md").write_text(
+        "The classifier scores\n<!-- metric:category_accuracy -->92.6% category.\n",
+        encoding="utf-8",
+    )
+    (problem,) = check_placement(tmp_path, sweep_paths(tmp_path))
+    assert "archive/OLD.md:2" in problem
+    assert "first thing on this line" in problem
+
+
+def test_a_fenced_marker_in_a_subdirectory_passes(tmp_path) -> None:
+    """Same file, same column-zero marker, only the fence differs."""
+    (tmp_path / "archive").mkdir()
+    (tmp_path / "archive" / "OLD.md").write_text(
+        "How a number opts in:\n\n```markdown\n"
+        "<!-- metric:category_accuracy -->92.6%\n```\n",
+        encoding="utf-8",
+    )
+    assert check_placement(tmp_path, sweep_paths(tmp_path)) == []
+
+
+def test_the_sweep_does_not_walk_generated_or_vendored_trees(tmp_path) -> None:
+    """`site/` is the MkDocs build; a marker there is a copy of one in a source note."""
+    for skipped in ("site", ".claude", "node_modules", "__pycache__", ".git"):
+        (tmp_path / skipped).mkdir()
+        (tmp_path / skipped / "STRAY.md").write_text(
+            "generated\n<!-- metric:category_accuracy -->92.6%\n", encoding="utf-8"
+        )
+    assert sweep_paths(tmp_path) == []
+
+
+def test_the_sweep_applies_only_the_placement_rule() -> None:
+    """A stale value or unknown key outside the root is NOT a failure.
+
+    The value rules answer "is this number still current?", which belongs to the notes
+    that make present-tense claims. Placement answers "does this file render?".
+    """
+    stale = (
+        "In June it measured <!-- metric:category_accuracy -->**88.9%**, "
+        "and <!-- metric:typo_key -->**79.0%** on the synthetic set.\n"
+    )
+    assert placement_problems("archive/OLD.md", stale, []) == []
+
+
+def test_placement_line_numbers_are_counted_on_the_raw_text() -> None:
+    """Stripping code first would report every line after a fence short by its height."""
+    markdown = (
+        "intro\n\n```python\nx = 1\ny = 2\n```\n\ntext\n"
+        "<!-- metric:category_accuracy -->92.6%\n"
+    )
+    (problem,) = placement_problems("archive/OLD.md", markdown, [])
+    assert "archive/OLD.md:9" in problem
+
+
+def test_placement_still_runs_when_the_artifact_fetch_fails(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    """An outage skips the value rules. It must not skip a rule that needs no artifact.
+
+    Otherwise a bad merge lands green during a GitHub blip - a gate that did not
+    actually run, which reads as a pass and is not one.
+    """
+    (tmp_path / "README.md").write_text("root note\n", encoding="utf-8")
+    (tmp_path / "archive").mkdir()
+    (tmp_path / "archive" / "OLD.md").write_text(
+        "The classifier scores\n<!-- metric:category_accuracy -->92.6% category.\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cpm, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(cpm, "fetch_artifact", lambda: None)
+    assert cpm.main() == 1
+    assert "first thing on this line" in capsys.readouterr().err
+
+
+def test_a_clean_tree_still_skips_when_the_artifact_fetch_fails(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    """The other half: an outage with no placement fault is a loud skip, not a failure."""
+    (tmp_path / "README.md").write_text("root note\n", encoding="utf-8")
+    monkeypatch.setattr(cpm, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(cpm, "fetch_artifact", lambda: None)
+    assert cpm.main() == 0
+    assert "SKIPPED" in capsys.readouterr().out
 
 
 # --- the pre-existing rules, still enforced --------------------------------------
