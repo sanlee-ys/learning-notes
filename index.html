@@ -166,7 +166,7 @@ img { max-width:100%; height:auto; }
 </ol>
 <p>To add a concept: copy that shape into a new <code>NN-name.md</code> file and tick it off below. Keep it simple first; expand later. A half-written note is fine. After adding or editing a note, run <code>python build_site.py</code> to refresh the viewable <code>index.html</code> (see below).</p>
 <h2>Concept map</h2>
-<p>Concepts pulled from my three projects. <code>[x]</code> = written, <code>[ ]</code> = planned.</p>
+<p>Concepts pulled from the projects these notes support — mainly the classifier, kb-agent, and notes-api, plus agent-ops practices that run across the broader portfolio. <code>[x]</code> = written, <code>[ ]</code> = planned.</p>
 <h3>Foundations</h3>
 <ul>
   <li>[x] 01 — Structured output via tool use <em>(both projects)</em></li>
@@ -233,10 +233,12 @@ uv run --no-project --with mkdocs-material==9.7.6 mkdocs serve   # live preview 
 <p>This step also regenerates <strong><code>assets/category-map.svg</code></strong> — the small category meta-map shown at the top of this README, built from the notes so it never needs a manual screenshot. Re-run <code>build_graph.py</code> after editing or adding a note.</p>
 <p>Or view it live, no install: <strong>https://sanlee-ys.github.io/learning-notes/concept-map.html</strong></p>
 <h2>Where these come from</h2>
+<p>Most product and engineering examples still come from three projects; the agent-workflow notes generalize across the wider system:</p>
 <ul>
   <li><strong>defense-news-classifier</strong> — an AI that reads a defense-news snippet and labels it (what it's about + which domain). Built to <em>measure</em> how well it does.</li>
   <li><strong>kb-agent</strong> — an AI assistant that answers questions about my projects by searching a personal notebook of Markdown files (this is the "RAG" project).</li>
   <li><strong>notes-api</strong> — a small notes REST API, now <strong>Python/FastAPI</strong> (originally Spring Boot/Java — see the note above and note 18 for why it changed); where the OOP/class examples (notes 13–14) come from.</li>
+  <li><strong>agent-ops (and related system tooling)</strong> — where the "Working with AI agents" notes (22–25, 27) live in practice: CLAUDE.md steering, allowlists/hooks, parallel sessions, multi-agent fan-out, and cost control. Those patterns apply across the portfolio's operating layer, not only the three product repos above. This hub does not yet carry dedicated per-repo notes for every system repo (e.g. telltale); the checklist tags stay honest about where each concept was actually used.</li>
 </ul>
 </section>
 <section id="01-structured-output-via-tool-use">
