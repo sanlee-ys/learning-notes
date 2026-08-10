@@ -37,7 +37,9 @@ a note, run `python build_site.py` to refresh the viewable `index.html` (see bel
 
 ## Concept map
 
-Concepts pulled from my three projects. `[x]` = written, `[ ]` = planned.
+Concepts pulled from the projects these notes support — mainly the classifier,
+kb-agent, and notes-api, plus agent-ops practices that run across the broader
+portfolio. `[x]` = written, `[ ]` = planned.
 
 ### Foundations
 - [x] 01 — Structured output via tool use *(both projects)*
@@ -142,6 +144,9 @@ Or view it live, no install: **https://sanlee-ys.github.io/learning-notes/concep
 
 ## Where these come from
 
+Most product and engineering examples still come from three projects; the
+agent-workflow notes generalize across the wider system:
+
 - **defense-news-classifier** — an AI that reads a defense-news snippet and labels it
   (what it's about + which domain). Built to *measure* how well it does.
 - **kb-agent** — an AI assistant that answers questions about my projects by searching
@@ -149,3 +154,9 @@ Or view it live, no install: **https://sanlee-ys.github.io/learning-notes/concep
 - **notes-api** — a small notes REST API, now **Python/FastAPI** (originally Spring Boot/Java —
   see the note above and note 18 for why it changed); where the OOP/class examples (notes 13–14)
   come from.
+- **agent-ops (and related system tooling)** — where the "Working with AI agents" notes
+  (22–25, 27) live in practice: CLAUDE.md steering, allowlists/hooks, parallel sessions,
+  multi-agent fan-out, and cost control. Those patterns apply across the portfolio's
+  operating layer, not only the three product repos above. This hub does not yet carry
+  dedicated per-repo notes for every system repo (e.g. telltale); the checklist tags
+  stay honest about where each concept was actually used.
