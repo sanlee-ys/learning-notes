@@ -163,8 +163,11 @@ everything "procurement," you get 95% accuracy while being useless. F1 catches t
 **In my projects:** current classifier scores (v3.2.1) — macro-F1 0.930 category, 0.982
 operational domain. The region macro-F1 (0.975) is support-limited on the 54-row gold set
 (two region classes have one or two examples), so the scale eval at n=300 is the honest
-region read. The ceiling is label ambiguity (industry vs. procurement both involve defense
-companies and money), not model power.
+region read. The misses that remain sit on genuine label boundaries. Earlier versions read
+that as a fixed ceiling, but two rubric clarifications then fixed most of those misses: the
+technology-versus-operations confusions, and the over-assigned *land* domain. Model power is
+not the limit. An all-Opus run measured the same category score as the Sonnet workhorse
+(classifier `ADR-013`).
 
 ---
 
