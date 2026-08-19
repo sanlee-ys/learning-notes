@@ -60,9 +60,10 @@ rent I wasn't using. There were no other subscribers to decouple from, no replay
 throughput that needed partitions — just a broker, a topic, and a dual-write hazard to babysit.
 The in-process task removes the broker, the dual-write window, and a whole class of operational
 surface, in exchange for losing what I was never actually using. If a second consumer or a real
-replay need ever shows up, the queue earns its place back. The old Kafka consumer is preserved,
-marked inactive, in the classifier repo as a reference implementation, and the idempotent
-prefixed-tag writeback it pioneered now lives in `notes-api`'s `tasks.py`.
+replay need ever shows up, the queue earns its place back. The old Kafka consumer was deleted
+from the classifier repo in **v2.0.1** — a no-op consumer is maintenance cost for zero live
+coverage — so the reference implementation now lives only in git history at that tag, and the
+idempotent prefixed-tag writeback it pioneered now lives in `notes-api`'s `tasks.py`.
 
 The rest of this note describes the pattern itself, which is worth knowing cold even when the
 right call is to *not* reach for it.

@@ -108,7 +108,7 @@ uv run --no-project --with mkdocs-material==9.7.6 mkdocs build   # → ../../lea
 uv run --no-project --with mkdocs-material==9.7.6 mkdocs serve   # live preview at :8000
 ```
 
-Then open **`../learning-notes-site/index.html`** to read it offline. Note: the
+Then open **`../../learning-notes-site/index.html`** to read it offline. Note: the
 **dark-mode toggle only works when the site is served over HTTP** (`mkdocs serve` above, at
 http://127.0.0.1:8000) — opened as a bare `file://` page the light/dark switch can't run,
 though layout, search, and everything else do. When you add a note, add one line to
