@@ -62,7 +62,8 @@ opt-in is by *filename convention + build phase*, where Python does it with a ma
 
 **v2 (no broker).** The Java→Python port collapsed that event loop into an in-process
 `BackgroundTask` (note 18), so the Kafka seam these tests guarded no longer exists: the producer IT
-is gone with the Java code, and the consumer IT is preserved but inactive. The technique didn't go
+is gone with the Java code, and the consumer IT was deleted alongside the consumer itself in the
+classifier's **v2.0.1**, so it survives only in git history at that tag. The technique didn't go
 anywhere, though — it just points at v2's real seams now. The integration test I'd write next uses
 a **Postgres** Testcontainer to catch the SQLite-vs-Postgres dialect bugs note 19 warns about, and
 an **HTTP stub** of the classifier's `/classify` to prove the writeback `BackgroundTask` end to end.

@@ -69,9 +69,11 @@ nav:
       - 05 · The agentic tool-use loop: 05-the-agentic-tool-use-loop.md
       - 06 · RAG over your own docs: 06-rag-answering-from-your-own-docs.md
       - 07 · Embeddings & vector stores: 07-embeddings-and-vector-stores.md
+      - 28 · Tracing an agent loop — where the time & tokens go: 28-tracing-an-agent-loop.md
   - Data & method:
       - 08 · Synthetic data & the circular-eval trap: 08-synthetic-data-circular-eval.md
       - 09 · Tiered model routing: 09-tiered-model-routing.md
+      - 29 · Ablate your own scaffolding: 29-ablate-your-own-scaffolding.md
   - Engineering hygiene:
       - 10 · Secrets & the .env pattern: 10-secrets-and-env.md
       - 11 · Reproducible environments (uv): 11-reproducible-environments-uv.md
