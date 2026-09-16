@@ -138,6 +138,7 @@ img { max-width:100%; height:auto; }
 <a href="#24-one-concern-one-branch-parallel-sessions">24 · One concern, one branch: working in parallel agent sessions</a>
 <a href="#25-multi-agent-workflows">25 · Multi-agent workflows: fan-out, and the collision boundary</a>
 <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a>
+<a href="#30-the-honest-gauge-and-record-replay">30 · The honest gauge: every rendered value traces to a measurement</a>
 </div>
 </nav>
 <main>
@@ -213,6 +214,7 @@ img { max-width:100%; height:auto; }
   <li>[x] 24 — One concern, one branch: parallel agent sessions <em>(all projects)</em></li>
   <li>[x] 25 — Multi-agent workflows: fan-out &amp; the collision boundary <em>(all projects)</em></li>
   <li>[x] 27 — Fan-out cost control: cap the spend before you launch <em>(all projects)</em></li>
+  <li>[x] 30 — The honest gauge: every rendered value traces to a measurement <em>(telltale)</em></li>
 </ul>
 <h2>Viewing the notes</h2>
 <p>Four ways to read these as more than raw text. The <code>.md</code> files always stay the source of truth — the viewers are regenerated, never hand-edited.</p>
@@ -238,7 +240,7 @@ uv run --no-project --with mkdocs-material==9.7.6 mkdocs serve   # live preview 
   <li><strong>defense-news-classifier</strong> — an AI that reads a defense-news snippet and labels it (what it's about + which domain). Built to <em>measure</em> how well it does.</li>
   <li><strong>kb-agent</strong> — an AI assistant that answers questions about my projects by searching a personal notebook of Markdown files (this is the "RAG" project).</li>
   <li><strong>notes-api</strong> — a small notes REST API, now <strong>Python/FastAPI</strong> (originally Spring Boot/Java — see the note above and note 18 for why it changed); where the OOP/class examples (notes 13–14) come from.</li>
-  <li><strong>agent-ops (and related system tooling)</strong> — where the "Working with AI agents" notes (22–25, 27) live in practice: CLAUDE.md steering, allowlists/hooks, parallel sessions, multi-agent fan-out, and cost control. Those patterns apply across the portfolio's operating layer, not only the three product repos above. This hub does not yet carry dedicated per-repo notes for every system repo (e.g. telltale); the checklist tags stay honest about where each concept was actually used.</li>
+  <li><strong>agent-ops (and related system tooling)</strong> — where the "Working with AI agents" notes (22–25, 27) live in practice: CLAUDE.md steering, allowlists/hooks, parallel sessions, multi-agent fan-out, and cost control. Those patterns apply across the portfolio's operating layer, not only the three product repos above. Note 30 is the first per-repo note for a system repo (telltale). The other system repos have none yet; the checklist tags stay honest about where each concept was actually used.</li>
 </ul>
 </section>
 <section id="01-structured-output-via-tool-use">
@@ -336,7 +338,7 @@ recall    = tp / (tp + fn)</code></pre>
   <li>How to read a <strong>confusion matrix</strong> (which label gets mistaken for which) at a glance.</li>
   <li>Macro vs <strong>micro</strong> vs weighted averages — what each one is really measuring.</li>
 </ul><aside class="related">
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a> <a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#08-synthetic-data-circular-eval">08 · Synthetic data and the &quot;circular eval&quot; trap</a> <a href="#09-tiered-model-routing">09 · Tiered model routing: pay for the big model only when it pays</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a> <a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a> <a href="#30-the-honest-gauge-and-record-replay">30 · The honest gauge: every rendered value traces to a measurement</a></div>
 </aside>
 </section>
 <section id="04-tool-use-the-general-idea">
@@ -948,7 +950,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>Mocks and fakes — testing one layer without booting the whole app.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#12-checkpoint-resume-and-retries">12 · Checkpoint/resume and retries: surviving flaky API runs</a></div>
-<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a> <a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a> <a href="#23-permissions-allowlists-and-hooks">23 · Permissions, allowlists &amp; hooks: guardrails for an AI agent</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a> <a href="#29-ablate-your-own-scaffolding">29 · Ablate your own scaffolding: was the hand-written part doing anything?</a> <a href="#30-the-honest-gauge-and-record-replay">30 · The honest gauge: every rendered value traces to a measurement</a></div>
 </aside>
 </section>
 <section id="21-test-driven-development">
@@ -1165,6 +1167,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li>How this connects to <strong>event-driven architecture</strong> (note 18): the contract between producer and consumer is exactly what an integration test on each side protects.</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#11-reproducible-environments-uv">11 · Reproducible environments: uv and lockfiles</a> <a href="#16-containers-and-docker">16 · Containers &amp; Docker: ship it the same everywhere</a> <a href="#18-event-driven-architecture">18 · Event-driven architecture: working through a message queue</a> <a href="#19-database-migrations">19 · Database migrations: versioning your schema</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#30-the-honest-gauge-and-record-replay">30 · The honest gauge: every rendered value traces to a measurement</a></div>
 </aside>
 </section>
 <section id="27-fan-out-cost-control">
@@ -1250,6 +1253,7 @@ COPY src/api.py src/classify.py ./src/</code></pre>
 <h2>Why this is the same instinct as everything else here</h2>
 <p>"Build the eval before you trust the model" (note 02). "Read the numbers, don't trust the vibe" (note 03). "Know the cost before you launch the fan-out" (note 27). Tracing is that instinct pointed at a running agent: <strong>don't guess where the time and tokens went — measure it, per step.</strong> The loop in note 05 is where the work happens; this is how you see it happen.</p><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#05-the-agentic-tool-use-loop">05 · The agentic tool-use loop</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#27-fan-out-cost-control">27 · Fan-out cost control: a finding, and the guardrail</a></div>
+<div class="rel-row"><span class="rel-label">Referenced by</span><a href="#30-the-honest-gauge-and-record-replay">30 · The honest gauge: every rendered value traces to a measurement</a></div>
 </aside>
 </section>
 <section id="29-ablate-your-own-scaffolding">
@@ -1285,6 +1289,54 @@ COPY src/api.py src/classify.py ./src/</code></pre>
   <li><strong>The uncomfortable generalization:</strong> how much of what we call prompt engineering would survive its own ablation?</li>
 </ul><aside class="related">
 <div class="rel-row"><span class="rel-label">References</span><a href="#02-eval-driven-development">02 · Eval-driven development</a> <a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#21-test-driven-development">21 · Test-driven development: red, green, refactor</a></div>
+</aside>
+</section>
+<section id="30-the-honest-gauge-and-record-replay">
+<h1>30 — The honest gauge: every rendered value traces to a measurement</h1>
+<blockquote><strong>TL;DR</strong> telltale is a terminal harness that shows what several AI coding tools do and spend. It has one rule: a rendered value must come from a measured tool output. A value the program inferred is omitted or marked as an estimate. Zero and absent are different values, and a test fails the build if a render shows them the same way. The test fixture for a UI that talks to live vendors is a recording of a real run, played back through the same renderer. The shipped copy of that fixture is scrubbed: the shape is real, and the words are synthesized.</blockquote>
+<h2>Plain idea</h2>
+<p>A dashboard is a set of claims. Each number on it says "somebody measured this." Most dashboards break that promise in a quiet way. They fill a gap with a guess. They show <code>0</code> when a source was not read. They compute a figure from two other figures and show it in the same font as a measured one. The reader cannot tell the three cases apart.</p>
+<p>The honest-gauge rule removes the guess. A cell may show only a value that came from the tool's own output. If the tool did not say it, the cell shows nothing. If the program computed it, the cell says so with a mark.</p>
+<p>That rule forces one distinction that most schemas skip. "Zero" and "absent" are two different facts, and "absent" itself splits in two:</p>
+<ul>
+  <li><strong>Zero.</strong> The vendor reported zero. The gauge draws a full empty track.</li>
+  <li><strong>Absent now.</strong> The vendor can report this field, but it has no value at this moment. The gauge draws a dash.</li>
+  <li><strong>Cannot know.</strong> The vendor never exposes this field. The gauge drops the column for that vendor.</li>
+</ul>
+<p>A gauge that shows all three as <code>0%</code> tells the reader that three sessions are in the same state. Two of them were not measured at all.</p>
+<h2>Analogy</h2>
+<p>A fuel gauge with a broken sender wire must not read "empty". A needle at "empty" is a claim about the tank. A dark gauge is a claim about the wire. A driver who sees the needle at "empty" refuels. A driver who sees a dark gauge repairs the wire. The two readings cause different actions, so the dashboard must keep them different. A dashboard that moves the needle to "empty" when the wire breaks sends the driver to the wrong repair.</p>
+<h2>In my project</h2>
+<p><strong>telltale</strong> (<code>github.com/sanlee-ys/telltale</code>) is a Go binary with three surfaces: a statusline segment, a watch TUI (<code>telltale hud</code>), and a room (<code>telltale council</code>) that sends one brief to several vendor CLIs side by side. The rule is stated in <code>README.md</code> under "The honest-gauge rule", and it is the first design decision in <code>docs/design.md</code> (ADR-001, with §4a.1 "Absence is two different things").</p>
+<p>Three mechanisms hold the rule in place:</p>
+<ol>
+  <li><strong>Every optional field is a pointer, and there is no sentinel number.</strong> In <code>internal/model/session.go</code>, a nil pointer means "no value". The value <code>0</code> always means the vendor said zero. An adapter that cannot source a field declares that fact (<code>CapNone</code>) instead of a plausible guess.</li>
+  <li><strong>A golden test pins the render.</strong> <code>internal/hud</code> renders one session at 0% context and one session with no context source, and the test asserts that the two rows differ (<code>internal/hud/testdata/golden/zero-vs-absent.txt</code>). If a change makes the rows equal, the build fails.</li>
+  <li><strong>An estimate carries a mark.</strong> A value the adapter computed, such as a context percentage, renders with a leading <code>~</code>. The <code>telltale snapshot</code> JSON document says the same thing in fields: <code>0</code> is a measured zero, <code>null</code> is no reading now, <code>&quot;unsupported&quot;</code> lists the fields this vendor never exposes, and <code>&quot;estimated&quot;</code> lists the fields the adapter computed.</li>
+</ol>
+<p>The CI workflow (<code>.github/workflows/ci.yml</code>) runs the built binary against fixtures and asserts on stdout. One assertion fails the run if a quota window renders with no rate-limit data behind it. Another fails it if a dollar sign renders for a vendor that reports no cost. The repo tests the rendered string, not only that the code ran (note 20).</p>
+<p>The rule reaches past the code. <code>docs/design.md</code> §1 lists the three gates for the v1 tag. One gate says the README must be verified against the tip of the code: every claim, keybinding, and badge checked. A comment in the README badge slot applies the same rule to badges: a badge states a fact somebody measured, and it names who measured it. A star count or a download count is a number telltale does not measure, so no badge shows one.</p>
+<h3>The second idea: record and replay as the test fixture</h3>
+<p>The room talks to live vendor CLIs. Each seat costs money per turn, needs a login, and answers differently every time. That is the worst possible test dependency. A test that spawns a real vendor is slow, non-deterministic, and billed to the operator's account. Note 26 keeps a real dependency short. Here the dependency cannot run in a test at all. So the suite for the room never starts a vendor, and a guard in <code>internal/council/main_test.go</code> panics if a test reaches a spawn with a binary the machine can resolve.</p>
+<p>Then how do you test what the room draws over a real run? You record one. <code>telltale council --record &lt;file&gt;</code> writes the room's event stream as JSON lines: the room line, each dispatch, each event from each seat, and each gate decision, with millisecond offsets (<code>internal/council/recording.go</code>). <code>--replay &lt;file&gt;</code> opens a room over the file and puts the same records through the same code path a live room uses. The clock is the recording's clock, so <code>Render</code> stays pure over its state, and two plays of one file produce one frame. Every replayed frame says <code>REPLAY</code> in words, and <code>enter</code> refuses to dispatch: "nothing here is live".</p>
+<p>The recording is the fixture. The replay is the test. <code>docs/design.md</code> §9.56 records the design, and its measurement section records what the first replay of a real file found: a defect in how the room attributed the exit of a seat's old process. The synthesized fixtures in the suite had not caught it. A real recording did.</p>
+<p><strong>Why the shipped fixture is scrubbed.</strong> A recording holds content: the operator's brief, each vendor's reply, session ids, and the workspace path. telltale is a public repository, and its fixture rule says fixtures are synthesized and hold no real session content. The two rules meet in <code>telltale council replay-scrub &lt;in&gt; &lt;out&gt;</code> (<code>internal/council/scrub.go</code>). It reads one recording and writes a second file with the same shape and every word replaced. <code>examples/demo.jsonl</code> is a real room of 2026-09-03 after that pass. Its room line says <code>scrubbed: true</code>, and both <code>--replay</code> and <code>telltale council replay-check &lt;file&gt;</code> repeat the claim. A stranger can play a real room on a machine with no vendor installed, and the real recording stays with its operator.</p>
+<p><code>replay-check</code> is the honest-gauge rule turned on the recording itself. It lists what the file carries (the workspace, the seats, the session ids, the tool lines, the gate cards, and the size of the prose), and it says that it did not read the prose. You know what you are about to share before you share it.</p>
+<h2>Why it matters</h2>
+<ul>
+  <li><strong>A rendered guess looks the same as a measured value.</strong> The reader cannot correct for a difference they cannot see. The only fix is at the render: omit the guess, or mark it.</li>
+  <li><strong>Zero-versus-absent is a bug class, not a bug.</strong> It is the same class as a test suite that passes because it asserts nothing (note 20), and as a check that cannot fail (the "false green" entry in the glossary). The diagnostic question is the same each time: can this surface tell "measured zero" from "never measured"?</li>
+  <li><strong>A real recording finds what a synthesized fixture cannot.</strong> Synthesized fixtures pin the shape of a render. A recording pins the truth of one run, and the first real one found a defect on its first play.</li>
+  <li><strong>Scrub, do not redact.</strong> A redacted recording is a second truth that differs from the run. A scrubbed copy keeps the shape, replaces every word, and says so on its first line. Note 03 makes the same point about numbers: a figure you cannot trace is a figure you cannot read.</li>
+</ul>
+<h2>Go deeper</h2>
+<ul>
+  <li>Where else does the zero-versus-absent collapse hide? A <code>0</code> default in a JSON schema, a <code>COUNT(*)</code> over a table that was never loaded, a chart library that draws a missing point on the axis. Each one turns "not measured" into "measured zero".</li>
+  <li>How much of a UI's test suite can be a replay? The replay covers what the room draws. It cannot cover a vendor's live handshake, a resume across a respawn, or a real gate on a real write. <code>docs/design.md</code> §9.56 keeps a list under the heading "Not verified here". What list does your project keep?</li>
+  <li>Note 28 records spans; the room records events. Both are a timed stream that a viewer plays back. Which parts of one format would serve the other?</li>
+  <li>"Verified against tip" is a v1 gate for the README, and a person applies it. What would that gate look like as a CI check?</li>
+</ul><aside class="related">
+<div class="rel-row"><span class="rel-label">References</span><a href="#03-reading-the-numbers">03 · Reading the numbers: accuracy vs precision/recall/F1</a> <a href="#20-testing-and-coverage">20 · Testing &amp; coverage: knowing what&#x27;s exercised</a> <a href="#26-integration-tests-with-testcontainers">26 · Integration tests with Testcontainers: a real dependency, briefly</a> <a href="#28-tracing-an-agent-loop">28 · Tracing an agent loop: seeing where the time and tokens go</a></div>
 </aside>
 </section>
 <footer>

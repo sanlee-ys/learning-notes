@@ -309,6 +309,9 @@ gate measuring unstyled pages, a review lane with no file access, and a counter 
 "zero denials" off a key the log never carried. Writeup:
 [False Green](https://sanlee.me/projects/false-green.html).
 
+**See note:** [30 — The honest gauge](30-the-honest-gauge-and-record-replay.md) (the
+same question, asked of a display: can it tell "measured zero" from "never measured"?)
+
 **Related:** CI gate (what these were all supposed to be), eval (a number is only as
 trustworthy as the thing that measured it)
 

@@ -81,6 +81,7 @@ portfolio. `[x]` = written, `[ ]` = planned.
 - [x] 24 — One concern, one branch: parallel agent sessions *(all projects)*
 - [x] 25 — Multi-agent workflows: fan-out & the collision boundary *(all projects)*
 - [x] 27 — Fan-out cost control: cap the spend before you launch *(all projects)*
+- [x] 30 — The honest gauge: every rendered value traces to a measurement *(telltale)*
 
 ## Viewing the notes
 
@@ -157,6 +158,6 @@ agent-workflow notes generalize across the wider system:
 - **agent-ops (and related system tooling)** — where the "Working with AI agents" notes
   (22–25, 27) live in practice: CLAUDE.md steering, allowlists/hooks, parallel sessions,
   multi-agent fan-out, and cost control. Those patterns apply across the portfolio's
-  operating layer, not only the three product repos above. This hub does not yet carry
-  dedicated per-repo notes for every system repo (e.g. telltale); the checklist tags
-  stay honest about where each concept was actually used.
+  operating layer, not only the three product repos above. Note 30 is the first
+  per-repo note for a system repo (telltale). The other system repos have none yet;
+  the checklist tags stay honest about where each concept was actually used.
