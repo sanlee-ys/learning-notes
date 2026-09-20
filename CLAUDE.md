@@ -14,13 +14,50 @@ Treat every user-facing change as something that must work on a phone, not just 
 desktop browser. This is a standing directive — apply it even when a request
 doesn't mention mobile.
 
-**There is no gate script in this repo.** The sibling `portfolio` repo has one
-(`scripts/mobile-qa.cjs` — renders every page at 320/360/390/430px and fails on
-horizontal overflow); porting it here is the right fix and hasn't been done. Until it
-is, "verify" means you actually rendered the page and looked at it, and the honest
-report says which widths you checked and which you didn't. **"Looks responsive" from
-reading the CSS is not a check** — say it's unverified instead, the same way an
-unverified link gets labelled rather than sent.
+**This repo has a gate, since 2026-09-20.** Run it from the repo root before you
+commit any change to layout, style, or markup:
+
+```
+python build_site.py && python build_graph.py && node scripts/mobile-qa.cjs
+```
+
+The gate renders every deployed page at **320, 360, 390 and 430px** and **fails on
+horizontal overflow**. CI runs it in the `mobile-qa` job, and it runs the pass twice.
+The second pass sets a 20px root font, which is a reader's large-text setting:
+
+```
+ROOT_FONT_PX=20 node scripts/mobile-qa.cjs
+```
+
+**Run the large-text pass. It finds what the default pass cannot.** A heading sizes
+itself in rem, so a long token fits at a 16px root and widens the page at a 20px
+root. `index.html` did that when the gate landed: a 369px scroll width against a
+320px viewport, while the default pass was green. The fix is a rule that breaks the
+token, not a px breakpoint, because a rem inside a media query does not follow the
+injected root.
+
+**Prerequisite: Playwright and a Chromium that matches the pin.** `node_modules/` is
+untracked, and each Playwright version maps to one browser revision, so a fresh
+clone cannot run the gate until you run both commands:
+
+```
+npm --prefix scripts ci
+npm --prefix scripts exec -- playwright install chromium
+```
+
+Use `--prefix scripts` and not a bare `npx`. The prefix resolves the version that
+`scripts/package.json` pins, which is the revision CI uses.
+
+**If the gate cannot launch a browser, it is unrun, not green.** The gate reports an
+unrun state for two more causes: a permitted external request that failed, and an
+inline `<svg>` that stayed empty. `concept-map.html` loads D3 from a CDN and D3 draws
+the whole graph, so a blocked request would leave an empty element that cannot
+overflow. The gate would then pass a page it never rendered.
+
+**The gate checks overflow only. You uphold the rest** — tap targets, readable text,
+and the "☰ Contents" path below. **"Looks responsive" from reading the CSS is not a
+check**; say it is unverified instead, the same way an unverified link gets labelled
+rather than sent.
 
 - Render at a narrow viewport (~390px wide, and 320px if the change touches layout):
   **no horizontal overflow**, no content cut off, text readable without pinch-zoom.

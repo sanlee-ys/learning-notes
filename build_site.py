@@ -271,6 +271,12 @@ section:last-child { border-bottom:none; }
 h1 { font-size:1.9rem; margin:.2em 0 .6em; }
 h2 { font-size:1.25rem; margin:1.6em 0 .4em; }
 h3 { font-size:1.05rem; margin:1.3em 0 .3em; }
+/* A heading sets its own font size in rem, so it grows when a reader raises
+   the root font size. One long token then sticks out past the content box
+   and widens the whole page. The mobile gate measured that at a 20px root on
+   2026-09-20: index.html reported a 369px scroll width against a 320px
+   viewport, while the 16px pass was green. Break the token instead. */
+h1, h2, h3 { overflow-wrap:break-word; }
 a { color:var(--accent); }
 code { background:var(--code-bg); padding:.12em .35em; border-radius:4px;
        font:.88em "SF Mono", Consolas, "Liberation Mono", monospace;
