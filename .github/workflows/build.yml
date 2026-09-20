@@ -69,3 +69,50 @@ jobs:
             echo "::error::Generated files are stale — run build_site.py and build_graph.py and commit the output."
             exit 1
           fi
+
+  # Mobile is a first-class constraint in CLAUDE.md, and until 2026-09-20 no
+  # gate held it. This job renders the deployed pages at phone widths and
+  # fails on horizontal overflow. It runs the pass twice. The second pass
+  # sets a 20px root font, which is a reader's large-text setting. A heading
+  # sizes itself in rem, so a long token fits at 16px and widens the page at
+  # 20px. That pass found exactly that on index.html when the gate landed.
+  #
+  # The job regenerates the pages first, so it measures the CSS that
+  # build_site.py holds now. The generated-files job above separately proves
+  # the committed output matches that source.
+  mobile-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+
+      - name: Build the site
+        run: |
+          python build_site.py
+          python build_graph.py
+
+      - name: Install Playwright Chromium
+        working-directory: scripts
+        run: |
+          npm ci
+          # Chromium only, and no --with-deps. That flag pulls Debian
+          # packages the runner image already carries, and it fails when an
+          # upstream index hash drifts.
+          npx playwright install chromium
+
+      - name: Mobile QA gate (no horizontal overflow at 320/360/390/430)
+        run: node scripts/mobile-qa.cjs
+
+      - name: Mobile QA gate, large text (same widths at a 20px root)
+        run: node scripts/mobile-qa.cjs
+        env:
+          ROOT_FONT_PX: 20

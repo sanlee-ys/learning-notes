@@ -16,3 +16,6 @@ Thumbs.db
 desktop.ini
 
 graphify-out/
+
+# Node QA tooling (scripts/package-lock.json IS tracked; the tree is not)
+node_modules/
