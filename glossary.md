@@ -98,11 +98,12 @@ document. Falls apart when the query and document use *different words for the s
 
 **In my projects:** I measured BM25 as a grounding layer for the *classifier* and cut it —
 +1.9% category accuracy, +0.0% domain, not worth the retrieval complexity. `kb-agent`
-retrieves with dense embeddings only (`all-MiniLM-L6-v2`). That eval ran on 2026-08-02:
-kb-agent `ADR-010`, "Build hybrid BM25+dense retrieval, measure it, and keep dense-only as
-the default". The hybrid arm showed no net gain at n=27 (McNemar exact p = 1.0000), so
-dense-only stays the shipped default. Both surviving misses were corpus crowding, not a
-dense-versus-lexical gap: the lexical leg put the same wrong file on top.
+retrieves with dense embeddings only (`all-MiniLM-L6-v2`). That eval ran. kb-agent
+`ADR-010` recorded the result on 2026-08-02: "Build hybrid BM25+dense retrieval, measure
+it, and keep dense-only as the default". The hybrid arm showed no net gain at n=27
+(McNemar exact p = 1.0000), so dense-only stays the shipped default. Both surviving
+misses were corpus crowding, not a dense-versus-lexical gap: the lexical leg put the same
+wrong file on top.
 
 **Related:** vector search (the meaning-based alternative), RAG (the broader pattern)
 
@@ -285,9 +286,10 @@ gets caught before it merges.
 
 **In my projects:** the classifier's eval runs as a CI gate now — an offline scoring job on
 every PR that costs nothing, plus a scheduled live job that spends real API budget against
-the model (classifier `ADR-007`). That pattern reached `kb-agent` on 2026-09-09 (kb-agent
-`ADR-013`, SYS-017 tier 2). The floors come from measured CI runs, and a breach now fails
-the PR.
+the model (classifier `ADR-007`). `kb-agent` got the offline half of that pattern on
+2026-09-09 (kb-agent `ADR-013`, SYS-017 tier 2). Its floors come from measured CI runs,
+and a breach now fails the required `test` job. The paid scheduled leg stays out of that
+repo's CI.
 
 **Related:** eval, contract (what the harness enforces), false green (a harness that
 can't fail is worse than none)
