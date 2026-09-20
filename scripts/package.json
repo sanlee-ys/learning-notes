@@ -1,0 +1,8 @@
+{
+  "name": "learning-notes-qa-tooling",
+  "private": true,
+  "description": "Pinned Playwright for the mobile QA gate (mobile-qa.cjs). The pin matches the sibling portfolio repo, so both gates launch one browser revision. Not part of the site build, which is Python and stdlib only (2026-09-20).",
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
